@@ -5,6 +5,8 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "SceneManager.generated.h"
 
+struct FGameplayTag;
+
 UCLASS()
 class THIRDMOTION_API USceneManager : public UWorldSubsystem
 {
@@ -21,6 +23,7 @@ public:
 	AActor* FindByGuid(const FGuid& ID) const;;
 
 	// 스폰/변경/삭제
-	//void SpawnFromPreset(FName )
-	
+	void SpawnFromPreset(FGameplayTag PresetTag, const FTransform& T, AActor*& OutActor);
+	void ApplyTransform(const FGuid& ID, const FTransform& T);
+	void ApplyPropertyDelta(const FGuid& ID, const FPropertyDelta)
 };
