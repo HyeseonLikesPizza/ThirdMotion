@@ -21,3 +21,11 @@ UE_LOG(LogTemp, Log, TEXT("[CT][%s][%s][%s] " Format), \
 *PresetTag.ToString(), \
 *DisplayName.ToString(), \
 ##__VA_ARGS__)
+
+// 태그 간편하게 쓰기
+#define TAG(Name) FGameplayTag::RequestGameplayTag(TEXT(Name))
+
+/* 
+ * 사용
+ * auto TagIntensity = TAG("Property.Light.Intensity");
+ */

@@ -6,6 +6,14 @@
 #include "EditTypes.generated.h"
 
 UENUM(BlueprintType)
+enum class EPresetType : uint8
+{
+	Mesh,
+	Light,
+	Camera
+};
+
+UENUM(BlueprintType)
 enum class EPropOp : uint8
 {
 	SetFloat,
@@ -79,6 +87,9 @@ struct FLibraryRow : public FTableRowBase
 
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon;
+
+	UPROPERTY(EditAnywhere)
+	EPresetType PresetType;
 
 	FEditMeta BuildMetaFromPreset(const FLibraryRow& Row)
 	{
