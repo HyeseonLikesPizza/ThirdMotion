@@ -5,6 +5,62 @@
 #include "GameplayTagContainer.h"
 #include "EditTypes.generated.h"
 
+UENUM(BlueprintType)
+enum class EPropOp : uint8
+{
+	SetFloat,
+	SetInt,
+	SetColor,
+	SetName,
+	SetObject,
+	SetTransform
+};
+
+USTRUCT(BlueprintType)
+struct FPropertyDelta
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag PropertyTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EPropOp Op = EPropOp::SetFloat;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 IntParam = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float FloatParam = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FLinearColor ColorParam = FLinearColor::White;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName NameParam = FName("");
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSoftObjectPath ObjectPath;
+};
+
+
+
+// 뷰포트 상에 해당 프리셋 추가 시 사용되는 구조체
+USTRUCT(BlueprintType)
+struct FEditMeta
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGuid Guid;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag PresetTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName DisplayName;
+
+};
 
 // 라이브러리 프리셋 구조체
 USTRUCT(BlueprintType)
@@ -30,42 +86,7 @@ struct FLibraryRow : public FTableRowBase
 		M.Guid = FGuid::NewGuid();
 		M.PresetTag = Row.PresetTag;
 		M.DisplayName = Row.DisplayName;
-		M.AssetPath = Row.ClassRef.ToSoftObjectPath();
 		return M;
 	}
 };
 
-
-// 뷰포트 상에 해당 프리셋 추가 시 사용되는 구조체
-USTRUCT(BlueprintType)
-struct FEditMeta
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGuid Guid;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTag PresetTag;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName DisplayName;
-
-	FString GuidShort() const
-	{
-		return Guid.ToString(EGuidFormats::Short).Left(8);
-	}
-	
-};
-
-/*
-// TSoftClassPtr<AActor>  →  FSoftClassPath
-FSoftClassPath ToPath = ClassPtr.ToSoftObjectPath();
-
-// FSoftClassPath  →  TSoftClassPtr<AActor>
-TSoftClassPtr<AActor> ToPtr(ToPath);
-
-// 로딩
-UClass* C1 = ClassPtr.LoadSynchronous();
-UClass* C2 = ToPath.TryLoadClass<AActor>();
- */
