@@ -20,10 +20,27 @@ public:
 	bool IsAuthority() const;
 
 	// Guid로 액터 찾기
-	AActor* FindByGuid(const FGuid& ID) const;;
+	AActor* FindByGuid(const FGuid& ID) const;
 
-	// 스폰/변경/삭제
-	void SpawnFromPreset(FGameplayTag PresetTag, const FTransform& T, AActor*& OutActor);
-	void ApplyTransform(const FGuid& ID, const FTransform& T);
-	void ApplyPropertyDelta(const FGuid& ID, const FPropertyDelta)
+	// 스폰 / 삭제
+	UFUNCTION()
+	AActor* SpawnByTag(FGameplayTag PresetTag, const FTransform& T);
+
+	UFUNCTION()
+	bool DestroyByGuid(const FGuid& ID);
+
+	// Apply
+	UFUNCTION()
+	bool ApplyTransform(const FGuid& ID, const FTransform& T);
+
+	UFUNCTION()
+	bool ApplyPropertyDelta(const FGuid& Guid, const FPropertyDelta& Delta);
+
+
+private:
+	UPROPERTY()
+	TMap<FGuid, TWeakObjectPtr<AActor>> GuidCache;
+
+	void AttachEditComponentAndMeta(AActor* Actor, const struct FLibraryRow& Row);
+	
 };
