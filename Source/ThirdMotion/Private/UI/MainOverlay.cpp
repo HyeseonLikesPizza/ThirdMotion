@@ -30,8 +30,7 @@ void UMainOverlay::CreateHost()
 	bool bCanBindAll;
 	TSharedPtr<FInternetAddr> LocalAddr = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->GetLocalHostAddr(*GLog, bCanBindAll);
     
-	url = LocalAddr.IsValid() ?
-		 LocalAddr->ToString(false) : "127.0.0.1";
+	url = LocalAddr.IsValid() ? LocalAddr->ToString(false) : "127.0.0.1";
 	
 	UE_LOG(LogTemp, Display, TEXT("Host URL : %s"), *url);
 
