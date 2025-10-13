@@ -15,6 +15,7 @@ class THIRDMOTION_API USceneManager : public UWorldSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 	// 서버만 호출 허용
 	bool IsAuthority() const;
@@ -42,5 +43,19 @@ private:
 	TMap<FGuid, TWeakObjectPtr<AActor>> GuidCache;
 
 	void AttachEditComponentAndMeta(AActor* Actor, const struct FLibraryRow& Row);
+
+	// 델리게이트 핸들
+	FDelegateHandle OnSpawnedHandle;
+	FDelegateHandle OnDestroyedHandle;
+
+	// 준비
+	void OnResolverReady();
+	void BuildInitialGuidCache();
+	void BindWorldDelegates();
+	void UnbindWorldDelegates();
+
+	// 델리게이트 콜백
+	void HandleActorSpawned(AActor* NewActor);
+	void HandleActorDestroyed(AActor* DestroyedActor);
 	
 };

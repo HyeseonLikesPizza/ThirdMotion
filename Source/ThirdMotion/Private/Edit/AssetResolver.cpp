@@ -56,3 +56,36 @@ void UAssetResolver::GetRowsByCategory(const FGameplayTag& CategoryTag, TArray<c
 		}
 	}
 }
+
+void UAssetResolver::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+	bReady = false;
+}
+
+void UAssetResolver::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+	EnsureLoadedAndBuildIndex();
+}
+
+void UAssetResolver::EnsureLoadedAndBuildIndex()
+{
+	if (bReady) return;
+
+	if (!LibraryTable && LibraryTableAsset.IsValid())
+		LibraryTable = LibraryTableAsset.Get(); // 이미 메모리에 있으면 바로
+
+	if (!LibraryTable && LibraryTableAsset.IsNull() == false)
+		LibraryTable = LibraryTableAsset.LoadSynchronous(); // 간단버전: 동기 로드
+
+	if (!LibraryTable)
+	{
+		PRINTLOG(TEXT("[Resolver] No LibraryTableAsset assigned"));
+		return;
+	}
+
+	BuildIndex(LibraryTable);
+	bReady = true;
+	OnReady.Broadcast();
+}
