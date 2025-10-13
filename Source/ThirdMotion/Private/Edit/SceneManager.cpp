@@ -1,20 +1,45 @@
 
 #include "Edit/SceneManager.h"
 
+#include "EngineUtils.h"
 #include "GameplayTagContainer.h"
 #include "Edit/AssetResolver.h"
 #include "Edit/EditSyncComponent.h"
+#include "ThirdMotion/ThirdMotion.h"
 
 void USceneManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+	GuidCache.Empty();
 }
 
 void USceneManager::Deinitialize()
 {
-	Super::Deinitialize();
-
+	UnbindWorldDelegates();
 	GuidCache.Empty();
+
+	Super::Deinitialize();
+}
+
+void USceneManager::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+
+	if (auto* R = InWorld.GetSubsystem<UAssetResolver>())
+	{
+		if (R->IsReady()) OnResolverReady();
+		else R->OnReady.AddUObject(this, &USceneManager::OnResolverReady);
+	}
+	else
+	{
+		PRINTLOG(TEXT("AssetResolver not found"));
+	}
+
+	if (IsAuthority())
+	{
+		BuildInitialGuidCache();
+		BindWorldDelegates();
+	}
 }
 
 bool USceneManager::IsAuthority() const
@@ -48,7 +73,7 @@ AActor* USceneManager::SpawnByTag(FGameplayTag PresetTag, const FTransform& T)
 	check(IsAuthority());
 
 	auto* Resolver = GetWorld()->GetSubsystem<UAssetResolver>();
-	if (!Resolver) return nullptr;
+	if (!Resolver || !Resolver->IsReady()) return nullptr;
 
 	const FLibraryRow* Row = Resolver->FindRowByTag(PresetTag);
 	if (!Row) return nullptr;
@@ -113,5 +138,70 @@ void USceneManager::AttachEditComponentAndMeta(AActor* Actor, const struct FLibr
 	auto* Edit = NewObject<UEditSyncComponent>(Actor);
 	Edit->RegisterComponent();
 	Edit->InitMetaFromPreset(Row);
+}
+
+void USceneManager::OnResolverReady()
+{
+	PRINTLOG(TEXT("Resolver Ready"));
+}
+
+void USceneManager::BuildInitialGuidCache()
+{
+	UWorld* W = GetWorld();
+	if (!W) return;
+
+	for (TActorIterator<AActor> It(W); It; ++It)
+	{
+		if (UEditSyncComponent* Edit = It->FindComponentByClass<UEditSyncComponent>())
+		{
+			const FEditMeta& M = Edit->GetMeta();
+			if (M.Guid.IsValid())
+				GuidCache.FindOrAdd(M.Guid) = *It;
+		}
+	}
+}
+
+void USceneManager::BindWorldDelegates()
+{
+	UWorld* W = GetWorld();
+	if (!W) return;
+
+	OnSpawnedHandle = W->AddOnActorSpawnedHandler(
+		FOnActorSpawned::FDelegate::CreateUObject(this, &USceneManager::HandleActorSpawned));
+
+	OnDestroyedHandle = W->AddOnActorDestroyedHandler(
+		FOnActorDestroyed::FDelegate::CreateUObject(this, &USceneManager::HandleActorDestroyed));
+}
+
+void USceneManager::UnbindWorldDelegates()
+{
+	if (UWorld* W = GetWorld())
+	{
+		if (OnSpawnedHandle.IsValid())
+			W->RemoveOnActorSpawnedHandler(OnSpawnedHandle);
+		if (OnDestroyedHandle.IsValid())
+			W->RemoveOnActorDestroyedHandler(OnDestroyedHandle);
+	}
+}
+
+void USceneManager::HandleActorSpawned(AActor* NewActor)
+{
+	if (!IsAuthority() || !NewActor) return;
+	if (UEditSyncComponent* Edit = NewActor->FindComponentByClass<UEditSyncComponent>())
+	{
+		const FEditMeta& M = Edit->GetMeta();
+		if (M.Guid.IsValid())
+			GuidCache.FindOrAdd(M.Guid) = NewActor;
+	}
+}
+
+void USceneManager::HandleActorDestroyed(AActor* DestroyedActor)
+{
+	if (!IsAuthority() || !DestroyedActor) return;
+	if (UEditSyncComponent* Edit = DestroyedActor->FindComponentByClass<UEditSyncComponent>())
+	{
+		const FGuid G = Edit->GetMeta().Guid;
+		if (G.IsValid()) GuidCache.Remove(G);
+	}
 }
 
