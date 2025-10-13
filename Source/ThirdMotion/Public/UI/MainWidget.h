@@ -4,25 +4,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/TwinmotionBaseWidget.h"
+#include "UI/BaseWidget.h"
 #include "Components/Border.h"
 #include "Components/CanvasPanel.h"
 #include "Components/SizeBox.h"
-#include "TwinmotionMainWidget.generated.h"
+#include "MainWidget.generated.h"
 
-/**
- * Main Twinmotion UI Container
- * Contains references to all sub-panels
- */
+class UUIManager;
+enum class ETwinmotionPanelType : uint8;
+
 UCLASS()
-class THIRDMOTION_API UTwinmotionMainWidget : public UTwinmotionBaseWidget
+class THIRDMOTION_API UMainWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
 public:
 	virtual void NativeConstruct() override;
 
-	// Widget References - Bind these in the Blueprint Designer
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UUserWidget* TopBar;
 
@@ -47,6 +45,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Twinmotion UI")
 	void ToggleBottomPanel();
+
+	
 
 protected:
 	UFUNCTION()

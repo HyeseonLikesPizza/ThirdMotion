@@ -4,13 +4,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/TwinmotionBaseWidget.h"
+#include "UI/BaseWidget.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/EditableText.h"
 #include "Components/HorizontalBox.h"
 #include "GameFramework/Actor.h"
-#include "TwinmotionSceneTreeItem.generated.h"
+#include "SceneTreeItem.generated.h"
 
 /**
  * Data structure for scene tree items
@@ -57,7 +57,7 @@ struct FSceneTreeItemData
  * Widget for displaying a single scene tree item
  */
 UCLASS()
-class THIRDMOTION_API UTwinmotionSceneTreeItem : public UTwinmotionBaseWidget
+class THIRDMOTION_API USceneTreeItem : public UBaseWidget
 {
 	GENERATED_BODY()
 

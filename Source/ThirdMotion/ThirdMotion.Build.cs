@@ -12,6 +12,9 @@ public class ThirdMotion : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "ImageWrapper" });
 		
+		PublicIncludePaths.Add(ModuleDirectory + "/Public");
+		PrivateIncludePaths.Add(ModuleDirectory + "/Private");
+		
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
 

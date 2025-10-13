@@ -1,42 +1,42 @@
 // TwinmotionSceneTreeItem.cpp
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "UI/TwinmotionSceneTreeItem.h"
+#include "UI/SceneTreeItem.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/EditableText.h"
 #include "Components/Spacer.h"
-#include "TwinmotionUIManager.h"
+#include "UI/UIManager.h"
 
-void UTwinmotionSceneTreeItem::NativeConstruct()
+void USceneTreeItem::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 	// Bind button events
 	if (ExpandButton)
 	{
-		ExpandButton->OnClicked.AddDynamic(this, &UTwinmotionSceneTreeItem::OnExpandButtonClicked);
+		ExpandButton->OnClicked.AddDynamic(this, &USceneTreeItem::OnExpandButtonClicked);
 	}
 
 	if (VisibilityButton)
 	{
-		VisibilityButton->OnClicked.AddDynamic(this, &UTwinmotionSceneTreeItem::OnVisibilityButtonClicked);
+		VisibilityButton->OnClicked.AddDynamic(this, &USceneTreeItem::OnVisibilityButtonClicked);
 	}
 
 	if (SelectButton)
 	{
-		SelectButton->OnClicked.AddDynamic(this, &UTwinmotionSceneTreeItem::OnSelectButtonClicked);
+		SelectButton->OnClicked.AddDynamic(this, &USceneTreeItem::OnSelectButtonClicked);
 	}
 
 	if (NameText)
 	{
-		NameText->OnTextCommitted.AddDynamic(this, &UTwinmotionSceneTreeItem::OnNameTextCommitted);
+		NameText->OnTextCommitted.AddDynamic(this, &USceneTreeItem::OnNameTextCommitted);
 	}
 
 	bIsSelected = false;
 }
 
-void UTwinmotionSceneTreeItem::SetSceneTreeItemData(const FSceneTreeItemData& InData)
+void USceneTreeItem::SetSceneTreeItemData(const FSceneTreeItemData& InData)
 {
 	ItemData = InData;
 
@@ -65,7 +65,7 @@ void UTwinmotionSceneTreeItem::SetSceneTreeItemData(const FSceneTreeItemData& In
 		*ItemData.Name, ItemData.IndentLevel, ItemData.bHasChildren);
 }
 
-void UTwinmotionSceneTreeItem::SetExpanded(bool bExpanded)
+void USceneTreeItem::SetExpanded(bool bExpanded)
 {
 	ItemData.bIsExpanded = bExpanded;
 	UpdateExpandButton();
@@ -76,7 +76,7 @@ void UTwinmotionSceneTreeItem::SetExpanded(bool bExpanded)
 		*ItemData.Name, bExpanded ? TEXT("expanded") : TEXT("collapsed"));
 }
 
-void UTwinmotionSceneTreeItem::SetItemVisible(bool bVisible)
+void USceneTreeItem::SetItemVisible(bool bVisible)
 {
 	ItemData.bIsVisible = bVisible;
 	UpdateVisibilityButton();
@@ -94,7 +94,7 @@ void UTwinmotionSceneTreeItem::SetItemVisible(bool bVisible)
 		*ItemData.Name, bVisible ? TEXT("visible") : TEXT("hidden"));
 }
 
-void UTwinmotionSceneTreeItem::SetSelected(bool bSelected)
+void USceneTreeItem::SetSelected(bool bSelected)
 {
 	bIsSelected = bSelected;
 	OnItemSelectedChanged(bSelected);
@@ -103,17 +103,17 @@ void UTwinmotionSceneTreeItem::SetSelected(bool bSelected)
 		*ItemData.Name, bSelected ? TEXT("selected") : TEXT("deselected"));
 }
 
-void UTwinmotionSceneTreeItem::OnExpandButtonClicked()
+void USceneTreeItem::OnExpandButtonClicked()
 {
 	SetExpanded(!ItemData.bIsExpanded);
 }
 
-void UTwinmotionSceneTreeItem::OnVisibilityButtonClicked()
+void USceneTreeItem::OnVisibilityButtonClicked()
 {
 	SetItemVisible(!ItemData.bIsVisible);
 }
 
-void UTwinmotionSceneTreeItem::OnSelectButtonClicked()
+void USceneTreeItem::OnSelectButtonClicked()
 {
 	SetSelected(true);
 	OnTreeItemSelected.Broadcast(ItemData);
@@ -127,7 +127,7 @@ void UTwinmotionSceneTreeItem::OnSelectButtonClicked()
 	UE_LOG(LogTemp, Log, TEXT("Tree item selected: %s"), *ItemData.Name);
 }
 
-void UTwinmotionSceneTreeItem::OnNameTextCommitted(const FText& Text, ETextCommit::Type CommitMethod)
+void USceneTreeItem::OnNameTextCommitted(const FText& Text, ETextCommit::Type CommitMethod)
 {
 	if (CommitMethod == ETextCommit::OnEnter || CommitMethod == ETextCommit::OnUserMovedFocus)
 	{
@@ -149,7 +149,7 @@ void UTwinmotionSceneTreeItem::OnNameTextCommitted(const FText& Text, ETextCommi
 	}
 }
 
-void UTwinmotionSceneTreeItem::UpdateIndentation()
+void USceneTreeItem::UpdateIndentation()
 {
 	// This would typically add a Spacer widget to create indentation
 	// The exact implementation depends on your widget structure
@@ -160,7 +160,7 @@ void UTwinmotionSceneTreeItem::UpdateIndentation()
 	}
 }
 
-void UTwinmotionSceneTreeItem::UpdateExpandButton()
+void USceneTreeItem::UpdateExpandButton()
 {
 	if (ExpandButton)
 	{
@@ -175,7 +175,7 @@ void UTwinmotionSceneTreeItem::UpdateExpandButton()
 	}
 }
 
-void UTwinmotionSceneTreeItem::UpdateVisibilityButton()
+void USceneTreeItem::UpdateVisibilityButton()
 {
 	if (VisibilityButton)
 	{

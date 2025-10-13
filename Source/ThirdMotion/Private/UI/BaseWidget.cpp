@@ -1,11 +1,11 @@
 // TwinmotionBaseWidget.cpp
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "UI/TwinmotionBaseWidget.h"
-#include "TwinmotionUIManager.h"
+#include "UI/BaseWidget.h"
+#include "UI/UIManager.h"
 #include "Kismet/GameplayStatics.h"
 
-void UTwinmotionBaseWidget::NativeConstruct()
+void UBaseWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -22,18 +22,18 @@ void UTwinmotionBaseWidget::NativeConstruct()
 	}
 }
 
-void UTwinmotionBaseWidget::NativeDestruct()
+void UBaseWidget::NativeDestruct()
 {
 	OnTwinmotionUICleanup();
 	Super::NativeDestruct();
 }
 
-UTwinmotionUIManager* UTwinmotionBaseWidget::GetUIManager() const
+UUIManager* UBaseWidget::GetUIManager() const
 {
 	UGameInstance* GameInstance = GetGameInstance();
 	if (GameInstance)
 	{
-		return GameInstance->GetSubsystem<UTwinmotionUIManager>();
+		return GameInstance->GetSubsystem<UUIManager>();
 	}
 	return nullptr;
 }

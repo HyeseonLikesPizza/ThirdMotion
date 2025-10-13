@@ -4,11 +4,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/TwinmotionBaseWidget.h"
+#include "UI/BaseWidget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
-#include "TwinmotionLibraryItem.generated.h"
+#include "LibraryItem.generated.h"
 
 UENUM(BlueprintType)
 enum class ELibraryItemType : uint8
@@ -60,7 +60,7 @@ struct FLibraryItemData
  * Widget for displaying a single library item
  */
 UCLASS()
-class THIRDMOTION_API UTwinmotionLibraryItem : public UTwinmotionBaseWidget
+class THIRDMOTION_API ULibraryItem : public UBaseWidget
 {
 	GENERATED_BODY()
 

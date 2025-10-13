@@ -1,22 +1,22 @@
 // TwinmotionMainWidget.cpp
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "UI/TwinmotionMainWidget.h"
-#include "TwinmotionUIManager.h"
+#include "UI/MainWidget.h"
+#include "UI/UIManager.h"
 #include "Components/Widget.h"
 
-void UTwinmotionMainWidget::NativeConstruct()
+void UMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 	if (UIManager)
 	{
 		// Subscribe to panel visibility changes
-		UIManager->OnPanelVisibilityChanged.AddDynamic(this, &UTwinmotionMainWidget::OnPanelVisibilityChanged);
+		UIManager->OnPanelVisibilityChanged.AddDynamic(this, &UMainWidget::OnPanelVisibilityChanged);
 	}
 }
 
-void UTwinmotionMainWidget::ToggleLeftPanel()
+void UMainWidget::ToggleLeftPanel()
 {
 	if (UIManager)
 	{
@@ -25,7 +25,7 @@ void UTwinmotionMainWidget::ToggleLeftPanel()
 	}
 }
 
-void UTwinmotionMainWidget::ToggleRightPanel()
+void UMainWidget::ToggleRightPanel()
 {
 	if (UIManager)
 	{
@@ -34,7 +34,7 @@ void UTwinmotionMainWidget::ToggleRightPanel()
 	}
 }
 
-void UTwinmotionMainWidget::ToggleBottomPanel()
+void UMainWidget::ToggleBottomPanel()
 {
 	if (UIManager)
 	{
@@ -43,32 +43,32 @@ void UTwinmotionMainWidget::ToggleBottomPanel()
 	}
 }
 
-void UTwinmotionMainWidget::OnPanelVisibilityChanged(ETwinmotionPanelType PanelType, bool bVisible)
+void UMainWidget::OnPanelVisibilityChanged(ETwinmotionPanelType PanelType, bool bVisible)
 {
 	ESlateVisibility NewVisibility = bVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed;
 
 	switch (PanelType)
 	{
-	case ETwinmotionPanelType::Library:
-		if (LeftPanel)
-		{
-			LeftPanel->SetVisibility(NewVisibility);
-		}
-		break;
+		case ETwinmotionPanelType::Library:
+			if (LeftPanel)
+			{
+				LeftPanel->SetVisibility(NewVisibility);
+			}
+			break;
 
-	case ETwinmotionPanelType::Scene:
-	case ETwinmotionPanelType::Properties:
-		if (RightPanel)
-		{
-			RightPanel->SetVisibility(NewVisibility);
-		}
-		break;
+		case ETwinmotionPanelType::Scene:
+		case ETwinmotionPanelType::Properties:
+			if (RightPanel)
+			{
+				RightPanel->SetVisibility(NewVisibility);
+			}
+			break;
 
-	case ETwinmotionPanelType::Thumbnail:
-		if (BottomPanel)
-		{
-			BottomPanel->SetVisibility(NewVisibility);
-		}
+		case ETwinmotionPanelType::Thumbnail:
+			if (BottomPanel)
+			{
+				BottomPanel->SetVisibility(NewVisibility);
+			}
 		break;
 	}
 }

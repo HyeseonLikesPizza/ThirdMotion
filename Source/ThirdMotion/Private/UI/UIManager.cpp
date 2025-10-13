@@ -1,19 +1,19 @@
 // TwinmotionUIManager.cpp - UI State Management for Twinmotion-style Interface
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "TwinmotionUIManager.h"
+#include "UI/UIManager.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 
-void UTwinmotionUIManager::Initialize(FSubsystemCollectionBase& Collection)
+void UUIManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	InitializeDefaultStates();
 	UE_LOG(LogTemp, Log, TEXT("TwinmotionUIManager initialized"));
 }
 
-void UTwinmotionUIManager::Deinitialize()
+void UUIManager::Deinitialize()
 {
 	if (MainUIWidget && MainUIWidget->IsValidLowLevel())
 	{
@@ -25,7 +25,7 @@ void UTwinmotionUIManager::Deinitialize()
 	UE_LOG(LogTemp, Log, TEXT("TwinmotionUIManager deinitialized"));
 }
 
-void UTwinmotionUIManager::InitializeDefaultStates()
+void UUIManager::InitializeDefaultStates()
 {
 	// Initialize default panel visibility
 	PanelVisibilityStates.Add(ETwinmotionPanelType::Library, true);
@@ -42,7 +42,7 @@ void UTwinmotionUIManager::InitializeDefaultStates()
 	CurrentLibraryFilter = TEXT("");
 }
 
-void UTwinmotionUIManager::CreateMainUI(TSubclassOf<UUserWidget> MainUIClass)
+void UUIManager::CreateMainUI(TSubclassOf<UUserWidget> MainUIClass)
 {
 	if (!MainUIClass)
 	{
@@ -69,7 +69,7 @@ void UTwinmotionUIManager::CreateMainUI(TSubclassOf<UUserWidget> MainUIClass)
 	}
 }
 
-void UTwinmotionUIManager::SetPanelVisibility(ETwinmotionPanelType PanelType, bool bVisible)
+void UUIManager::SetPanelVisibility(ETwinmotionPanelType PanelType, bool bVisible)
 {
 	if (PanelVisibilityStates.Contains(PanelType))
 	{
@@ -80,7 +80,7 @@ void UTwinmotionUIManager::SetPanelVisibility(ETwinmotionPanelType PanelType, bo
 	}
 }
 
-bool UTwinmotionUIManager::IsPanelVisible(ETwinmotionPanelType PanelType) const
+bool UUIManager::IsPanelVisible(ETwinmotionPanelType PanelType) const
 {
 	if (PanelVisibilityStates.Contains(PanelType))
 	{
@@ -89,7 +89,7 @@ bool UTwinmotionUIManager::IsPanelVisible(ETwinmotionPanelType PanelType) const
 	return false;
 }
 
-void UTwinmotionUIManager::SetActiveBottomTab(ETwinmotionBottomTab Tab)
+void UUIManager::SetActiveBottomTab(ETwinmotionBottomTab Tab)
 {
 	if (CurrentBottomTab != Tab)
 	{
@@ -99,14 +99,14 @@ void UTwinmotionUIManager::SetActiveBottomTab(ETwinmotionBottomTab Tab)
 	}
 }
 
-void UTwinmotionUIManager::AddThumbnail(const FThumbnailData& ThumbnailData)
+void UUIManager::AddThumbnail(const FThumbnailData& ThumbnailData)
 {
 	Thumbnails.Add(ThumbnailData);
 	OnThumbnailsUpdated.Broadcast();
 	UE_LOG(LogTemp, Log, TEXT("Thumbnail added: %s (Total: %d)"), *ThumbnailData.Name, Thumbnails.Num());
 }
 
-void UTwinmotionUIManager::RemoveThumbnail(int32 Index)
+void UUIManager::RemoveThumbnail(int32 Index)
 {
 	if (Thumbnails.IsValidIndex(Index))
 	{
@@ -117,7 +117,7 @@ void UTwinmotionUIManager::RemoveThumbnail(int32 Index)
 	}
 }
 
-void UTwinmotionUIManager::ClearAllThumbnails()
+void UUIManager::ClearAllThumbnails()
 {
 	int32 Count = Thumbnails.Num();
 	Thumbnails.Empty();
@@ -125,26 +125,26 @@ void UTwinmotionUIManager::ClearAllThumbnails()
 	UE_LOG(LogTemp, Log, TEXT("All thumbnails cleared (%d removed)"), Count);
 }
 
-void UTwinmotionUIManager::RefreshLibraryAssets()
+void UUIManager::RefreshLibraryAssets()
 {
 	// This would be implemented to scan content browser assets
 	// For now, just log the action
 	UE_LOG(LogTemp, Log, TEXT("Library assets refreshed"));
 }
 
-void UTwinmotionUIManager::FilterLibraryAssets(const FString& SearchTerm)
+void UUIManager::FilterLibraryAssets(const FString& SearchTerm)
 {
 	CurrentLibraryFilter = SearchTerm;
 	UE_LOG(LogTemp, Log, TEXT("Library filter set to: %s"), *SearchTerm);
 }
 
-void UTwinmotionUIManager::RefreshSceneHierarchy()
+void UUIManager::RefreshSceneHierarchy()
 {
 	// This would be implemented to rebuild scene tree
 	UE_LOG(LogTemp, Log, TEXT("Scene hierarchy refreshed"));
 }
 
-void UTwinmotionUIManager::SelectSceneObject(AActor* Actor)
+void UUIManager::SelectSceneObject(AActor* Actor)
 {
 	if (SelectedActor != Actor)
 	{
@@ -163,7 +163,7 @@ void UTwinmotionUIManager::SelectSceneObject(AActor* Actor)
 	}
 }
 
-void UTwinmotionUIManager::UpdatePropertiesPanel(AActor* Actor)
+void UUIManager::UpdatePropertiesPanel(AActor* Actor)
 {
 	// This would be implemented to update properties panel with actor details
 	if (Actor)

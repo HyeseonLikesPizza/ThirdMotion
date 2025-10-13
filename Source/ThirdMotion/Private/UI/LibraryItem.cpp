@@ -1,24 +1,24 @@
 // TwinmotionLibraryItem.cpp
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "UI/TwinmotionLibraryItem.h"
+#include "UI/LibraryItem.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 
-void UTwinmotionLibraryItem::NativeConstruct()
+void ULibraryItem::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 	if (ItemButton)
 	{
-		ItemButton->OnClicked.AddDynamic(this, &UTwinmotionLibraryItem::OnButtonClicked);
+		ItemButton->OnClicked.AddDynamic(this, &ULibraryItem::OnButtonClicked);
 	}
 
 	bIsSelected = false;
 }
 
-void UTwinmotionLibraryItem::SetLibraryItemData(const FLibraryItemData& InData)
+void ULibraryItem::SetLibraryItemData(const FLibraryItemData& InData)
 {
 	ItemData = InData;
 
@@ -37,13 +37,13 @@ void UTwinmotionLibraryItem::SetLibraryItemData(const FLibraryItemData& InData)
 		*ItemData.Name, static_cast<int32>(ItemData.Type));
 }
 
-void UTwinmotionLibraryItem::OnButtonClicked()
+void ULibraryItem::OnButtonClicked()
 {
 	OnLibraryItemClicked.Broadcast(ItemData);
 	UE_LOG(LogTemp, Log, TEXT("Library item clicked: %s"), *ItemData.Name);
 }
 
-void UTwinmotionLibraryItem::SetSelected(bool bSelected)
+void ULibraryItem::SetSelected(bool bSelected)
 {
 	bIsSelected = bSelected;
 	OnItemSelected(bSelected);

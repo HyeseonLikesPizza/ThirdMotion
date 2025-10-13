@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Blueprint/UserWidget.h"
-#include "TwinmotionUIManager.generated.h"
+#include "UIManager.generated.h"
 
 class UWBPTwinmotionUI;
 
@@ -58,7 +58,7 @@ struct FThumbnailData
  * Implemented as a Game Instance Subsystem for persistent state across levels
  */
 UCLASS()
-class THIRDMOTION_API UTwinmotionUIManager : public UGameInstanceSubsystem
+class THIRDMOTION_API UUIManager : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 

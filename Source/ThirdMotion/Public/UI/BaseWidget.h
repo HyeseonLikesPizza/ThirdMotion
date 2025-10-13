@@ -5,16 +5,16 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "TwinmotionBaseWidget.generated.h"
+#include "BaseWidget.generated.h"
 
-class UTwinmotionUIManager;
+class UUIManager;
 
 /**
  * Base class for all Twinmotion UI Widgets
  * Provides common functionality and access to UI Manager
  */
 UCLASS(Abstract, Blueprintable)
-class THIRDMOTION_API UTwinmotionBaseWidget : public UUserWidget
+class THIRDMOTION_API UBaseWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -24,12 +24,12 @@ public:
 
 	// Get reference to UI Manager
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Twinmotion UI")
-	UTwinmotionUIManager* GetUIManager() const;
+	UUIManager* GetUIManager() const;
 
 protected:
 	// Cached reference to UI Manager
 	UPROPERTY(BlueprintReadOnly, Category = "Twinmotion UI")
-	UTwinmotionUIManager* UIManager;
+	UUIManager* UIManager;
 
 	// Override this in child classes for custom initialization
 	UFUNCTION(BlueprintImplementableEvent, Category = "Twinmotion UI")

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ThirdMotion/Public/UI/MainOverlay.h"
+#include "UI/MainOverlay.h"
 
 #include "SocketSubsystem.h"
 #include "Components/VerticalBox.h"
