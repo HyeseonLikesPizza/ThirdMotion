@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blueprint/IUserObjectListEntry.h"
 #include "UI/BaseWidget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
@@ -56,12 +57,14 @@ struct FLibraryItemData
  * Widget for displaying a single library item
  */
 UCLASS()
-class THIRDMOTION_API ULibraryItem : public UBaseWidget
+class THIRDMOTION_API ULibraryItem : public UBaseWidget, public IUserObjectListEntry
 {
 	GENERATED_BODY()
 
 public:
 	virtual void NativeConstruct() override;
+
+	
 
 	// Widget Components
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
@@ -106,4 +109,6 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Library")
 	void OnItemSelected(bool bSelected);
+
+	virtual void NativeOnListItemObjectSet(UObject* ListItem) override;
 };

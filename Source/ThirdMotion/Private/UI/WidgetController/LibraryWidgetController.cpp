@@ -1,5 +1,7 @@
 
 #include "UI/WidgetController/LibraryWidgetController.h"
+
+#include "Data/LibraryItemObject.h"
 #include "Edit/SceneManager.h"
 #include "Edit/AssetResolver.h"
 #include "Framework/ThirdMotionPlayerController.h"
@@ -10,13 +12,24 @@ void ULibraryWidgetController::Init()
 	SceneManagerCache = GetSceneManager();
 }
 
-void ULibraryWidgetController::QueryByCategory(const FGameplayTag& Category, TArray<const FLibraryRow*>& OutItems)
+void ULibraryWidgetController::QueryByCategory(const FGameplayTag& Category, TArray<ULibraryItemObject*>& OutItems)
 {
 	OutItems.Reset();
 	auto* R = GetResolver();
 	if (!R || !R->IsReady()) return;
-	
-	R->GetRowsByCategory(Category, OutItems);
+
+	TArray<const FLibraryRow*> RowArr;
+	R->GetRowsByCategory(Category, RowArr);
+
+	for (auto* It : RowArr)
+	{
+		ULibraryItemObject* Obj = NewObject<ULibraryItemObject>(this);
+		Obj->DisplayName = FText::FromName(It->DisplayName);
+		Obj->Icon = It->Icon;
+		Obj->Tag = It->PresetTag;
+
+		OutItems.Add(Obj);
+	}
 }
 
 void ULibraryWidgetController::BeginPreview(const FGameplayTag& PresetTag)
