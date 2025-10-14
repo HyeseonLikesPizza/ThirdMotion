@@ -2,7 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseWidget.h"
+#include "UI/Widget/BaseWidget.h"
 #include "LibraryPanel.generated.h"
 
 class UTileView;

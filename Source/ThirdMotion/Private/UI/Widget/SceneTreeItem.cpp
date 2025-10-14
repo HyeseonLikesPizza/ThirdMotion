@@ -1,7 +1,7 @@
 // TwinmotionSceneTreeItem.cpp
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "UI/SceneTreeItem.h"
+#include "UI/Widget/SceneTreeItem.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/EditableText.h"

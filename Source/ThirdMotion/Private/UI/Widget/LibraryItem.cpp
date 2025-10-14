@@ -1,7 +1,7 @@
 // TwinmotionLibraryItem.cpp
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "UI/LibraryItem.h"
+#include "UI/Widget/LibraryItem.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"

@@ -1,5 +1,5 @@
 
-#include "UI/BaseWidget.h"
+#include "UI/Widget/BaseWidget.h"
 #include "Kismet/GameplayStatics.h"
 
 void UBaseWidget::NativeConstruct()

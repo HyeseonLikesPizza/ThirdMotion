@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/MainOverlay.h"
+#include "UI/Widget/MainOverlay.h"
 
 #include "SocketSubsystem.h"
 #include "Components/VerticalBox.h"
@@ -63,7 +63,6 @@ void UMainOverlay::NativeOnInitialized()
 
 
 //Host버튼 눌렸을 때
-
 void UMainOverlay::CreateHost()
 {
 	UE_LOG(LogTemp, Warning, TEXT("UMainOverlay::CreateHost() - Host Button Clicked!")); // Diagnostic log
@@ -71,9 +70,10 @@ void UMainOverlay::CreateHost()
 	bool bCanBindAll;
 	TSharedPtr<FInternetAddr> LocalAddr = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->GetLocalHostAddr(*GLog, bCanBindAll);
     
+	//UE_LOG(LogTemp, Warning, TEXT("test")); // Diagnostic log
 	url = LocalAddr.IsValid() ? LocalAddr->ToString(false) : "127.0.0.1";
 	
-	UE_LOG(LogTemp, Display, TEXT("Host URL : %s"), *url);
+	UE_LOG(LogTemp, Warning, TEXT("Host URL : %s"), *url);
 
 	// ✅ Viewport에서 제거
 	RemoveFromParent();

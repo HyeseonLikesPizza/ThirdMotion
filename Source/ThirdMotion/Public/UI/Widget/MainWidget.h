@@ -1,10 +1,8 @@
-// TwinmotionMainWidget.h - Main container widget for Twinmotion UI
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/BaseWidget.h"
+#include "UI/Widget/BaseWidget.h"
 #include "Components/Border.h"
 #include "Components/CanvasPanel.h"
 #include "Components/SizeBox.h"
@@ -31,13 +29,13 @@ public:
 	UUserWidget* TopBar;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UUserWidget* LeftPanel;
+	UUserWidget* LibraryPanel;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UUserWidget* RightPanel;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UUserWidget* BottomPanel;
+	UUserWidget* BottomBar;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UBorder* ViewportContainer;

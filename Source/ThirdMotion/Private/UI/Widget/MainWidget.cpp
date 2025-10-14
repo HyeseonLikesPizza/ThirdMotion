@@ -1,5 +1,5 @@
 
-#include "UI/MainWidget.h"
+#include "UI/Widget/MainWidget.h"
 #include "Components/Widget.h"
 
 void UMainWidget::NativeConstruct()
@@ -10,14 +10,14 @@ void UMainWidget::NativeConstruct()
 
 void UMainWidget::OnPanelVisibilityChanged(EPanelType PanelType, bool bVisible)
 {
-	ESlateVisibility NewVisibility = bVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed;
+	/*ESlateVisibility NewVisibility = bVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed;
 
 	switch (PanelType)
 	{
 		case EPanelType::Library:
-			if (LeftPanel)
+			if (LibraryPanel)
 			{
-				LeftPanel->SetVisibility(NewVisibility);
+				LibraryPanel->SetVisibility(NewVisibility);
 			}
 			break;
 
@@ -30,10 +30,10 @@ void UMainWidget::OnPanelVisibilityChanged(EPanelType PanelType, bool bVisible)
 			break;
 
 		case EPanelType::Thumbnail:
-			if (BottomPanel)
+			if (BottomBar)
 			{
-				BottomPanel->SetVisibility(NewVisibility);
+				BottomBar->SetVisibility(NewVisibility);
 			}
 		break;
-	}
+	}*/
 }
