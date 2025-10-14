@@ -22,7 +22,7 @@ public:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UEditableTextBox* urlInput;
+	UEditableTextBox* UrlInputBox;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UButton* joinBt;
@@ -34,18 +34,43 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Network")
 	FString url;
 
+	UPROPERTY(meta=(BindWidget))
+	class UWidgetSwitcher* WidgetSwitcher;
+
+	UPROPERTY(meta=(BindWidget))
+	class UButton* JoinBtn;
+
+	UPROPERTY(meta=(BindWidget))
+	class UButton* HostBtn;
+
+	UPROPERTY(meta=(BindWidget))
+	class UButton* CancelBtn;
+
+	UPROPERTY(meta=(BindWidget))
+	class UButton* JoinConfirmBtn;
+
+	
+	
 private:
+
+
 	// 버튼/입력 핸들러
 	UFUNCTION()
 	void CreateHost();
 
 	UFUNCTION()
-	void ClickJoinButton();
+	void GoToFirstPage();
+
+	//Join 버튼을 누르면 Ip입력과 Confirm이 뜨는 창으로 이동
+	UFUNCTION()
+	void GoToJoinPage();
 
 	UFUNCTION()
-	void joinUrl(const FText& inText, ETextCommit::Type inCommitMethod);
+	void OnJoinConfirmClicked();
 
+	
+	// 서버 접속 실패 시 호출될 함수
 	UFUNCTION()
-	void InputUrl(const FText& changedText);
+	void HandleNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType, const FString& ErrorString);
 	
 };
