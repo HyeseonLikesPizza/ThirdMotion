@@ -10,8 +10,14 @@
 #include "Components/SizeBox.h"
 #include "MainWidget.generated.h"
 
-class UUIManager;
-enum class ETwinmotionPanelType : uint8;
+UENUM(BlueprintType)
+enum class EPanelType : uint8
+{
+	Library UMETA(DisplayName = "Library"),
+	Scene UMETA(DisplayName = "Scene"),
+	Properties UMETA(DisplayName = "Properties"),
+	Thumbnail UMETA(DisplayName = "Thumbnail")
+};
 
 UCLASS()
 class THIRDMOTION_API UMainWidget : public UBaseWidget
@@ -36,19 +42,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UBorder* ViewportContainer;
 
-	// Panel visibility controls
-	UFUNCTION(BlueprintCallable, Category = "Twinmotion UI")
-	void ToggleLeftPanel();
-
-	UFUNCTION(BlueprintCallable, Category = "Twinmotion UI")
-	void ToggleRightPanel();
-
-	UFUNCTION(BlueprintCallable, Category = "Twinmotion UI")
-	void ToggleBottomPanel();
-
-	
-
-protected:
 	UFUNCTION()
-	void OnPanelVisibilityChanged(ETwinmotionPanelType PanelType, bool bVisible);
+	void OnPanelVisibilityChanged(EPanelType PanelType, bool bVisible);
 };

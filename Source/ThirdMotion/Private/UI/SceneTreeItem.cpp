@@ -6,7 +6,6 @@
 #include "Components/Image.h"
 #include "Components/EditableText.h"
 #include "Components/Spacer.h"
-#include "UI/UIManager.h"
 
 void USceneTreeItem::NativeConstruct()
 {
@@ -117,14 +116,7 @@ void USceneTreeItem::OnSelectButtonClicked()
 {
 	SetSelected(true);
 	OnTreeItemSelected.Broadcast(ItemData);
-
-	// Notify UI Manager
-	if (UIManager && ItemData.Actor)
-	{
-		UIManager->SelectSceneObject(ItemData.Actor);
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("Tree item selected: %s"), *ItemData.Name);
+\
 }
 
 void USceneTreeItem::OnNameTextCommitted(const FText& Text, ETextCommit::Type CommitMethod)

@@ -1,5 +1,3 @@
-// TwinmotionBaseWidget.h - Base class for all Twinmotion UI widgets
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -9,10 +7,6 @@
 
 class UUIManager;
 
-/**
- * Base class for all Twinmotion UI Widgets
- * Provides common functionality and access to UI Manager
- */
 UCLASS(Abstract, Blueprintable)
 class THIRDMOTION_API UBaseWidget : public UUserWidget
 {
@@ -22,20 +16,11 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-	// Get reference to UI Manager
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Twinmotion UI")
-	UUIManager* GetUIManager() const;
-
-protected:
-	// Cached reference to UI Manager
-	UPROPERTY(BlueprintReadOnly, Category = "Twinmotion UI")
-	UUIManager* UIManager;
-
 	// Override this in child classes for custom initialization
-	UFUNCTION(BlueprintImplementableEvent, Category = "Twinmotion UI")
-	void OnTwinmotionUIInitialize();
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void OnUIInitialize();
 
 	// Override this in child classes for custom cleanup
-	UFUNCTION(BlueprintImplementableEvent, Category = "Twinmotion UI")
-	void OnTwinmotionUICleanup();
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void OnUICleanup();
 };
