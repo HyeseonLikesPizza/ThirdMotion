@@ -64,29 +64,32 @@ USceneManager* ULibraryWidgetController::GetSceneManager() const
 
 AActor* ULibraryWidgetController::SpawnPreviewGhost_Simple(const FGameplayTag& PresetTag, const FTransform& Xf)
 {
-	/*
-	static TSoftObjectPtr<UStaticMesh> PreviewCube(TEXT("/Engine/EditorMeshes/EditorCube.EditorCube"));
-	UStaticMesh* Mesh = PreviewCube.LoadSynchronous();
+	UAssetResolver* R = GetWorld()->GetSubsystem<UAssetResolver>();
+	if (!R) return nullptr;
 
-	AActor* Ghost = GetWorld()->SpawnActor<AActor>(AActor::StaticClass(), Xf);
+	const FLibraryRow* Row = R->FindRowByTag(PresetTag);
+	
+	UClass* PreviewClass = Row->ClassRef.LoadSynchronous();
+	
+	AActor* Ghost = GetWorld()->SpawnActor<AActor>(PreviewClass, Xf);
+	if (!Ghost) return nullptr;
+	
 	Ghost->SetReplicates(false);
 	Ghost->SetActorEnableCollision(false);
 	Ghost->SetActorHiddenInGame(false);
-
-	UStaticMeshComponent* SMC = NewObject<UStaticMeshComponent>(Ghost);
-	SMC->SetStaticMesh(Mesh);
-	SMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	SMC->SetMobility(EComponentMobility::Movable);
-	SMC->SetCastShadow(false);
-	SMC->SetRenderCustomDepth(true);     // 테두리 표시 등 효과 주고 싶으면
-	SMC->RegisterComponent();
-	Ghost->AddInstanceComponent(SMC);
-	Ghost->SetRootComponent(SMC);
-	*/
 	
-	return nullptr;
+	return Ghost;
 }
 
 void ULibraryWidgetController::DestroyPreviewGhost()
 {
+	if (AActor* G = PreviewGhost.Get())
+	{
+		if (IsValid(G)) G->Destroy();
+	}
+	
+	PreviewGhost = nullptr;
+	
 }
+
+
