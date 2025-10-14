@@ -1,5 +1,3 @@
-// TwinmotionLibraryItem.h - Library asset item widget
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -15,9 +13,7 @@ enum class ELibraryItemType : uint8
 {
 	Object UMETA(DisplayName = "Object"),
 	Material UMETA(DisplayName = "Material"),
-	Light UMETA(DisplayName = "Light"),
-	Effect UMETA(DisplayName = "Effect"),
-	Texture UMETA(DisplayName = "Texture")
+	Light UMETA(DisplayName = "Light")
 };
 
 /**
