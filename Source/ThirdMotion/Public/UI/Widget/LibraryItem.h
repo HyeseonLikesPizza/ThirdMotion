@@ -92,6 +92,8 @@ public:
 	FOnLibraryItemDoubleClicked OnLibraryItemDoubleClicked;
 
 protected:
+	virtual void NativeOnListItemObjectSet(UObject* ListItem);
+	
 	UPROPERTY(BlueprintReadOnly, Category = "Library")
 	FLibraryItemData ItemData;
 

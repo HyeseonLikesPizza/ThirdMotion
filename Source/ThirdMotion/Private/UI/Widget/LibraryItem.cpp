@@ -21,8 +21,6 @@ void ULibraryItem::NativeConstruct()
 
 void ULibraryItem::NativeOnListItemObjectSet(UObject* ListItem)
 {
-	IUserObjectListEntry::NativeOnListItemObjectSet(ListItem);
-
 	if (const auto* Data = Cast<ULibraryItemObject>(ListItem))
 	{
 		ItemNameText->SetText(Data->DisplayName);
