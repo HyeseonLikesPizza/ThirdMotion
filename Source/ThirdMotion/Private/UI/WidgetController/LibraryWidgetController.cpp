@@ -27,6 +27,7 @@ void ULibraryWidgetController::QueryByCategory(const FGameplayTag& Category, TAr
 		Obj->DisplayName = FText::FromName(It->DisplayName);
 		Obj->Icon = It->Icon;
 		Obj->Tag = It->PresetTag;
+		Obj->Type = It->IconType;
 
 		OutItems.Add(Obj);
 	}

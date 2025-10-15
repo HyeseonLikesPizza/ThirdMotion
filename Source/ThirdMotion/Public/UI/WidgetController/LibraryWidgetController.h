@@ -10,6 +10,7 @@ struct FGameplayTag;
 class UAssetResolver;
 class USceneManager;
 struct FLibraryRow;
+class ULibraryItemObject;
 
 UCLASS()
 class THIRDMOTION_API ULibraryWidgetController : public UBaseWidgetController

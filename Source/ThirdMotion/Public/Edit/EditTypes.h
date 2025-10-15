@@ -98,7 +98,8 @@ struct FLibraryRow : public FTableRowBase
 	UPROPERTY(EditAnywhere)
 	EPresetType PresetType;
 
-	
+	UPROPERTY(EditAnywhere)
+	ELibraryIconType IconType;
 
 	FEditMeta BuildMetaFromPreset(const FLibraryRow& Row)
 	{
