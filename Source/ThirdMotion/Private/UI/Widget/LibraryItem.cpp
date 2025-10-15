@@ -1,5 +1,3 @@
-// TwinmotionLibraryItem.cpp
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UI/Widget/LibraryItem.h"
 #include "Components/Image.h"
@@ -24,7 +22,7 @@ void ULibraryItem::NativeOnListItemObjectSet(UObject* ListItem)
 	if (const auto* Data = Cast<ULibraryItemObject>(ListItem))
 	{
 		ItemNameText->SetText(Data->DisplayName);
-
+		
 		// 아이콘 로드
 		if (!Data->Icon.IsNull())
 		{

@@ -1,5 +1,3 @@
-// LightEditLibrary.h - Library for editing Light Actors
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -13,9 +11,7 @@ class ULightComponent;
 class ALight;
 class UEditSyncComponent;
 
-/**
- * Extended light property tags for editing
- */
+
 UENUM(BlueprintType)
 enum class ELightPropertyType : uint8
 {
