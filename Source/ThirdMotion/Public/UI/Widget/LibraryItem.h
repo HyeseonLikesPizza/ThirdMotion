@@ -63,7 +63,8 @@ class THIRDMOTION_API ULibraryItem : public UBaseWidget
 
 public:
 	virtual void NativeConstruct() override;
-
+	virtual void NativeOnListItemObjectSet(UObject* ListItem);
+	
 	// Widget Components
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UImage* ThumbnailImage;
