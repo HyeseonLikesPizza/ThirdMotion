@@ -29,7 +29,7 @@ void ULibraryPanel::ShowPreset(FGameplayTag Category)
 {
 	// 카테고리 태그로 프리셋 뽑아오기
 	TArray<ULibraryItemObject*> Presets;
-	WidgetController->QueryByCategory(Category, Presets);
+	WidgetController->QueryByCategory_Exact(Category, Presets);
 
 	TArray<UObject*> AsObj;
 	AsObj.Reserve(Presets.Num());
@@ -47,7 +47,7 @@ void ULibraryPanel::HandleItemClicked(UObject* Item)
 	{
 		if (Data->Type == ELibraryIconType::Category)
 		{
-			ShowPreset(Data->Tag);
+			ShowPreset(Data->NextCategoryTag);
 		}
 		else
 		{

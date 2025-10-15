@@ -93,6 +93,10 @@ public:
 	FOnLibraryItemDoubleClicked OnLibraryItemDoubleClicked;
 
 protected:
+<<<<<<< Updated upstream
+=======
+	
+>>>>>>> Stashed changes
 	UPROPERTY(BlueprintReadOnly, Category = "Library")
 	FLibraryItemData ItemData;
 
