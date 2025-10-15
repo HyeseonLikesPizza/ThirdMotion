@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "UI/Widget/BaseWidget.h"
+#include "Blueprint/IUserObjectListEntry.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"

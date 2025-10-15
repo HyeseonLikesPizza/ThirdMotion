@@ -6,6 +6,7 @@
 #include "LibraryPanel.generated.h"
 
 class UTileView;
+class UBaseWidgetController;
 
 UCLASS()
 class THIRDMOTION_API ULibraryPanel : public UBaseWidget
@@ -14,10 +15,17 @@ class THIRDMOTION_API ULibraryPanel : public UBaseWidget
 
 public:
 
+	void NativeConstruct() override;
 	
-	
-	//UPROPERTY(meta=(BindWidgetOptional))
-	//UTileView* TileView;
+	UPROPERTY(meta=(BindWidgetOptional))
+	UTileView* TileView;
 
+	void SetController(UBaseWidgetController* InWC);
+
+	
+private:
+
+	UPROPERTY()
+	UBaseWidgetController* WidgetController;
 	
 };

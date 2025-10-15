@@ -6,6 +6,13 @@
 #include "EditTypes.generated.h"
 
 UENUM(BlueprintType)
+enum class ELibraryIconType : uint8
+{
+	Category,
+	Preset
+};
+
+UENUM(BlueprintType)
 enum class EPresetType : uint8
 {
 	Mesh,
@@ -90,6 +97,8 @@ struct FLibraryRow : public FTableRowBase
 
 	UPROPERTY(EditAnywhere)
 	EPresetType PresetType;
+
+	
 
 	FEditMeta BuildMetaFromPreset(const FLibraryRow& Row)
 	{

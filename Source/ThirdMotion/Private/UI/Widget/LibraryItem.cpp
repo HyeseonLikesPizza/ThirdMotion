@@ -5,6 +5,7 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include "Data/LibraryItemObject.h"
 
 void ULibraryItem::NativeConstruct()
 {
@@ -16,6 +17,23 @@ void ULibraryItem::NativeConstruct()
 	}
 
 	bIsSelected = false;
+}
+
+void ULibraryItem::NativeOnListItemObjectSet(UObject* ListItem)
+{
+	IUserObjectListEntry::NativeOnListItemObjectSet(ListItem);
+
+	if (const auto* Data = Cast<ULibraryItemObject>(ListItem))
+	{
+		ItemNameText->SetText(Data->DisplayName);
+
+		// 아이콘 로드
+		if (!Data->Icon.IsNull())
+		{
+			if (UTexture2D* Tex = Data->Icon.LoadSynchronous())
+				ThumbnailImage->SetBrushFromTexture(Tex, true);
+		}
+	}
 }
 
 void ULibraryItem::SetLibraryItemData(const FLibraryItemData& InData)

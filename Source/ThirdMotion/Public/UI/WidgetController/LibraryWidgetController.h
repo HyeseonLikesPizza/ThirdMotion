@@ -2,8 +2,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BaseWidgetController.h"
 #include "Engine/StreamableManager.h"
-#include "UObject/Object.h"
 #include "LibraryWidgetController.generated.h"
 
 struct FGameplayTag;
@@ -12,15 +12,15 @@ class USceneManager;
 struct FLibraryRow;
 
 UCLASS()
-class THIRDMOTION_API ULibraryWidgetController : public UObject
+class THIRDMOTION_API ULibraryWidgetController : public UBaseWidgetController
 {
 	GENERATED_BODY()
 
 public:
-	void Init();
+	void Init() override;
 
 	// 1) 카테고리 별 목록 뽑기 (아이콘 SoftObj 만 비동기)
-	void QueryByCategory(const FGameplayTag& Category, TArray<const FLibraryRow*>& OutItems);
+	void QueryByCategory(const FGameplayTag& Category, TArray<ULibraryItemObject*>& OutItems);
 
 	// 프리뷰 (로컬 고스트)
 	void BeginPreview(const FGameplayTag& PresetTag);
