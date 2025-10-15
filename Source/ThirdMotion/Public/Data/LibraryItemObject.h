@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "UObject/Object.h"
+#include "Edit/EditTypes.h"
 #include "LibraryItemObject.generated.h"
 
 UCLASS()
@@ -20,4 +21,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	TSoftObjectPtr<UTexture2D> Icon;
+
+	UPROPERTY(BlueprintReadOnly)
+	ELibraryIconType Type;
 };
