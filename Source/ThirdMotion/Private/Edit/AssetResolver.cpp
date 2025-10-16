@@ -57,6 +57,13 @@ void UAssetResolver::GetRowsByCategory(const FGameplayTag& CategoryTag, TArray<c
 	}
 }
 
+const FLibraryRow* UAssetResolver::GetRowByCategory(const FGameplayTag& CategoryTag) const
+{
+	if (const FLibraryRow* Found = TagToRow.Find(CategoryTag))
+		return Found;
+	return nullptr;
+}
+
 void UAssetResolver::GetDirectChildrenCategories(const FGameplayTag& ParentTag, TArray<FGameplayTag>& OutChildren)
 {
 	OutChildren.Reset();
