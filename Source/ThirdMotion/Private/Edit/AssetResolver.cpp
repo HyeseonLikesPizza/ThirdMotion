@@ -57,6 +57,65 @@ void UAssetResolver::GetRowsByCategory(const FGameplayTag& CategoryTag, TArray<c
 	}
 }
 
+const FLibraryRow* UAssetResolver::GetRowByCategory(const FGameplayTag& CategoryTag) const
+{
+	if (const FLibraryRow* Found = TagToRow.Find(CategoryTag))
+		return Found;
+	return nullptr;
+}
+
+void UAssetResolver::GetDirectChildrenCategories(const FGameplayTag& ParentTag, TArray<FGameplayTag>& OutChildren)
+{
+	OutChildren.Reset();
+	if (!ParentTag.IsValid()) return;
+
+	const FString ParentStr = ParentTag.ToString();
+	const FString Prefix    = ParentStr + TEXT(".");   
+
+	TSet<FGameplayTag> Unique;
+
+	for (const auto& Pair : TagToRow)
+	{
+		const FString RowStr = Pair.Key.ToString();
+
+		// 1) 부모의 하위가 아니면 스킵
+		if (!RowStr.StartsWith(Prefix)) continue;
+
+		// 2) Prefix 이후 첫 '.' 위치를 찾아서 "직계" 경계 판단
+		int32 FirstDotAfterPrefix = INDEX_NONE;
+		RowStr.FindChar('.', FirstDotAfterPrefix); // 이건 문자열 처음부터라서 안 맞음
+
+		// 올바른 방식: Prefix 다음부터 검색
+		FirstDotAfterPrefix = RowStr.Find(TEXT("."), ESearchCase::CaseSensitive, ESearchDir::FromStart, Prefix.Len());
+
+		FString ChildStr;
+		if (FirstDotAfterPrefix == INDEX_NONE)
+		{
+			// 더 이상 점이 없으면 RowStr 전체가 직계 (예: "Category.Object")
+			ChildStr = RowStr;
+		}
+		else
+		{
+			// Prefix부터 다음 점 전까지 = 직계 (예: "Category.Object")
+			ChildStr = RowStr.Left(FirstDotAfterPrefix);
+		}
+
+		// 3) GameplayTag로 변환(미등록일 수 있으니 false)
+		const FGameplayTag ChildTag = FGameplayTag::RequestGameplayTag(FName(*ChildStr), /*ErrorIfNotFound*/ false);
+		if (ChildTag.IsValid() && ChildTag != ParentTag)
+		{
+			Unique.Add(ChildTag);
+		}
+	}
+
+	OutChildren = Unique.Array();
+
+	// 보기 좋게 정렬(선택)
+	OutChildren.Sort([](const FGameplayTag& A, const FGameplayTag& B){
+		return A.ToString() < B.ToString();
+	});
+}
+
 void UAssetResolver::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);

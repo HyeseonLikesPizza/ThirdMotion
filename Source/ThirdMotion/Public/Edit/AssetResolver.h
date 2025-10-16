@@ -29,7 +29,9 @@ public:
 
 	// 카테고리별 나열 등 UI용도
 	void GetRowsByCategory(const FGameplayTag& CategoryTag, TArray<const FLibraryRow*>& OutRows) const;
-
+	const FLibraryRow* GetRowByCategory(const FGameplayTag& CategoryTag) const;
+	void GetDirectChildrenCategories(const FGameplayTag& ParentTag, TArray<FGameplayTag>& OutChildren);
+	
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	

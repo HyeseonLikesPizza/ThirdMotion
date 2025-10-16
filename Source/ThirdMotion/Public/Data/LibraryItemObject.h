@@ -20,6 +20,9 @@ public:
 	FGameplayTag Tag;
 
 	UPROPERTY(BlueprintReadOnly)
+	FGameplayTag NextCategoryTag;
+
+	UPROPERTY(BlueprintReadOnly)
 	TSoftObjectPtr<UTexture2D> Icon;
 
 	UPROPERTY(BlueprintReadOnly)

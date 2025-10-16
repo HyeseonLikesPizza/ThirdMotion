@@ -90,6 +90,9 @@ struct FLibraryRow : public FTableRowBase
 	FGameplayTag PresetTag;
 
 	UPROPERTY(EditAnywhere)
+	FGameplayTag NextCategory;
+
+	UPROPERTY(EditAnywhere)
 	TSoftClassPtr<AActor> ClassRef;
 
 	UPROPERTY(EditAnywhere)
@@ -100,6 +103,8 @@ struct FLibraryRow : public FTableRowBase
 
 	UPROPERTY(EditAnywhere)
 	ELibraryIconType IconType;
+
+	
 
 	FEditMeta BuildMetaFromPreset(const FLibraryRow& Row)
 	{

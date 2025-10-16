@@ -22,7 +22,8 @@ public:
 
 	// 1) 카테고리 별 목록 뽑기 (아이콘 SoftObj 만 비동기)
 	void QueryByCategory(const FGameplayTag& Category, TArray<ULibraryItemObject*>& OutItems);
-
+	void GetDirectChildrenCategories(const FGameplayTag& Category, TArray<ULibraryItemObject*>& OutItems);
+	
 	// 프리뷰 (로컬 고스트)
 	void BeginPreview(const FGameplayTag& PresetTag);
 	void UpdatePreviewTransform(const FTransform& Xf);

@@ -19,8 +19,9 @@ void ULibraryItem::NativeConstruct()
 
 void ULibraryItem::NativeOnListItemObjectSet(UObject* ListItem)
 {
-	if (const auto* Data = Cast<ULibraryItemObject>(ListItem))
+	if (ULibraryItemObject* Data = Cast<ULibraryItemObject>(ListItem))
 	{
+		LibraryItem = Data;
 		ItemNameText->SetText(Data->DisplayName);
 		
 		// 아이콘 로드
@@ -53,8 +54,7 @@ void ULibraryItem::SetLibraryItemData(const FLibraryItemData& InData)
 
 void ULibraryItem::OnButtonClicked()
 {
-	OnLibraryItemClicked.Broadcast(ItemData);
-	UE_LOG(LogTemp, Log, TEXT("Library item clicked: %s"), *ItemData.Name);
+	OnLibraryItemClicked.Broadcast(LibraryItem);
 }
 
 void ULibraryItem::SetSelected(bool bSelected)
