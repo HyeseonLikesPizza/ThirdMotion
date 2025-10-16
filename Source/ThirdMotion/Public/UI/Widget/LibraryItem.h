@@ -7,7 +7,10 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include "Data/LibraryItemObject.h"
 #include "LibraryItem.generated.h"
+
+class ULibraryItemObject;
 
 UENUM(BlueprintType)
 enum class ELibraryItemType : uint8
@@ -57,13 +60,17 @@ struct FLibraryItemData
  * Widget for displaying a single library item
  */
 UCLASS()
-class THIRDMOTION_API ULibraryItem : public UBaseWidget
+class THIRDMOTION_API ULibraryItem : public UBaseWidget, public IUserObjectListEntry
 {
 	GENERATED_BODY()
 
 public:
 	virtual void NativeConstruct() override;
+	virtual void NativeOnListItemObjectSet(UObject* ListItem) override;
 
+	UPROPERTY()
+	ULibraryItemObject* LibraryItem;
+	
 	// Widget Components
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UImage* ThumbnailImage;
@@ -82,7 +89,7 @@ public:
 	FLibraryItemData GetLibraryItemData() const { return ItemData; }
 
 	// Events
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLibraryItemClicked, const FLibraryItemData&, ItemData);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLibraryItemClicked, ULibraryItemObject*, ItemData);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLibraryItemDoubleClicked, const FLibraryItemData&, ItemData);
 
 	UPROPERTY(BlueprintAssignable, Category = "Library Events")
@@ -92,8 +99,7 @@ public:
 	FOnLibraryItemDoubleClicked OnLibraryItemDoubleClicked;
 
 protected:
-	virtual void NativeOnListItemObjectSet(UObject* ListItem);
-	
+
 	UPROPERTY(BlueprintReadOnly, Category = "Library")
 	FLibraryItemData ItemData;
 

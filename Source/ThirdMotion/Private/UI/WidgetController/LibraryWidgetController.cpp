@@ -27,6 +27,32 @@ void ULibraryWidgetController::QueryByCategory(const FGameplayTag& Category, TAr
 		Obj->DisplayName = FText::FromName(It->DisplayName);
 		Obj->Icon = It->Icon;
 		Obj->Tag = It->PresetTag;
+		Obj->Type = It->IconType;
+		Obj->NextCategoryTag = It->NextCategory;
+
+		OutItems.Add(Obj);
+	}
+}
+
+void ULibraryWidgetController::GetDirectChildrenCategories(const FGameplayTag& Category,
+	TArray<ULibraryItemObject*>& OutItems)
+{
+	OutItems.Reset();
+	auto* R = GetResolver();
+	if (!R || !R->IsReady()) return;
+
+	TArray<FGameplayTag> Categories;
+	R->GetDirectChildrenCategories(Category, Categories);
+
+	for (auto Category : Categories)
+	{
+		ULibraryItemObject* Obj = NewObject<ULibraryItemObject>(this);
+		const FLibraryRow* Row =  R->GetRowByCategory(Category);
+		Obj->DisplayName = FText::FromName(Row->DisplayName);
+		Obj->Icon = Row->Icon;
+		Obj->Tag = Row->PresetTag;
+		Obj->Type = Row->IconType;
+		Obj->NextCategoryTag = Row->NextCategory;
 
 		OutItems.Add(Obj);
 	}
