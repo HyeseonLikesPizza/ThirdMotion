@@ -16,12 +16,6 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-	// Override this in child classes for custom initialization
-	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
-	void OnUIInitialize();
 
-	// Override this in child classes for custom cleanup
-	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
-	void OnUICleanup();
 	
 };

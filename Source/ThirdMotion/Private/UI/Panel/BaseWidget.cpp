@@ -10,6 +10,5 @@ void UBaseWidget::NativeConstruct()
 
 void UBaseWidget::NativeDestruct()
 {
-	OnUICleanup();
 	Super::NativeDestruct();
 }

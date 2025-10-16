@@ -15,10 +15,11 @@ class THIRDMOTION_API ULibraryPanel : public UBaseWidget
 
 public:
 
+
 	void NativeConstruct() override;
 	
-	UPROPERTY(meta=(BindWidgetOptional))
-	UTileView* TileView;
+	/*UPROPERTY(meta=(BindWidgetOptional))
+	UTileView* TileView;*/
 
 	void SetController(UBaseWidgetController* InWC);
 

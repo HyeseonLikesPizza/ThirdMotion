@@ -1,5 +1,7 @@
 
 #include "UI/Widget/MainWidget.h"
+
+#include "Components/CanvasPanelSlot.h"
 #include "Components/Widget.h"
 
 void UMainWidget::NativeConstruct()
@@ -8,32 +10,7 @@ void UMainWidget::NativeConstruct()
 
 }
 
-void UMainWidget::OnPanelVisibilityChanged(EPanelType PanelType, bool bVisible)
+void UMainWidget::NativeDestruct()
 {
-	/*ESlateVisibility NewVisibility = bVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed;
-
-	switch (PanelType)
-	{
-		case EPanelType::Library:
-			if (LibraryPanel)
-			{
-				LibraryPanel->SetVisibility(NewVisibility);
-			}
-			break;
-
-		case EPanelType::Scene:
-		case EPanelType::Properties:
-			if (RightPanel)
-			{
-				RightPanel->SetVisibility(NewVisibility);
-			}
-			break;
-
-		case EPanelType::Thumbnail:
-			if (BottomBar)
-			{
-				BottomBar->SetVisibility(NewVisibility);
-			}
-		break;
-	}*/
+	Super::NativeDestruct();
 }

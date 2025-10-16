@@ -8,15 +8,6 @@
 #include "Components/SizeBox.h"
 #include "MainWidget.generated.h"
 
-UENUM(BlueprintType)
-enum class EPanelType : uint8
-{
-	Library UMETA(DisplayName = "Library"),
-	Scene UMETA(DisplayName = "Scene"),
-	Properties UMETA(DisplayName = "Properties"),
-	Thumbnail UMETA(DisplayName = "Thumbnail")
-};
-
 UCLASS()
 class THIRDMOTION_API UMainWidget : public UBaseWidget
 {
@@ -24,6 +15,7 @@ class THIRDMOTION_API UMainWidget : public UBaseWidget
 
 public:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UUserWidget* TopBar;
@@ -39,7 +31,4 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UBorder* ViewportContainer;
-
-	UFUNCTION()
-	void OnPanelVisibilityChanged(EPanelType PanelType, bool bVisible);
 };

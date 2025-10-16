@@ -1,5 +1,3 @@
-// TwinmotionLibraryItem.cpp
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UI/Widget/LibraryItem.h"
 #include "Components/Image.h"
