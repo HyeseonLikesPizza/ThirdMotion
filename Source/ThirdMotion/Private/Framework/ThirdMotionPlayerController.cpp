@@ -34,8 +34,10 @@ void AThirdMotionPlayerController::BeginPlay()
 	}
 
 	// 메인 오버레이 생성
+	
 	if (MainWidgetClass)
 	{
+		if (!IsLocalPlayerController()) return;
 		MainWidget = CreateWidget<UMainWidget>(this, MainWidgetClass);
 		ULibraryPanel* LBWidget = Cast<ULibraryPanel>(MainWidget->LibraryPanel);
 		LBWidget->Init(LibraryWidgetController);
