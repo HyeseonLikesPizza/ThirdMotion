@@ -13,6 +13,13 @@ void AThirdMotionPlayerController::BeginPlay()
 
 }
 
+void AThirdMotionPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	
+}
+
 
 void AThirdMotionPlayerController::Server_RequestSpawnByTag_Implementation(FGameplayTag PresetTag, const FTransform& Xf)
 {
