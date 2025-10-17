@@ -25,7 +25,7 @@ public:
 	UPROPERTY(meta=(BindWidgetOptional))
 	UTileView* TileView;
 
-	void Init();
+	void Init(ULibraryWidgetController* Controller);
 
 private:
 

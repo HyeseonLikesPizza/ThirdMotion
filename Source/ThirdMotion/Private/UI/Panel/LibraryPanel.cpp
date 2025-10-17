@@ -10,19 +10,13 @@
 void ULibraryPanel::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	if (!WidgetController)
-	{
-		WidgetController = NewObject<ULibraryWidgetController>(this);
-		WidgetController->Init();
-	}
-
+	
 	TileView->OnEntryWidgetGenerated().AddUObject(this, &ULibraryPanel::HandleEntryGenerated);
-	Init();
 }
 
-void ULibraryPanel::Init()
+void ULibraryPanel::Init(ULibraryWidgetController* Controller)
 {
+	WidgetController = Controller;
 	ShowCategories(FGameplayTag::RequestGameplayTag(TEXT("Category")));
 }
 
