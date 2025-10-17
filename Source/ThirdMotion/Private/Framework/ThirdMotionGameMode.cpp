@@ -12,4 +12,6 @@ AThirdMotionGameMode::AThirdMotionGameMode()
 void AThirdMotionGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	
 }
