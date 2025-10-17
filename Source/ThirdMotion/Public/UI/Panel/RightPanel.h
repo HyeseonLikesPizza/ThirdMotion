@@ -22,11 +22,11 @@ public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 protected:
-	UPROPERTY(meta = (BindWidget))
+	/*UPROPERTY(meta = (BindWidget))
 	UTreeView* SceneTreeView;
 
 	UPROPERTY(meta = (BindWidget))
-	UEditableTextBox* SearchBox;
+	UEditableTextBox* SearchBox;*/
 
 	// 씬 액터 목록 업데이트
 	void RefreshSceneActors();

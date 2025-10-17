@@ -10,7 +10,7 @@ void URightPanel::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    if (SceneTreeView)
+    /*if (SceneTreeView)
     {
         // TreeView 델리게이트 바인딩
        // SceneTreeView->OnGetItemChildren().AddUObject(this, &URightPanel::OnGetItemChildren);
@@ -18,7 +18,7 @@ void URightPanel::NativeConstruct()
         
         // Entry Widget 클래스 설정 (블루프린트에서 설정하는 것이 좋음)
         // SceneTreeView->SetEntryWidgetClass(USceneTreeEntry::StaticClass());
-    }
+    }*/
 
     RefreshSceneActors();
 }
@@ -95,10 +95,10 @@ void URightPanel::RefreshSceneActors()
     }
 
     // TreeView 업데이트
-    if (SceneTreeView)
+    /*if (SceneTreeView)
     {
         SceneTreeView->SetListItems(RootItems);
-    }
+    }*/
 }
 
 void URightPanel::OnGetItemChildren(UObject* Item, TArray<UObject*>& Children)
