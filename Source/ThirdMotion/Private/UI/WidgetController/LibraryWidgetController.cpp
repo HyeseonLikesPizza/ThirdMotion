@@ -67,10 +67,7 @@ void ULibraryWidgetController::BeginPreview(const FGameplayTag& PresetTag)
 
 void ULibraryWidgetController::UpdatePreviewTransform(const FTransform& Xf)
 {
-	if (AActor* G = PreviewGhost.Get())
-	{
-		G->SetActorTransform(Xf, false, nullptr, ETeleportType::TeleportPhysics);
-	}
+	PreviewGhost->SetActorTransform(Xf, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 void ULibraryWidgetController::CancelPreview()

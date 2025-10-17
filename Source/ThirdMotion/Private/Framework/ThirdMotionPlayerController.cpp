@@ -49,7 +49,42 @@ void AThirdMotionPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (!bPlacing || !LibraryWidgetController) return;
+
+	FHitResult Hit;
+	bool bHit = GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit);
+
+	FTransform Xf = FTransform::Identity;
+
+	if (bHit)
+	{
+		FVector Loc = Hit.Location;
+		Xf.SetLocation(Loc);
+	}
+
+	LibraryWidgetController->UpdatePreviewTransform(Xf);
+	LastPreviewXf = Xf;
+
 	
+}
+
+void AThirdMotionPlayerController::StartPlacement(const FGameplayTag& PresetTag)
+{
+	if (!LibraryWidgetController) return;
+	
+	CurrentPreset = PresetTag;
+	bPlacing = true;
+	LibraryWidgetController->BeginPreview(PresetTag);
+}
+
+void AThirdMotionPlayerController::StopPlacement(bool bCancel)
+{
+	if (!LibraryWidgetController) return;
+	
+	if (bCancel)
+		LibraryWidgetController->CancelPreview();
+	
+	bPlacing = false;
 }
 
 
