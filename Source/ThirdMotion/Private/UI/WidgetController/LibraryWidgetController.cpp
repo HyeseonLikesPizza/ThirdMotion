@@ -44,10 +44,10 @@ void ULibraryWidgetController::GetDirectChildrenCategories(const FGameplayTag& C
 	TArray<FGameplayTag> Categories;
 	R->GetDirectChildrenCategories(Category, Categories);
 
-	for (auto Category : Categories)
+	for (auto category : Categories)
 	{
 		ULibraryItemObject* Obj = NewObject<ULibraryItemObject>(this);
-		const FLibraryRow* Row =  R->GetRowByCategory(Category);
+		const FLibraryRow* Row =  R->GetRowByCategory(category);
 		Obj->DisplayName = FText::FromName(Row->DisplayName);
 		Obj->Icon = Row->Icon;
 		Obj->Tag = Row->PresetTag;
