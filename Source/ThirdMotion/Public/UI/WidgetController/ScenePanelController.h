@@ -8,8 +8,11 @@
 #include "UI/Widget/SceneTreeItem.h"
 #include "ScenePanelController.generated.h"
 
-class USceneTreeItem;
-class AActor;
+class USceneItemData;
+
+// Delegates
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSceneTreeRefreshed, const TArray<FSceneTreeItemData>&, SceneItems);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActorSelectedInScene, AActor*, SelectedActor);
 
 /**
  * Controller for Scene Panel - manages scene tree hierarchy display
@@ -23,23 +26,39 @@ class THIRDMOTION_API UScenePanelController : public UBaseWidgetController
 public:
 	virtual void Init() override;
 
-	// Scene Tree Management
+	// Refresh the scene tree from world actors
 	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
 	void RefreshSceneTree();
 
+	// Get current scene actors
 	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
 	TArray<FSceneTreeItemData> GetSceneActors();
 
+	// Select an actor in the scene
 	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
 	void SelectActor(AActor* Actor);
 
+	// Toggle actor visibility
 	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
 	void ToggleActorVisibility(AActor* Actor);
 
+	// Rename actor
 	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
 	void RenameActor(AActor* Actor, const FString& NewName);
 
-	// Observer callbacks for SceneTreeItem events
+	// Bind to tree item events (Observer Pattern)
+	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
+	void BindToTreeItem(USceneTreeItem* TreeItem);
+
+	// Events
+	UPROPERTY(BlueprintAssignable, Category = "Scene Panel Events")
+	FOnSceneTreeRefreshed OnSceneTreeRefreshed;
+
+	UPROPERTY(BlueprintAssignable, Category = "Scene Panel Events")
+	FOnActorSelectedInScene OnActorSelectedInScene;
+
+protected:
+	// Observer Pattern: Event handlers from SceneTreeItem
 	UFUNCTION()
 	void OnTreeItemSelected(const FSceneTreeItemData& ItemData);
 
@@ -52,30 +71,17 @@ public:
 	UFUNCTION()
 	void OnTreeItemRenamed(const FSceneTreeItemData& ItemData, const FString& NewName);
 
-	// Bind to a SceneTreeItem widget
-	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
-	void BindToTreeItem(USceneTreeItem* TreeItem);
-
-	// Broadcasting events to UI
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSceneTreeRefreshed, const TArray<FSceneTreeItemData>&, SceneItems);
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActorSelectedInScene, AActor*, SelectedActor);
-
-	UPROPERTY(BlueprintAssignable, Category = "Scene Panel Events")
-	FOnSceneTreeRefreshed OnSceneTreeRefreshed;
-
-	UPROPERTY(BlueprintAssignable, Category = "Scene Panel Events")
-	FOnActorSelectedInScene OnActorSelectedInScene;
-
-protected:
+private:
 	// Currently selected actor
 	UPROPERTY()
 	AActor* CurrentSelectedActor;
 
-	// Cache of scene actors
-	UPROPERTY()
+	// Cached scene data
 	TArray<FSceneTreeItemData> CachedSceneData;
 
-	// Helper functions
+	// Build hierarchy recursively
 	void BuildSceneHierarchy(AActor* ParentActor, int32 IndentLevel, TArray<FSceneTreeItemData>& OutItems);
+
+	// Create item data from actor
 	FSceneTreeItemData CreateItemDataFromActor(AActor* Actor, int32 IndentLevel);
 };

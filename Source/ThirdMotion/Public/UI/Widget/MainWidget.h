@@ -8,6 +8,8 @@
 #include "Components/SizeBox.h"
 #include "MainWidget.generated.h"
 
+class UViewportWidget;
+
 UCLASS()
 class THIRDMOTION_API UMainWidget : public UBaseWidget
 {
@@ -31,4 +33,16 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UBorder* ViewportContainer;
+
+protected:
+	// Viewport widget class to spawn
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Viewport")
+	TSubclassOf<UViewportWidget> ViewportWidgetClass;
+
+	// Viewport widget instance
+	UPROPERTY()
+	UViewportWidget* ViewportWidget;
+
+	// Setup 3D viewport in the container
+	void SetupViewport();
 };

@@ -3,14 +3,14 @@
 
 #include "CoreMinimal.h"
 #include "UI/Widget/BaseWidget.h"
-#include "Components/ListView.h"
-#include "Components/ScrollBox.h"
-#include "Components/TextBlock.h"
-#include "UI/WidgetController/ScenePanelController.h"
+#include "Components/TreeView.h"
+#include "Engine/Light.h"
+#include "Camera/CameraActor.h"
+#include "EngineUtils.h"
 #include "RightPanel.generated.h"
 
-class USceneTreeItem;
-class UScenePanelController;
+class USceneItemData;
+class UEditableTextBox;
 
 UCLASS()
 class THIRDMOTION_API URightPanel : public UBaseWidget
@@ -19,51 +19,38 @@ class THIRDMOTION_API URightPanel : public UBaseWidget
 
 public:
 	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-	// Initialize with controller
-	UFUNCTION(BlueprintCallable, Category = "Right Panel")
-	void InitializePanel(UScenePanelController* InController);
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UTreeView* SceneTreeView;
 
-	// Show/Hide panel
-	UFUNCTION(BlueprintCallable, Category = "Right Panel")
-	void ShowScenePanel();
+	UPROPERTY(meta = (BindWidget))
+	UEditableTextBox* SearchBox;
 
-	UFUNCTION(BlueprintCallable, Category = "Right Panel")
-	void HidePanel();
+	// 씬 액터 목록 업데이트
+	void RefreshSceneActors();
 
-	// Refresh scene list
-	UFUNCTION(BlueprintCallable, Category = "Right Panel")
-	void RefreshSceneList();
+	// 액터 계층 구조 구축
+	void BuildActorHierarchy();
 
-	// Widget Components
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UTextBlock* PanelTitle;
-
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UScrollBox* SceneListContainer;
-
-	// Scene Tree Item Class
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Right Panel")
-	TSubclassOf<USceneTreeItem> SceneTreeItemClass;
-
-	// Widget Controller
-	UPROPERTY()
-	UScenePanelController* ScenePanelController;
-
-	// Created tree items
-	UPROPERTY()
-	TArray<USceneTreeItem*> SceneTreeItems;
-
-	// Controller event callbacks
+	// TreeView 델리게이트
 	UFUNCTION()
-	void OnSceneTreeRefreshed(const TArray<FSceneTreeItemData>& SceneItems);
+	void OnGetItemChildren(UObject* Item, TArray<UObject*>& Children);
 
 	UFUNCTION()
-	void OnActorSelectedInScene(AActor* SelectedActor);
+	void OnItemExpansionChanged(UObject* Item, bool bIsExpanded);
 
-	// Helper functions
-	void ClearSceneList();
-	void PopulateSceneList(const TArray<FSceneTreeItemData>& SceneItems);
-	USceneTreeItem* CreateTreeItemWidget(const FSceneTreeItemData& ItemData);
+	UFUNCTION()
+	void OnItemSelectionChanged(UObject* Item);
+
+private:
+	UPROPERTY()
+	TArray<USceneItemData*> RootItems;
+
+	UPROPERTY()
+	TMap<AActor*, USceneItemData*> ActorToItemMap;
+
+	float RefreshTimer = 0.0f;
+
 };
