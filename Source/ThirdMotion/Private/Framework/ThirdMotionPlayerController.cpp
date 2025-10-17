@@ -1,6 +1,7 @@
 
 #include "Framework/ThirdMotionPlayerController.h"
-
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "GameplayTagContainer.h"
 #include "Edit/SceneManager.h"
 #include "Blueprint/UserWidget.h"
@@ -66,6 +67,32 @@ void AThirdMotionPlayerController::Tick(float DeltaSeconds)
 	LastPreviewXf = Xf;
 
 	
+}
+
+void AThirdMotionPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	if (ULocalPlayer* LP = GetLocalPlayer())
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsys =
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LP))
+		{
+			Subsys->AddMappingContext(IMC, 0);
+		}
+	}
+	
+
+	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		EIC->BindAction(IA_Click, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::RequestSpawnByTag);
+	}
+	
+}
+
+void AThirdMotionPlayerController::RequestSpawnByTag()
+{
+	Server_RequestSpawnByTag(CurrentPreset, LastPreviewXf);
 }
 
 void AThirdMotionPlayerController::StartPlacement(const FGameplayTag& PresetTag)

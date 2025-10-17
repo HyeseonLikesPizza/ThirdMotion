@@ -62,9 +62,10 @@ void ULibraryPanel::HandleItemClicked(ULibraryItemObject* Item)
 	else
 	{
 		// 프리뷰 시작: 커서 추적/스냅은 PC Tick에서
-		//WidgetController->BeginPreview(Item->Tag);
-		AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetWorld()->GetFirstPlayerController());
-		PC->StartPlacement(Item->Tag);
+		if (AThirdMotionPlayerController* PC = GetWorld()->GetFirstPlayerController<AThirdMotionPlayerController>())
+		{
+			PC->StartPlacement(Item->Tag);	
+		}
 	}
 }
 
