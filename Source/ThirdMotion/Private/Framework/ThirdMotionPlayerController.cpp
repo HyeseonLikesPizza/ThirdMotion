@@ -10,6 +10,39 @@
 #include "UI/Widget/MainWidget.h"
 #include "UI/Panel/LibraryPanel.h"
 #include "UI/WidgetController/LibraryWidgetController.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/DecalComponent.h"
+
+void AThirdMotionPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	InputComponent->BindAction("LeftMouseButton", IE_Pressed, this, &AThirdMotionPlayerController::OnLeftMouseButtonClicked);
+}
+
+void AThirdMotionPlayerController::OnLeftMouseButtonClicked()
+{
+	FHitResult HitResult;
+	GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
+
+	if (HitResult.bBlockingHit)
+	{
+		Server_SpawnClickEffect(HitResult.Location);
+	}
+}
+
+void AThirdMotionPlayerController::Server_SpawnClickEffect_Implementation(FVector_NetQuantize Location)
+{
+	Multicast_SpawnClickEffect(Location);
+}
+
+void AThirdMotionPlayerController::Multicast_SpawnClickEffect_Implementation(FVector_NetQuantize Location)
+{
+	if (ClickDecalMaterial)
+	{
+		UDecalComponent* DecalComponent = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), ClickDecalMaterial, FVector(100.f), Location);
+	}
+}
 
 void AThirdMotionPlayerController::BeginPlay()
 {

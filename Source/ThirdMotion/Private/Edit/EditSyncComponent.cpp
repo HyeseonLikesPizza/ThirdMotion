@@ -88,6 +88,14 @@ void UEditSyncComponent::ApplyDeltaToNative(const FPropertyDelta& D)
 			LC->SetIntensity(D.FloatParam);
 		return;
 	}
+	if (D.Op == EPropOp::SetTransform)
+	{
+		if (AActor* Owner = GetOwner())
+		{
+			Owner->SetActorTransform(D.TransformParam, true, nullptr, ETeleportType::None);
+		}
+		return;
+	}
 
 	// TODO: SpringArm.ArmLength 등 필요한 키 추가
 }

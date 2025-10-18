@@ -106,10 +106,15 @@ bool USceneManager::ApplyTransform(const FGuid& ID, const FTransform& T)
 
 	if (AActor* Actor = FindByGuid(ID))
 	{
-		FTransform Transform = T;
-		Actor->SetReplicateMovement(true);
-		Actor->SetActorTransform(Transform, true, nullptr, ETeleportType::None);
-		return true;
+		FPropertyDelta Delta;
+		Delta.Op = EPropOp::SetTransform;
+		Delta.TransformParam = T;
+		
+		if (UEditSyncComponent* Edit = Actor->FindComponentByClass<UEditSyncComponent>())
+		{
+			Edit->ServerApplyPropertyDelta_Internal(Delta);
+			return true;
+		}
 	}
 	return false;
 }

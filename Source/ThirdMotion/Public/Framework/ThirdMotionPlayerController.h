@@ -26,6 +26,20 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> MainWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UMaterialInterface* ClickDecalMaterial;
+
+protected:
+	virtual void SetupInputComponent() override;
+
+	void OnLeftMouseButtonClicked();
+
+	UFUNCTION(Server, Reliable)
+	void Server_SpawnClickEffect(FVector_NetQuantize Location);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SpawnClickEffect(FVector_NetQuantize Location);
+
 private:
 
 	// 메인 오버레이 위젯

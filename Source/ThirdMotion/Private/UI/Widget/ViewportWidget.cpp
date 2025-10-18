@@ -37,9 +37,6 @@ TSharedRef<SWidget> UViewportWidget::RebuildWidget()
 			));
 
 			ViewportWidget->SetViewportInterface(SceneViewport.ToSharedRef());
-
-			// ViewportClient의 뷰포트를 이 SceneViewport로 설정하여 렌더링 활성화
-			GameViewportClient->Viewport = SceneViewport.Get();
 		}
 	}
 

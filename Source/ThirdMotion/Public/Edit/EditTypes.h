@@ -56,6 +56,9 @@ struct FPropertyDelta
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSoftObjectPath ObjectPath;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTransform TransformParam = FTransform::Identity;
 };
 
 
