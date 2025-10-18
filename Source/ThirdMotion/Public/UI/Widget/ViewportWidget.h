@@ -10,8 +10,8 @@ class THIRDMOTION_API UViewportWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-
 public:
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 
 protected:
@@ -21,5 +21,4 @@ private:
 	TSharedPtr<class SOverlay> RootWidget;
 	TSharedPtr<class SViewport> ViewportWidget;
 	TSharedPtr<class FSceneViewport> SceneViewport;
-	
 };
