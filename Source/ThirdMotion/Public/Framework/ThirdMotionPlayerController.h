@@ -26,8 +26,7 @@ public:
 	/* 배치 */
 	UFUNCTION(Server, Reliable)
 	void Server_RequestSpawnByTag(FGameplayTag PresetTag, const FTransform& Xf);
-
-	void RequestSpawnByTag();
+	
 	void StartPlacement(const FGameplayTag& PresetTag);
 	void StopPlacement(bool bCancel);
 
@@ -43,11 +42,20 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Click;
 
-protected:
-	
-	
 	
 private:
+	
+	void OnClick();
+
+	/* Actor Select */
+
+	UPROPERTY()
+	AActor* SelectedActor;
+	
+	void SelectUnderCursor();
+
+
+	
 
 	/* 메인 오버레이 위젯 */
 	
