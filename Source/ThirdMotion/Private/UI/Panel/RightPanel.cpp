@@ -200,14 +200,14 @@ void URightPanel::RefreshSceneActors()
     // TreeView 업데이트 - SceneList에 RootItems 설정
     if (SceneList)
     {
-        UE_LOG(LogTemp, Warning, TEXT("RefreshSceneActors: Found %d root items, %d total actors"), RootItems.Num(), ActorToItemMap.Num());
+        //UE_LOG(LogTemp, Warning, TEXT("RefreshSceneActors: Found %d root items, %d total actors"), RootItems.Num(), ActorToItemMap.Num());
 
         SceneList->SetListItems(RootItems);
 
         // 데이터 확인 로그
         for (USceneItemData* Item : RootItems)
         {
-            UE_LOG(LogTemp, Log, TEXT("  Root Item: %s (%s)"), *Item->DisplayName, *Item->ActorType);
+            //UE_LOG(LogTemp, Log, TEXT("  Root Item: %s (%s)"), *Item->DisplayName, *Item->ActorType);
         }
     }
 }
