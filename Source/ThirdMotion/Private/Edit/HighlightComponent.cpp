@@ -1,12 +1,12 @@
 
 #include "Edit/HighlightComponent.h"
 
+#include "ThirdMotion/ThirdMotion.h"
+
 
 UHighlightComponent::UHighlightComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
-
 }
 
 void UHighlightComponent::EnableHighlight(bool bEnable)

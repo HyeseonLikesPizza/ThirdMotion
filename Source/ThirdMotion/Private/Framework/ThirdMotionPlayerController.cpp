@@ -112,7 +112,6 @@ void AThirdMotionPlayerController::StopPlacement(bool bCancel)
 
 void AThirdMotionPlayerController::OnClick()
 {
-	PRINTLOG(TEXT("OnClick"));
 	// 프리뷰 고스트가 켜진 상태일 때
 	if (bPlacing)
 	{
@@ -126,6 +125,7 @@ void AThirdMotionPlayerController::OnClick()
 
 void AThirdMotionPlayerController::SelectUnderCursor()
 {
+	
 	FHitResult Hit;
 	if (GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit))
 	{
