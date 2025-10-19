@@ -1,6 +1,7 @@
 
 #include "Framework/ThirdMotionPlayerController.h"
-
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "GameplayTagContainer.h"
 #include "Edit/SceneManager.h"
 #include "Blueprint/UserWidget.h"
@@ -82,7 +83,68 @@ void AThirdMotionPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (!bPlacing || !LibraryWidgetController) return;
+
+	FHitResult Hit;
+	bool bHit = GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit);
+
+	FTransform Xf = FTransform::Identity;
+
+	if (bHit)
+	{
+		FVector Loc = Hit.Location;
+		Xf.SetLocation(Loc);
+	}
+
+	LibraryWidgetController->UpdatePreviewTransform(Xf);
+	LastPreviewXf = Xf;
+
 	
+}
+
+void AThirdMotionPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	if (ULocalPlayer* LP = GetLocalPlayer())
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsys =
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LP))
+		{
+			Subsys->AddMappingContext(IMC, 0);
+		}
+	}
+	
+
+	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		EIC->BindAction(IA_Click, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::RequestSpawnByTag);
+	}
+	
+}
+
+void AThirdMotionPlayerController::RequestSpawnByTag()
+{
+	Server_RequestSpawnByTag(CurrentPreset, LastPreviewXf);
+}
+
+void AThirdMotionPlayerController::StartPlacement(const FGameplayTag& PresetTag)
+{
+	if (!LibraryWidgetController) return;
+	
+	CurrentPreset = PresetTag;
+	bPlacing = true;
+	LibraryWidgetController->BeginPreview(PresetTag);
+}
+
+void AThirdMotionPlayerController::StopPlacement(bool bCancel)
+{
+	if (!LibraryWidgetController) return;
+	
+	if (bCancel)
+		LibraryWidgetController->CancelPreview();
+	
+	bPlacing = false;
 }
 
 

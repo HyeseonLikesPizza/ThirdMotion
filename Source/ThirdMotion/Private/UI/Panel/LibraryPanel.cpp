@@ -4,6 +4,7 @@
 #include "IContentBrowserSingleton.h"
 #include "Components/TileView.h"
 #include "Data/LibraryItemObject.h"
+#include "Framework/ThirdMotionPlayerController.h"
 #include "UI/Widget/LibraryItem.h"
 #include "UI/WidgetController/LibraryWidgetController.h"
 
@@ -61,7 +62,10 @@ void ULibraryPanel::HandleItemClicked(ULibraryItemObject* Item)
 	else
 	{
 		// 프리뷰 시작: 커서 추적/스냅은 PC Tick에서
-		WidgetController->BeginPreview(Item->Tag);
+		if (AThirdMotionPlayerController* PC = GetWorld()->GetFirstPlayerController<AThirdMotionPlayerController>())
+		{
+			PC->StartPlacement(Item->Tag);	
+		}
 	}
 }
 

@@ -37,6 +37,9 @@ TSharedRef<SWidget> UViewportWidget::RebuildWidget()
 			));
 
 			ViewportWidget->SetViewportInterface(SceneViewport.ToSharedRef());
+
+			// 마우스 커서가 보이도록 설정
+			SceneViewport->ShowCursor(true);
 		}
 	}
 
