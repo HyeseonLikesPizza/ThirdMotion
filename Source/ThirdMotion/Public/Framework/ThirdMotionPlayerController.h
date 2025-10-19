@@ -26,8 +26,7 @@ public:
 	/* 배치 */
 	UFUNCTION(Server, Reliable)
 	void Server_RequestSpawnByTag(FGameplayTag PresetTag, const FTransform& Xf);
-
-	void RequestSpawnByTag();
+	
 	void StartPlacement(const FGameplayTag& PresetTag);
 	void StopPlacement(bool bCancel);
 
@@ -36,25 +35,31 @@ public:
 	TSubclassOf<UUserWidget> MainWidgetClass;
 
 	/* Enhanced Input */
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputMappingContext* IMC;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Click;
-	
+
+	//마우스 형태
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UMaterialInterface* ClickDecalMaterial;
 
 protected:
 	void OnLeftMouseButtonClicked();
-
-	UFUNCTION(Server, Reliable)
-	void Server_SpawnClickEffect(FVector_NetQuantize Location);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_SpawnClickEffect(FVector_NetQuantize Location);
+	
 private:
+	
+	void OnClick();
+
+	/* Actor Select */
+
+	UPROPERTY()
+	AActor* SelectedActor;
+	
+	void SelectUnderCursor();
+
 
 	/* 메인 오버레이 위젯 */
 	

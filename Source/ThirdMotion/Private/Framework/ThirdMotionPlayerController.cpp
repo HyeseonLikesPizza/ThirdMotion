@@ -6,6 +6,7 @@
 #include "Edit/SceneManager.h"
 #include "Blueprint/UserWidget.h"
 #include "TimerManager.h"
+#include "Edit/HighlightComponent.h"
 #include "Engine/World.h"
 #include "ThirdMotion/ThirdMotion.h"
 #include "UI/Widget/MainWidget.h"
@@ -77,6 +78,7 @@ void AThirdMotionPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	// 프리뷰 고스트 상태일 때만 Tick 로직 수행
 	if (!bPlacing || !LibraryWidgetController) return;
 
 	FHitResult Hit;
@@ -112,14 +114,9 @@ void AThirdMotionPlayerController::SetupInputComponent()
 
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		EIC->BindAction(IA_Click, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::RequestSpawnByTag);
+		EIC->BindAction(IA_Click, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::OnClick);
 	}
 	
-}
-
-void AThirdMotionPlayerController::RequestSpawnByTag()
-{
-	Server_RequestSpawnByTag(CurrentPreset, LastPreviewXf);
 }
 
 void AThirdMotionPlayerController::StartPlacement(const FGameplayTag& PresetTag)
@@ -139,6 +136,44 @@ void AThirdMotionPlayerController::StopPlacement(bool bCancel)
 		LibraryWidgetController->CancelPreview();
 	
 	bPlacing = false;
+}
+
+void AThirdMotionPlayerController::OnClick()
+{
+	// 프리뷰 고스트가 켜진 상태일 때
+	if (bPlacing)
+	{
+		Server_RequestSpawnByTag(CurrentPreset, LastPreviewXf);
+	} // 일반 상태일 때
+	else
+	{
+		SelectUnderCursor();
+	}
+}
+
+void AThirdMotionPlayerController::SelectUnderCursor()
+{
+	FHitResult Hit;
+	if (GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit))
+	{
+		AActor* NewSel = Hit.GetActor();
+
+		// 기존 하이라이트 끄기
+		if (IsValid(SelectedActor))
+			if (auto* H = SelectedActor->FindComponentByClass<UHighlightComponent>())
+				H->EnableHighlight(false);
+
+		SelectedActor = NewSel;
+
+		// 새 대상 하이라이트 켜기
+		if (IsValid(SelectedActor))
+		{
+			if (auto* H = SelectedActor->FindComponentByClass<UHighlightComponent>())
+			{
+				H->EnableHighlight(true);
+			}
+		}
+	}
 }
 
 
