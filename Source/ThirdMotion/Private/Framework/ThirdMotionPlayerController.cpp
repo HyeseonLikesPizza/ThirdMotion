@@ -1,4 +1,3 @@
-
 #include "Framework/ThirdMotionPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -12,33 +11,6 @@
 #include "UI/Widget/MainWidget.h"
 #include "UI/Panel/LibraryPanel.h"
 #include "UI/WidgetController/LibraryWidgetController.h"
-#include "Kismet/GameplayStatics.h"
-#include "Components/DecalComponent.h"
-
-
-void AThirdMotionPlayerController::OnLeftMouseButtonClicked()
-{
-	FHitResult HitResult;
-	GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
-
-	if (HitResult.bBlockingHit)
-	{
-		Server_SpawnClickEffect(HitResult.Location);
-	}
-}
-
-void AThirdMotionPlayerController::Server_SpawnClickEffect_Implementation(FVector_NetQuantize Location)
-{
-	Multicast_SpawnClickEffect(Location);
-}
-
-void AThirdMotionPlayerController::Multicast_SpawnClickEffect_Implementation(FVector_NetQuantize Location)
-{
-	if (ClickDecalMaterial)
-	{
-		UDecalComponent* DecalComponent = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), ClickDecalMaterial, FVector(100.f), Location);
-	}
-}
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -140,6 +112,7 @@ void AThirdMotionPlayerController::StopPlacement(bool bCancel)
 
 void AThirdMotionPlayerController::OnClick()
 {
+	PRINTLOG(TEXT("OnClick"));
 	// 프리뷰 고스트가 켜진 상태일 때
 	if (bPlacing)
 	{

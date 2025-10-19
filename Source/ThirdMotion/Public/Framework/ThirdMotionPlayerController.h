@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -42,12 +41,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Click;
 
-	//마우스 형태
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UMaterialInterface* ClickDecalMaterial;
-
-protected:
-	void OnLeftMouseButtonClicked();
 	
 private:
 	
@@ -60,6 +53,8 @@ private:
 	
 	void SelectUnderCursor();
 
+
+	
 
 	/* 메인 오버레이 위젯 */
 	
