@@ -41,6 +41,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Click;
 
+	UPROPERTY(BlueprintReadWrite, Category="Gizmo")
+	bool bGizmoShowed;
+
 	
 private:
 	
