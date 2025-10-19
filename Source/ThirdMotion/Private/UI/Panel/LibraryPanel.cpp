@@ -5,6 +5,7 @@
 #include "Components/TileView.h"
 #include "Data/LibraryItemObject.h"
 #include "Framework/ThirdMotionPlayerController.h"
+#include "UI/Widget/LibraryCategoryWidget.h"
 #include "UI/Widget/LibraryItem.h"
 #include "UI/WidgetController/LibraryWidgetController.h"
 
@@ -19,6 +20,7 @@ void ULibraryPanel::Init(ULibraryWidgetController* Controller)
 {
 	WidgetController = Controller;
 	ShowCategories(FGameplayTag::RequestGameplayTag(TEXT("Category")));
+	CategoryWidget->SetController(Controller);
 }
 
 void ULibraryPanel::ShowPreset(FGameplayTag Category)

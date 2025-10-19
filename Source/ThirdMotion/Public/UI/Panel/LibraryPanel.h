@@ -6,6 +6,7 @@
 #include "UI/Widget/BaseWidget.h"
 #include "LibraryPanel.generated.h"
 
+class ULibraryCategoryWidget;
 class ULibraryWidgetController;
 class ULibraryItemObject;
 class UTileView;
@@ -21,6 +22,9 @@ class THIRDMOTION_API ULibraryPanel : public UBaseWidget
 public:
 
 	virtual void NativeConstruct() override;
+
+	UPROPERTY(meta=(BindWidgetOptional))
+	ULibraryCategoryWidget* CategoryWidget;
 	
 	UPROPERTY(meta=(BindWidgetOptional))
 	UTileView* TileView;
