@@ -25,9 +25,16 @@ public:
 	/* 배치 */
 	UFUNCTION(Server, Reliable)
 	void Server_RequestSpawnByTag(FGameplayTag PresetTag, const FTransform& Xf);
-	
+
 	void StartPlacement(const FGameplayTag& PresetTag);
 	void StopPlacement(bool bCancel);
+
+	/* DirectionalLight 동기화 */
+	UFUNCTION(Server, Reliable)
+	void Server_UpdateDirectionalLightRotation(FRotator NewRotation);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_UpdateDirectionalLightRotation(FRotator NewRotation);
 
 	// 메인 오버레이 클래스
 	UPROPERTY(EditDefaultsOnly)

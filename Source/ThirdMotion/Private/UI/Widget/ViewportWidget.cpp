@@ -6,6 +6,11 @@
 #include "Widgets/SOverlay.h"
 #include "Engine/LocalPlayer.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Components/Slider.h"
+#include "Engine/DirectionalLight.h"
+#include "Components/DirectionalLightComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Framework/ThirdMotionPlayerController.h"
 
 /*
 TSharedRef<SWidget> UViewportWidget::RebuildWidget()
@@ -73,4 +78,60 @@ void UViewportWidget::ReleaseSlateResources(bool bReleaseChildren)
 	RootWidget.Reset();
 	ViewportWidget.Reset();
 	SceneViewport.Reset();
+}
+
+void UViewportWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	// DirectionalLight 찾기
+	TArray<AActor*> FoundLights;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADirectionalLight::StaticClass(), FoundLights);
+
+	if (FoundLights.Num() > 0)
+	{
+		DirectionalLight = Cast<ADirectionalLight>(FoundLights[0]);
+	}
+
+	// Slider_Light 콜백 바인딩
+	if (Slider_Light)
+	{
+		Slider_Light->OnValueChanged.AddDynamic(this, &UViewportWidget::OnLightSliderValueChanged);
+
+		// 초기값 설정 (0.0 ~ 1.0을 -90 ~ 90도로 매핑)
+		if (DirectionalLight)
+		{
+			float CurrentPitch = DirectionalLight->GetActorRotation().Pitch;
+			// -90 ~ 90을 0.0 ~ 1.0으로 변환
+			float NormalizedValue = (CurrentPitch + 90.0f) / 180.0f;
+			Slider_Light->SetValue(NormalizedValue);
+		}
+		else
+		{
+			Slider_Light->SetValue(0.5f); // 기본값 (0도)
+		}
+	}
+}
+
+void UViewportWidget::OnLightSliderValueChanged(float Value)
+{
+	if (!DirectionalLight)
+	{
+		return;
+	}
+
+	// Slider 값 (0.0 ~ 1.0)을 각도 (-90 ~ 90)로 변환
+	float Pitch = FMath::Lerp(-90.0f, 90.0f, Value);
+
+	FRotator NewRotation = DirectionalLight->GetActorRotation();
+	NewRotation.Pitch = Pitch;
+
+	// 로컬에서 즉시 적용
+	DirectionalLight->SetActorRotation(NewRotation);
+
+	// 네트워크 동기화 - PlayerController를 통해 서버에 전송
+	if (AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetOwningPlayer()))
+	{
+		PC->Server_UpdateDirectionalLightRotation(NewRotation);
+	}
 }

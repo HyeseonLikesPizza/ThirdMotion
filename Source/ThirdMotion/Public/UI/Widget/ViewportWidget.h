@@ -13,12 +13,25 @@ class THIRDMOTION_API UViewportWidget : public UUserWidget
 public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
+	virtual void NativeConstruct() override;
 
 protected:
 	//virtual TSharedRef<SWidget> RebuildWidget() override;
+
+	// Slider_Light 바인딩
+	UPROPERTY(meta = (BindWidget))
+	class USlider* Slider_Light;
+
+	// Slider 값 변경 콜백
+	UFUNCTION()
+	void OnLightSliderValueChanged(float Value);
 
 private:
 	TSharedPtr<class SOverlay> RootWidget;
 	TSharedPtr<class SViewport> ViewportWidget;
 	TSharedPtr<class FSceneViewport> SceneViewport;
+
+	// DirectionalLight 참조
+	UPROPERTY()
+	class ADirectionalLight* DirectionalLight;
 };

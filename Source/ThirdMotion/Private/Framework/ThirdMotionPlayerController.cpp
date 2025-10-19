@@ -10,7 +10,11 @@
 #include "ThirdMotion/ThirdMotion.h"
 #include "UI/Widget/MainWidget.h"
 #include "UI/Panel/LibraryPanel.h"
+#include "UI/Panel/RightPanel.h"
 #include "UI/WidgetController/LibraryWidgetController.h"
+#include "UI/WidgetController/SceneController.h"
+#include "Engine/DirectionalLight.h"
+#include "Kismet/GameplayStatics.h"
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -125,7 +129,7 @@ void AThirdMotionPlayerController::OnClick()
 
 void AThirdMotionPlayerController::SelectUnderCursor()
 {
-	
+
 	FHitResult Hit;
 	if (GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit))
 	{
@@ -146,6 +150,18 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 				H->EnableHighlight(true);
 			}
 		}
+
+		// SceneController를 통해 선택 전파 (RightPanel에 알림)
+		if (MainWidget)
+		{
+			if (URightPanel* RightPanel = Cast<URightPanel>(MainWidget->RightPanel))
+			{
+				if (USceneController* SceneController = RightPanel->GetSceneController())
+				{
+					SceneController->SelectActor(SelectedActor);
+				}
+			}
+		}
 	}
 }
 
@@ -154,4 +170,25 @@ void AThirdMotionPlayerController::Server_RequestSpawnByTag_Implementation(FGame
 {
 	if (auto* M = GetWorld()->GetSubsystem<USceneManager>())
 		M->SpawnByTag(PresetTag, Xf);
+}
+
+void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
+{
+	// 서버에서 모든 클라이언트에게 브로드캐스트
+	Multicast_UpdateDirectionalLightRotation(NewRotation);
+}
+
+void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
+{
+	// 모든 클라이언트에서 DirectionalLight 회전 업데이트
+	TArray<AActor*> FoundLights;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADirectionalLight::StaticClass(), FoundLights);
+
+	if (FoundLights.Num() > 0)
+	{
+		if (ADirectionalLight* Light = Cast<ADirectionalLight>(FoundLights[0]))
+		{
+			Light->SetActorRotation(NewRotation);
+		}
+	}
 }
