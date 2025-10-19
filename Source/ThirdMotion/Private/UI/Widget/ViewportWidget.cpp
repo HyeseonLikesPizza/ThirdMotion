@@ -7,6 +7,7 @@
 #include "Engine/LocalPlayer.h"
 #include "Framework/Application/SlateApplication.h"
 
+/*
 TSharedRef<SWidget> UViewportWidget::RebuildWidget()
 {
 	// SViewport 생성 - 이 뷰포트에서 3D World를 렌더링
@@ -44,14 +45,14 @@ TSharedRef<SWidget> UViewportWidget::RebuildWidget()
 	}
 
 	return RootWidget.ToSharedRef();
-}
+}*/
 
 void UViewportWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	// SceneViewport가 매 프레임 업데이트되도록 강제
-	if (SceneViewport.IsValid())
+	/*if (SceneViewport.IsValid())
 	{
 		// 뷰포트 크기 업데이트
 		FVector2D Size = MyGeometry.GetLocalSize();
@@ -62,7 +63,7 @@ void UViewportWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 		// 렌더링 강제 업데이트
 		SceneViewport->InvalidateDisplay();
-	}
+	}*/
 }
 
 void UViewportWidget::ReleaseSlateResources(bool bReleaseChildren)

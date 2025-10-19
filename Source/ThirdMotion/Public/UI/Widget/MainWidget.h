@@ -44,5 +44,5 @@ protected:
 	UViewportWidget* ViewportWidget;
 
 	// Setup 3D viewport in the container
-	void SetupViewport();
+	//void SetupViewport();
 };

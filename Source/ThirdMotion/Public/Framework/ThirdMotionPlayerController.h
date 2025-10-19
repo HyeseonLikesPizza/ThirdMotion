@@ -47,8 +47,6 @@ public:
 	UMaterialInterface* ClickDecalMaterial;
 
 protected:
-	virtual void SetupInputComponent() override;
-
 	void OnLeftMouseButtonClicked();
 
 	UFUNCTION(Server, Reliable)

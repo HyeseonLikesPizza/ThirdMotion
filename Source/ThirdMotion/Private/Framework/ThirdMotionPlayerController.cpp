@@ -14,12 +14,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/DecalComponent.h"
 
-void AThirdMotionPlayerController::SetupInputComponent()
-{
-	Super::SetupInputComponent();
-
-	InputComponent->BindAction("LeftMouseButton", IE_Pressed, this, &AThirdMotionPlayerController::OnLeftMouseButtonClicked);
-}
 
 void AThirdMotionPlayerController::OnLeftMouseButtonClicked()
 {

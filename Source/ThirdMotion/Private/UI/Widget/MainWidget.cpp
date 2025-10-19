@@ -12,7 +12,7 @@ void UMainWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	// Setup 3D viewport
-	SetupViewport();
+	//SetupViewport();
 
 }
 
@@ -21,6 +21,7 @@ void UMainWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
+/*
 void UMainWidget::SetupViewport()
 {
 	if (!ViewportContainer || !ViewportWidgetClass)
@@ -51,4 +52,4 @@ void UMainWidget::SetupViewport()
 			}
 		}
 	}
-}
+}*/

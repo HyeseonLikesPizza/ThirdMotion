@@ -135,9 +135,6 @@ bool USceneManager::ApplyPropertyDelta(const FGuid& Guid, const FPropertyDelta& 
 	return false;
 }
 
-
-/* -------------- 내부 유틸 --------------- */
-
 void USceneManager::AttachEditComponentAndMeta(AActor* Actor, const struct FLibraryRow& Row)
 {
 	auto* Edit = NewObject<UEditSyncComponent>(Actor);

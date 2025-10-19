@@ -15,7 +15,7 @@ public:
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 
 protected:
-	virtual TSharedRef<SWidget> RebuildWidget() override;
+	//virtual TSharedRef<SWidget> RebuildWidget() override;
 
 private:
 	TSharedPtr<class SOverlay> RootWidget;
