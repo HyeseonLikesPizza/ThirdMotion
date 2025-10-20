@@ -14,7 +14,9 @@
 #include "UI/WidgetController/LibraryWidgetController.h"
 #include "UI/WidgetController/SceneController.h"
 #include "Engine/DirectionalLight.h"
+#include "Components/DirectionalLightComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/Widget/ViewportWidget.h"
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -39,7 +41,7 @@ void AThirdMotionPlayerController::BeginPlay()
 	}
 
 	
-	// 메인 오버레이 생성
+	// 메인 Form 생성
 	if (MainWidgetClass)
 	{
 		if (!IsLocalPlayerController()) return;
@@ -177,13 +179,9 @@ void AThirdMotionPlayerController::Server_RequestSpawnByTag_Implementation(FGame
 
 void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
 {
-	// 서버에서 모든 클라이언트에게 브로드캐스트
-	Multicast_UpdateDirectionalLightRotation(NewRotation);
-}
+	UE_LOG(LogTemp, Warning, TEXT("[Server RPC] Received rotation update: Pitch=%f"), NewRotation.Pitch);
 
-void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
-{
-	// 모든 클라이언트에서 DirectionalLight 회전 업데이트
+	// [서버] DirectionalLight 찾기
 	TArray<AActor*> FoundLights;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADirectionalLight::StaticClass(), FoundLights);
 
@@ -191,7 +189,67 @@ void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Impl
 	{
 		if (ADirectionalLight* Light = Cast<ADirectionalLight>(FoundLights[0]))
 		{
+			// Mobility 설정
+			if (UDirectionalLightComponent* LightComp = Light->FindComponentByClass<UDirectionalLightComponent>())
+			{
+				if (LightComp->Mobility != EComponentMobility::Movable)
+				{
+					LightComp->SetMobility(EComponentMobility::Movable);
+					UE_LOG(LogTemp, Warning, TEXT("[Server] Set DirectionalLight Mobility to Movable"));
+				}
+			}
+
+			// 서버에서 회전 적용
 			Light->SetActorRotation(NewRotation);
+			UE_LOG(LogTemp, Warning, TEXT("[Server] DirectionalLight rotation updated: Pitch=%f"), NewRotation.Pitch);
+
+			// 모든 클라이언트에 동기화 (Multicast)
+			Multicast_UpdateDirectionalLightRotation(NewRotation);
+		}
+	}
+}
+
+void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
+{
+	UE_LOG(LogTemp, Warning, TEXT("[Multicast] Received rotation update: Pitch=%f, IsServer=%d"),
+		NewRotation.Pitch, HasAuthority());
+
+	// 모든 클라이언트 + 서버(Listen Server)에서 실행됨
+	TArray<AActor*> FoundLights;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADirectionalLight::StaticClass(), FoundLights);
+
+	if (FoundLights.Num() > 0)
+	{
+		if (ADirectionalLight* Light = Cast<ADirectionalLight>(FoundLights[0]))
+		{
+			// Mobility 설정
+			if (UDirectionalLightComponent* LightComp = Light->FindComponentByClass<UDirectionalLightComponent>())
+			{
+				if (LightComp->Mobility != EComponentMobility::Movable)
+				{
+					LightComp->SetMobility(EComponentMobility::Movable);
+				}
+			}
+
+			// 회전 적용
+			Light->SetActorRotation(NewRotation);
+			UE_LOG(LogTemp, Warning, TEXT("[Multicast] Light rotation applied: Pitch=%f"), NewRotation.Pitch);
+
+			// 로컬 플레이어의 ViewportWidget 슬라이더 업데이트
+			if (IsLocalPlayerController())
+			{
+				// MainWidget → ViewportWidget 찾기
+				if (MainWidget && MainWidget->ViewportWidget)
+				{
+					if (UViewportWidget* ViewportWidget = Cast<UViewportWidget>(MainWidget->ViewportWidget))
+					{
+						// ReplicatedLightRotation 설정하고 OnRep 수동 호출 (NetActor 패턴)
+						ViewportWidget->ReplicatedLightRotation = NewRotation;
+						ViewportWidget->OnRep_LightRotation();
+						UE_LOG(LogTemp, Warning, TEXT("[Multicast] ViewportWidget updated"));
+					}
+				}
+			}
 		}
 	}
 }

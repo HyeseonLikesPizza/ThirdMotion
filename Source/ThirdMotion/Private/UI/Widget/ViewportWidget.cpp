@@ -55,26 +55,8 @@ void UViewportWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	// DirectionalLight의 회전 변경 감지 (네트워크 동기화)
-	if (DirectionalLight && Slider_Light)
-	{
-		FRotator CurrentRotation = DirectionalLight->GetActorRotation();
-
-		// 회전값이 변경되었는지 확인 (약간의 허용 오차)
-		if (!CurrentRotation.Equals(LastLightRotation, 0.1f))
-		{
-			// 슬라이더 업데이트
-			float NormalizedValue = (CurrentRotation.Pitch + 90.0f) / 180.0f;
-
-			// 무한 루프 방지: OnValueChanged 콜백을 일시적으로 해제
-			Slider_Light->OnValueChanged.RemoveDynamic(this, &UViewportWidget::OnLightSliderValueChanged);
-			Slider_Light->SetValue(NormalizedValue);
-			Slider_Light->OnValueChanged.AddDynamic(this, &UViewportWidget::OnLightSliderValueChanged);
-
-			// 마지막 회전값 업데이트
-			LastLightRotation = CurrentRotation;
-		}
-	}
+	// 네트워크 동기화는 OnRep_LightRotation에서 처리
+	// NativeTick에서는 별도 처리 불필요
 
 	// SceneViewport가 매 프레임 업데이트되도록 강제
 	/*if (SceneViewport.IsValid())
@@ -149,15 +131,17 @@ void UViewportWidget::NativeConstruct()
 // Multicast에서 수동으로 ReplicatedLightRotation 설정하고 OnRep 호출
 
 
+// NetActor 패턴: 클라이언트에서는 자동 호출, 서버(Listen Server)에서는 수동 호출
 void UViewportWidget::OnRep_LightRotation()
 {
-	// 라이트 회전 적용
+
+	// 라이트 회전 적용 (이미 Multicast에서 적용되었지만 안전을 위해)
 	if (DirectionalLight)
 	{
 		DirectionalLight->SetActorRotation(ReplicatedLightRotation);
 	}
 
-	// 슬라이더 업데이트
+	// 슬라이더 업데이트 (가장 중요!)
 	if (Slider_Light)
 	{
 		// 각도 (-90 ~ 90)를 Slider 값 (0.0 ~ 1.0)으로 변환
@@ -171,7 +155,6 @@ void UViewportWidget::OnRep_LightRotation()
 		// 마지막 회전값 업데이트
 		LastLightRotation = ReplicatedLightRotation;
 
-		UE_LOG(LogTemp, Warning, TEXT("[ViewportWidget] OnRep_LightRotation: Slider updated to %f"), NormalizedValue);
 	}
 }
 

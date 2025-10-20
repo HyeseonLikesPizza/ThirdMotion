@@ -34,14 +34,14 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UBorder* ViewportContainer;
 
+	// Viewport widget instance (public for PlayerController access)
+	UPROPERTY(BlueprintReadWrite)
+	UViewportWidget* ViewportWidget;
+
 protected:
 	// Viewport widget class to spawn
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Viewport")
 	TSubclassOf<UViewportWidget> ViewportWidgetClass;
-
-	// Viewport widget instance
-	UPROPERTY()
-	UViewportWidget* ViewportWidget;
 
 	// Setup 3D viewport in the container
 	//void SetupViewport();
