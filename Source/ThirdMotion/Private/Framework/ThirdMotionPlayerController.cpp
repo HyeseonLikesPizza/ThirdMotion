@@ -121,7 +121,6 @@ void AThirdMotionPlayerController::OnClick()
 	{
 		StopPlacement(true);
 		Server_RequestSpawnByTag(CurrentPreset, LastPreviewXf);
-		//LibraryWidgetController->CommitSpawn(CurrentPreset, LastPreviewXf);
 	}
 	else // 일반 상태일 때
 	{
