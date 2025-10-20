@@ -6,15 +6,20 @@
 #include "Blueprint/UserWidget.h"
 #include "TimerManager.h"
 #include "Edit/HighlightComponent.h"
+#include "Edit/EditSyncComponent.h"
 #include "Engine/World.h"
 #include "ThirdMotion/ThirdMotion.h"
 #include "UI/Widget/MainWidget.h"
+#include "UI/Widget/ViewportWidget.h"
 #include "UI/Panel/LibraryPanel.h"
 #include "UI/Panel/RightPanel.h"
 #include "UI/WidgetController/LibraryWidgetController.h"
 #include "UI/WidgetController/SceneController.h"
 #include "Engine/DirectionalLight.h"
+#include "Components/DirectionalLightComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Blueprint/WidgetTree.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -38,15 +43,57 @@ void AThirdMotionPlayerController::BeginPlay()
 		LibraryWidgetController->Init();
 	}
 
-	// 메인 오버레이 생성
-	
+	// 로컬 플레이어만 UI 생성
+	if (!IsLocalPlayerController()) return;
+
+	// 로딩 화면 표시
+	if (LoadingWidgetClass)
+	{
+		LoadingWidget = CreateWidget<UUserWidget>(this, LoadingWidgetClass);
+		if (LoadingWidget)
+		{
+			LoadingWidget->AddToViewport(999); // 최상위 레이어에 표시
+
+			// 2초 후 로딩 화면 제거하고 메인 위젯 표시
+			FTimerHandle LoadingTimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(
+				LoadingTimerHandle,
+				this,
+				&AThirdMotionPlayerController::ShowMainWidget,
+				2.0f,  // 2초 대기
+				false  // 반복 안 함
+			);
+		}
+	}
+	else
+	{
+		// LoadingWidgetClass가 없으면 바로 메인 위젯 표시
+		ShowMainWidget();
+	}
+}
+
+void AThirdMotionPlayerController::ShowMainWidget()
+{
+	// 로딩 화면 제거
+	if (LoadingWidget)
+	{
+		LoadingWidget->RemoveFromParent();
+		LoadingWidget = nullptr;
+	}
+
+	// 메인 위젯 생성 및 표시
 	if (MainWidgetClass)
 	{
-		if (!IsLocalPlayerController()) return;
 		MainWidget = CreateWidget<UMainWidget>(this, MainWidgetClass);
-		ULibraryPanel* LBWidget = Cast<ULibraryPanel>(MainWidget->LibraryPanel);
-		LBWidget->Init(LibraryWidgetController);
-		MainWidget->AddToViewport();
+		if (MainWidget)
+		{
+			ULibraryPanel* LBWidget = Cast<ULibraryPanel>(MainWidget->LibraryPanel);
+			if (LBWidget)
+			{
+				LBWidget->Init(LibraryWidgetController);
+			}
+			MainWidget->AddToViewport();
+		}
 	}
 }
 
@@ -176,12 +223,63 @@ void AThirdMotionPlayerController::Server_RequestSpawnByTag_Implementation(FGame
 
 void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
 {
-	// 서버에서 모든 클라이언트에게 브로드캐스트
-	Multicast_UpdateDirectionalLightRotation(NewRotation);
+	UE_LOG(LogTemp, Warning, TEXT("[Server RPC] Received rotation update: Pitch=%f"), NewRotation.Pitch);
+
+	// [서버] DirectionalLight 찾기
+	TArray<AActor*> FoundLights;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADirectionalLight::StaticClass(), FoundLights);
+
+	if (FoundLights.Num() > 0)
+	{
+		if (ADirectionalLight* Light = Cast<ADirectionalLight>(FoundLights[0]))
+		{
+			// Mobility 설정
+			if (UDirectionalLightComponent* LightComp = Light->FindComponentByClass<UDirectionalLightComponent>())
+			{
+				if (LightComp->Mobility != EComponentMobility::Movable)
+				{
+					LightComp->SetMobility(EComponentMobility::Movable);
+					UE_LOG(LogTemp, Warning, TEXT("[Server] Set DirectionalLight Mobility to Movable"));
+				}
+			}
+
+			// 서버에서 회전 적용
+			Light->SetActorRotation(NewRotation);
+			UE_LOG(LogTemp, Warning, TEXT("[Server] DirectionalLight rotation updated: Pitch=%f"), NewRotation.Pitch);
+
+			// EditSyncComponent가 있으면 복제 사용, 없으면 Multicast 사용
+			if (UEditSyncComponent* SyncComp = Light->FindComponentByClass<UEditSyncComponent>())
+			{
+				// Replicated Property 설정 (자동으로 모든 클라이언트에 복제됨)
+				SyncComp->ReplicatedLightRotation = NewRotation;
+
+				// 서버는 OnRep가 자동 호출되지 않으므로 수동 호출
+				SyncComp->OnRep_LightRotation();
+
+				UE_LOG(LogTemp, Warning, TEXT("[Server] Light rotation replicated via EditSyncComponent"));
+			}
+			else
+			{
+				// EditSyncComponent가 없으면 직접 Multicast로 복제
+				Multicast_UpdateDirectionalLightRotation(NewRotation);
+				UE_LOG(LogTemp, Warning, TEXT("[Server] Light rotation replicated via Multicast (no EditSyncComponent)"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[Server] Failed to cast to DirectionalLight"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Server] No DirectionalLight found in world!"));
+	}
 }
 
 void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[Multicast] Received rotation update: Pitch=%f"), NewRotation.Pitch);
+
 	// 모든 클라이언트에서 DirectionalLight 회전 업데이트
 	TArray<AActor*> FoundLights;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADirectionalLight::StaticClass(), FoundLights);
@@ -190,7 +288,21 @@ void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Impl
 	{
 		if (ADirectionalLight* Light = Cast<ADirectionalLight>(FoundLights[0]))
 		{
+			// Mobility 설정
+			if (UDirectionalLightComponent* LightComp = Light->FindComponentByClass<UDirectionalLightComponent>())
+			{
+				if (LightComp->Mobility != EComponentMobility::Movable)
+				{
+					LightComp->SetMobility(EComponentMobility::Movable);
+				}
+			}
+
+			// 회전 적용
 			Light->SetActorRotation(NewRotation);
+			UE_LOG(LogTemp, Warning, TEXT("[Multicast] Light rotation applied: Pitch=%f"), NewRotation.Pitch);
+
+			// UI 업데이트는 EditSyncComponent의 OnLightRotationChanged 델리게이트를 통해 자동 처리됨
+			// ViewportWidget이 델리게이트를 구독하여 OnLightRotationReplicated 콜백 실행
 		}
 	}
 }

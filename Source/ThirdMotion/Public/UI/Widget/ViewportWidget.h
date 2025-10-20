@@ -27,11 +27,16 @@ protected:
 	void OnLightSliderValueChanged(float Value);
 
 private:
+	// 이전 라이트 회전값 (변경 감지용)
+	FRotator LastLightRotation;
+
+	// DirectionalLight 참조
+	UPROPERTY(BlueprintReadWrite)
+	class ADirectionalLight* DirectionalLight;
+	
 	TSharedPtr<class SOverlay> RootWidget;
 	TSharedPtr<class SViewport> ViewportWidget;
 	TSharedPtr<class FSceneViewport> SceneViewport;
 
-	// DirectionalLight 참조
-	UPROPERTY()
-	class ADirectionalLight* DirectionalLight;
+	
 };

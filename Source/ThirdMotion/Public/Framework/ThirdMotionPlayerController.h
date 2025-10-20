@@ -40,6 +40,10 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> MainWidgetClass;
 
+	// 로딩 화면 위젯 클래스
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> LoadingWidgetClass;
+
 	/* Enhanced Input */
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
@@ -67,12 +71,18 @@ private:
 	
 
 	/* 메인 오버레이 위젯 */
-	
+
 	UPROPERTY()
 	UMainWidget* MainWidget;
 
 	UPROPERTY()
+	UUserWidget* LoadingWidget;
+
+	UPROPERTY()
 	ULibraryWidgetController* LibraryWidgetController;
+
+	// 로딩 완료 후 메인 위젯 표시
+	void ShowMainWidget();
 
 	// 미리보기 활성화 상태
 	bool bPlacing = false;

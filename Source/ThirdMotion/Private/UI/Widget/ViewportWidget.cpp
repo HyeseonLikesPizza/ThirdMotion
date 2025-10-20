@@ -11,6 +11,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Framework/ThirdMotionPlayerController.h"
+#include "Edit/EditSyncComponent.h"
 
 /*
 TSharedRef<SWidget> UViewportWidget::RebuildWidget()
@@ -56,6 +57,27 @@ void UViewportWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
+	// DirectionalLight의 회전 변경 감지 (네트워크 동기화)
+	if (DirectionalLight && Slider_Light)
+	{
+		FRotator CurrentRotation = DirectionalLight->GetActorRotation();
+
+		// 회전값이 변경되었는지 확인 (약간의 허용 오차)
+		if (!CurrentRotation.Equals(LastLightRotation, 0.1f))
+		{
+			// 슬라이더 업데이트
+			float NormalizedValue = (CurrentRotation.Pitch + 90.0f) / 180.0f;
+
+			// 무한 루프 방지: OnValueChanged 콜백을 일시적으로 해제
+			Slider_Light->OnValueChanged.RemoveDynamic(this, &UViewportWidget::OnLightSliderValueChanged);
+			Slider_Light->SetValue(NormalizedValue);
+			Slider_Light->OnValueChanged.AddDynamic(this, &UViewportWidget::OnLightSliderValueChanged);
+
+			// 마지막 회전값 업데이트
+			LastLightRotation = CurrentRotation;
+		}
+	}
+
 	// SceneViewport가 매 프레임 업데이트되도록 강제
 	/*if (SceneViewport.IsValid())
 	{
@@ -91,6 +113,18 @@ void UViewportWidget::NativeConstruct()
 	if (FoundLights.Num() > 0)
 	{
 		DirectionalLight = Cast<ADirectionalLight>(FoundLights[0]);
+
+		// Mobility를 Movable로 설정 (런타임 회전 가능하도록)
+		if (DirectionalLight)
+		{
+			if (UDirectionalLightComponent* LightComp = DirectionalLight->FindComponentByClass<UDirectionalLightComponent>())
+			{
+				LightComp->SetMobility(EComponentMobility::Movable);
+			}
+
+			// 초기 회전값 저장 (NativeTick에서 변경 감지용)
+			LastLightRotation = DirectionalLight->GetActorRotation();
+		}
 	}
 
 	// Slider_Light 콜백 바인딩
@@ -117,6 +151,7 @@ void UViewportWidget::OnLightSliderValueChanged(float Value)
 {
 	if (!DirectionalLight)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[ViewportWidget] DirectionalLight is null!"));
 		return;
 	}
 
@@ -126,12 +161,17 @@ void UViewportWidget::OnLightSliderValueChanged(float Value)
 	FRotator NewRotation = DirectionalLight->GetActorRotation();
 	NewRotation.Pitch = Pitch;
 
-	// 로컬에서 즉시 적용
-	DirectionalLight->SetActorRotation(NewRotation);
+	UE_LOG(LogTemp, Warning, TEXT("[ViewportWidget] Slider changed to Pitch: %f"), Pitch);
 
-	// 네트워크 동기화 - PlayerController를 통해 서버에 전송
+	// 서버에게 회전 업데이트 요청 (RPC)
 	if (AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetOwningPlayer()))
 	{
 		PC->Server_UpdateDirectionalLightRotation(NewRotation);
+		UE_LOG(LogTemp, Warning, TEXT("[ViewportWidget] RPC sent to server"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[ViewportWidget] PlayerController is null!"));
 	}
 }
+
