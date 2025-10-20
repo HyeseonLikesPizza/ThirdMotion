@@ -14,8 +14,8 @@ void ULibraryCategoryWidget::NativeConstruct()
 
 void ULibraryCategoryWidget::SetController(ULibraryWidgetController* InController)
 {
+	if (!InController) return;
 	Controller = InController;
-	Controller->
 }
 
 void ULibraryCategoryWidget::SetFromTag(FGameplayTag InTag)

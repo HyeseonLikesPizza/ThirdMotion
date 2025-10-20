@@ -20,7 +20,7 @@ void ULibraryPanel::Init(ULibraryWidgetController* Controller)
 {
 	WidgetController = Controller;
 	ShowCategories(FGameplayTag::RequestGameplayTag(TEXT("Category")));
-	CategoryWidget->SetController(Controller);
+	//CategoryWidget->SetController(Controller);
 }
 
 void ULibraryPanel::ShowPreset(FGameplayTag Category)
