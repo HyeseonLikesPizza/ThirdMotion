@@ -33,6 +33,7 @@ void UEditSyncComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 	DOREPLIFETIME_CONDITION(UEditSyncComponent, R_Meta, COND_InitialOnly);
 	DOREPLIFETIME(UEditSyncComponent, R_PropsAppliedHistory);
+	
 }
 
 

@@ -1,8 +1,6 @@
 #include "UI/Widget/ViewportWidget.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
-#include "Slate/SceneViewport.h"
-#include "Widgets/SViewport.h"
 #include "Widgets/SOverlay.h"
 #include "Engine/LocalPlayer.h"
 #include "Framework/Application/SlateApplication.h"
@@ -11,7 +9,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Framework/ThirdMotionPlayerController.h"
-#include "Edit/EditSyncComponent.h"
+#include "Net/UnrealNetwork.h"
 
 /*
 TSharedRef<SWidget> UViewportWidget::RebuildWidget()
@@ -147,11 +145,27 @@ void UViewportWidget::NativeConstruct()
 	}
 }
 
+void UViewportWidget::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UViewportWidget, ReplicatedLightRotation);
+	
+}
+
+
+void UViewportWidget::OnRep_LightRotation()
+{
+	DirectionalLight->SetActorRotation(ReplicatedLightRotation);
+	
+}
+
+
+
 void UViewportWidget::OnLightSliderValueChanged(float Value)
 {
 	if (!DirectionalLight)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[ViewportWidget] DirectionalLight is null!"));
 		return;
 	}
 
@@ -161,17 +175,14 @@ void UViewportWidget::OnLightSliderValueChanged(float Value)
 	FRotator NewRotation = DirectionalLight->GetActorRotation();
 	NewRotation.Pitch = Pitch;
 
-	UE_LOG(LogTemp, Warning, TEXT("[ViewportWidget] Slider changed to Pitch: %f"), Pitch);
 
 	// 서버에게 회전 업데이트 요청 (RPC)
 	if (AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetOwningPlayer()))
 	{
 		PC->Server_UpdateDirectionalLightRotation(NewRotation);
-		UE_LOG(LogTemp, Warning, TEXT("[ViewportWidget] RPC sent to server"));
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("[ViewportWidget] PlayerController is null!"));
 	}
 }
-

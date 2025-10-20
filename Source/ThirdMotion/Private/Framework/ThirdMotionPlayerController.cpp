@@ -224,7 +224,6 @@ void AThirdMotionPlayerController::Server_RequestSpawnByTag_Implementation(FGame
 
 void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
 {
-	UE_LOG(LogTemp, Warning, TEXT("[Server RPC] Received rotation update: Pitch=%f"), NewRotation.Pitch);
 
 	// [서버] DirectionalLight 찾기
 	TArray<AActor*> FoundLights;
@@ -240,30 +239,24 @@ void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Impleme
 				if (LightComp->Mobility != EComponentMobility::Movable)
 				{
 					LightComp->SetMobility(EComponentMobility::Movable);
-					UE_LOG(LogTemp, Warning, TEXT("[Server] Set DirectionalLight Mobility to Movable"));
 				}
 			}
 
 			// 서버에서 회전 적용
 			Light->SetActorRotation(NewRotation);
-			UE_LOG(LogTemp, Warning, TEXT("[Server] DirectionalLight rotation updated: Pitch=%f"), NewRotation.Pitch);
 
-			// EditSyncComponent가 있으면 복제 사용, 없으면 Multicast 사용
-			if (UEditSyncComponent* SyncComp = Light->FindComponentByClass<UEditSyncComponent>())
+			if (UViewportWidget* Viewport = Light->FindComponentByClass<UViewportWidget>())
 			{
 				// Replicated Property 설정 (자동으로 모든 클라이언트에 복제됨)
-				SyncComp->ReplicatedLightRotation = NewRotation;
+				Viewport->ReplicatedLightRotation = NewRotation;
 
 				// 서버는 OnRep가 자동 호출되지 않으므로 수동 호출
-				SyncComp->OnRep_LightRotation();
+				Viewport->OnRep_LightRotation();
 
-				UE_LOG(LogTemp, Warning, TEXT("[Server] Light rotation replicated via EditSyncComponent"));
 			}
 			else
 			{
-				// EditSyncComponent가 없으면 직접 Multicast로 복제
 				Multicast_UpdateDirectionalLightRotation(NewRotation);
-				UE_LOG(LogTemp, Warning, TEXT("[Server] Light rotation replicated via Multicast (no EditSyncComponent)"));
 			}
 		}
 		else
@@ -279,7 +272,6 @@ void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Impleme
 
 void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
 {
-	UE_LOG(LogTemp, Warning, TEXT("[Multicast] Received rotation update: Pitch=%f"), NewRotation.Pitch);
 
 	// 모든 클라이언트에서 DirectionalLight 회전 업데이트
 	TArray<AActor*> FoundLights;
@@ -300,7 +292,6 @@ void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Impl
 
 			// 회전 적용
 			Light->SetActorRotation(NewRotation);
-			UE_LOG(LogTemp, Warning, TEXT("[Multicast] Light rotation applied: Pitch=%f"), NewRotation.Pitch);
 
 			// UI 업데이트는 EditSyncComponent의 OnLightRotationChanged 델리게이트를 통해 자동 처리됨
 			// ViewportWidget이 델리게이트를 구독하여 OnLightRotationReplicated 콜백 실행

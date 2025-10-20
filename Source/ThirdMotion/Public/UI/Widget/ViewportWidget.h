@@ -15,8 +15,7 @@ public:
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 	virtual void NativeConstruct() override;
 
-protected:
-	//virtual TSharedRef<SWidget> RebuildWidget() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	// Slider_Light 바인딩
 	UPROPERTY(meta = (BindWidget))
@@ -31,6 +30,13 @@ protected:
 	class ADirectionalLight* DirectionalLight;
 	// 이전 라이트 회전값 (변경 감지용)
 	FRotator LastLightRotation;
+
+	// DirectionalLight 회전 동기화
+	UPROPERTY(ReplicatedUsing=OnRep_LightRotation)
+	FRotator ReplicatedLightRotation;
+
+	UFUNCTION()
+	void OnRep_LightRotation();
 
 private:
 	
