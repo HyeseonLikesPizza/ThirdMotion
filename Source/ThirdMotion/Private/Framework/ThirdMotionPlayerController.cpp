@@ -119,7 +119,9 @@ void AThirdMotionPlayerController::OnClick()
 	// 프리뷰 고스트가 켜진 상태일 때
 	if (bPlacing)
 	{
+		StopPlacement(true);
 		Server_RequestSpawnByTag(CurrentPreset, LastPreviewXf);
+		//LibraryWidgetController->CommitSpawn(CurrentPreset, LastPreviewXf);
 	}
 	else // 일반 상태일 때
 	{

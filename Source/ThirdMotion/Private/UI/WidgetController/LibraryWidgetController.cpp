@@ -67,6 +67,7 @@ void ULibraryWidgetController::BeginPreview(const FGameplayTag& PresetTag)
 
 void ULibraryWidgetController::UpdatePreviewTransform(const FTransform& Xf)
 {
+	if (!PreviewGhost.IsValid()) return;
 	PreviewGhost->SetActorTransform(Xf, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
