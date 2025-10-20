@@ -86,7 +86,7 @@ void AThirdMotionPlayerController::SetupInputComponent()
 
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		EIC->BindAction(IA_Click, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::OnClick);
+		EIC->BindAction(IA_Click, ETriggerEvent::Started, this, &AThirdMotionPlayerController::OnClick);
 	}
 	
 }
@@ -116,9 +116,11 @@ void AThirdMotionPlayerController::OnClick()
 	if (bPlacing)
 	{
 		Server_RequestSpawnByTag(CurrentPreset, LastPreviewXf);
-	} // 일반 상태일 때
-	else
+	}
+	else // 일반 상태일 때
 	{
+		if (bGizmoShowed) return;
+		PRINTLOG(TEXT("SelectUnderCursor"));
 		SelectUnderCursor();
 	}
 }
@@ -132,7 +134,7 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 		AActor* NewSel = Hit.GetActor();
 
 		// 기존 하이라이트 끄기
-		if (IsValid(SelectedActor))
+		if (!bGizmoShowed && IsValid(SelectedActor))
 			if (auto* H = SelectedActor->FindComponentByClass<UHighlightComponent>())
 				H->EnableHighlight(false);
 

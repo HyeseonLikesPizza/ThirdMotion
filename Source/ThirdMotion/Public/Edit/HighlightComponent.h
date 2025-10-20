@@ -13,6 +13,8 @@ class THIRDMOTION_API UHighlightComponent : public UActorComponent
 
 public:
 	UHighlightComponent();
+
+	UFUNCTION(BlueprintCallable)
 	void EnableHighlight(bool bEnable);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Highlight", meta=(ClampMin="0", ClampMax="255"))
