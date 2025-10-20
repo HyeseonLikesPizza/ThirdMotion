@@ -252,10 +252,10 @@ void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Impleme
 			if (UEditSyncComponent* SyncComp = Light->FindComponentByClass<UEditSyncComponent>())
 			{
 				// Replicated Property 설정 (자동으로 모든 클라이언트에 복제됨)
-				SyncComp->ReplicatedLightRotation = NewRotation;
+				//SyncComp->ReplicatedLightRotation = NewRotation;
 
 				// 서버는 OnRep가 자동 호출되지 않으므로 수동 호출
-				SyncComp->OnRep_LightRotation();
+				//SyncComp->OnRep_LightRotation();
 
 				UE_LOG(LogTemp, Warning, TEXT("[Server] Light rotation replicated via EditSyncComponent"));
 			}
