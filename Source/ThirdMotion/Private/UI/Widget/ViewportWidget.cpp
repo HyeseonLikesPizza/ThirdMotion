@@ -145,19 +145,34 @@ void UViewportWidget::NativeConstruct()
 	}
 }
 
-void UViewportWidget::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(UViewportWidget, ReplicatedLightRotation);
-	
-}
+// ViewportWidget은 UUserWidget이므로 자동 복제되지 않음
+// Multicast에서 수동으로 ReplicatedLightRotation 설정하고 OnRep 호출
 
 
 void UViewportWidget::OnRep_LightRotation()
 {
-	DirectionalLight->SetActorRotation(ReplicatedLightRotation);
-	
+	// 라이트 회전 적용
+	if (DirectionalLight)
+	{
+		DirectionalLight->SetActorRotation(ReplicatedLightRotation);
+	}
+
+	// 슬라이더 업데이트
+	if (Slider_Light)
+	{
+		// 각도 (-90 ~ 90)를 Slider 값 (0.0 ~ 1.0)으로 변환
+		float NormalizedValue = (ReplicatedLightRotation.Pitch + 90.0f) / 180.0f;
+
+		// 무한 루프 방지: OnValueChanged 콜백을 일시적으로 해제
+		Slider_Light->OnValueChanged.RemoveDynamic(this, &UViewportWidget::OnLightSliderValueChanged);
+		Slider_Light->SetValue(NormalizedValue);
+		Slider_Light->OnValueChanged.AddDynamic(this, &UViewportWidget::OnLightSliderValueChanged);
+
+		// 마지막 회전값 업데이트
+		LastLightRotation = ReplicatedLightRotation;
+
+		UE_LOG(LogTemp, Warning, TEXT("[ViewportWidget] OnRep_LightRotation: Slider updated to %f"), NormalizedValue);
+	}
 }
 
 

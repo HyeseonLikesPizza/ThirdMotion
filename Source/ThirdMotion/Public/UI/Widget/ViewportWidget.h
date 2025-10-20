@@ -15,8 +15,6 @@ public:
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 	virtual void NativeConstruct() override;
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	// Slider_Light 바인딩
 	UPROPERTY(meta = (BindWidget))
 	class USlider* Slider_Light;
@@ -28,14 +26,14 @@ public:
 	// DirectionalLight 참조
 	UPROPERTY(BlueprintReadWrite)
 	class ADirectionalLight* DirectionalLight;
+
 	// 이전 라이트 회전값 (변경 감지용)
 	FRotator LastLightRotation;
 
-	// DirectionalLight 회전 동기화
-	UPROPERTY(ReplicatedUsing=OnRep_LightRotation)
+	// DirectionalLight 회전 동기화 (Multicast에서 수동 설정)
 	FRotator ReplicatedLightRotation;
 
-	UFUNCTION()
+	// 슬라이더 업데이트 함수 (Multicast에서 수동 호출)
 	void OnRep_LightRotation();
 
 private:
