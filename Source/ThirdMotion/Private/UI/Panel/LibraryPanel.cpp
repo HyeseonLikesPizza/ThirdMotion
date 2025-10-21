@@ -18,6 +18,7 @@ void ULibraryPanel::NativeConstruct()
 
 void ULibraryPanel::Init(ULibraryWidgetController* Controller)
 {
+	if (!Controller) return;
 	WidgetController = Controller;
 	ShowCategories(FGameplayTag::RequestGameplayTag(TEXT("Category")));
 	//CategoryWidget->SetController(Controller);
