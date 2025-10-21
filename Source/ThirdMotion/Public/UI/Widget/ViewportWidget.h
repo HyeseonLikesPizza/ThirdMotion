@@ -15,9 +15,6 @@ public:
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 	virtual void NativeConstruct() override;
 
-protected:
-	//virtual TSharedRef<SWidget> RebuildWidget() override;
-
 	// Slider_Light 바인딩
 	UPROPERTY(meta = (BindWidget))
 	class USlider* Slider_Light;
@@ -26,12 +23,24 @@ protected:
 	UFUNCTION()
 	void OnLightSliderValueChanged(float Value);
 
+	// DirectionalLight 참조
+	UPROPERTY(BlueprintReadWrite)
+	class ADirectionalLight* DirectionalLight;
+
+	// 이전 라이트 회전값 (변경 감지용)
+	FRotator LastLightRotation;
+
+	// DirectionalLight 회전 동기화 (Multicast에서 수동 설정)
+	FRotator ReplicatedLightRotation;
+
+	// 슬라이더 업데이트 함수 (Multicast에서 수동 호출)
+	void OnRep_LightRotation();
+
 private:
+	
 	TSharedPtr<class SOverlay> RootWidget;
 	TSharedPtr<class SViewport> ViewportWidget;
 	TSharedPtr<class FSceneViewport> SceneViewport;
 
-	// DirectionalLight 참조
-	UPROPERTY()
-	class ADirectionalLight* DirectionalLight;
+	
 };

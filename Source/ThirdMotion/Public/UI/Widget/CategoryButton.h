@@ -14,7 +14,7 @@ class THIRDMOTION_API UCategoryButton : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget), BlueprintReadWrite)
 	class UTextBlock* LabelText;
 
 	UPROPERTY(meta = (BindWidget))
@@ -33,6 +33,15 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="Category")
 	FOnCategoryClicked OnCategoryClicked;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Style")
+	FLinearColor ActiveColor = FLinearColor(0.30f, 0.64f, 1.0f);      // 파랑
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Style")
+	FLinearColor NormalColor = FLinearColor(0.85f, 0.85f, 0.85f);     // 회색
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Style")
+	FLinearColor LibraryColor = FLinearColor(1.f, 1.f, 1.f);     // 회색
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetText(const FText& InText);
@@ -42,8 +51,5 @@ public:
 
 private:
 	UFUNCTION()
-	void HandleClicked()
-	{
-		OnCategoryClicked.Broadcast(CategoryTag);
-	}
+	void HandleClicked();
 };

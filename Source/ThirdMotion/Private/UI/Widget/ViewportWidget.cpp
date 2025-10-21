@@ -1,8 +1,6 @@
 #include "UI/Widget/ViewportWidget.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
-#include "Slate/SceneViewport.h"
-#include "Widgets/SViewport.h"
 #include "Widgets/SOverlay.h"
 #include "Engine/LocalPlayer.h"
 #include "Framework/Application/SlateApplication.h"
@@ -11,6 +9,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Framework/ThirdMotionPlayerController.h"
+#include "Net/UnrealNetwork.h"
 
 /*
 TSharedRef<SWidget> UViewportWidget::RebuildWidget()
@@ -56,6 +55,9 @@ void UViewportWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
+	// 네트워크 동기화는 OnRep_LightRotation에서 처리
+	// NativeTick에서는 별도 처리 불필요
+
 	// SceneViewport가 매 프레임 업데이트되도록 강제
 	/*if (SceneViewport.IsValid())
 	{
@@ -91,6 +93,18 @@ void UViewportWidget::NativeConstruct()
 	if (FoundLights.Num() > 0)
 	{
 		DirectionalLight = Cast<ADirectionalLight>(FoundLights[0]);
+
+		// Mobility를 Movable로 설정 (런타임 회전 가능하도록)
+		if (DirectionalLight)
+		{
+			if (UDirectionalLightComponent* LightComp = DirectionalLight->FindComponentByClass<UDirectionalLightComponent>())
+			{
+				LightComp->SetMobility(EComponentMobility::Movable);
+			}
+
+			// 초기 회전값 저장 (NativeTick에서 변경 감지용)
+			LastLightRotation = DirectionalLight->GetActorRotation();
+		}
 	}
 
 	// Slider_Light 콜백 바인딩
@@ -113,6 +127,39 @@ void UViewportWidget::NativeConstruct()
 	}
 }
 
+// ViewportWidget은 UUserWidget이므로 자동 복제되지 않음
+// Multicast에서 수동으로 ReplicatedLightRotation 설정하고 OnRep 호출
+
+
+// NetActor 패턴: 클라이언트에서는 자동 호출, 서버(Listen Server)에서는 수동 호출
+void UViewportWidget::OnRep_LightRotation()
+{
+
+	// 라이트 회전 적용 (이미 Multicast에서 적용되었지만 안전을 위해)
+	if (DirectionalLight)
+	{
+		DirectionalLight->SetActorRotation(ReplicatedLightRotation);
+	}
+
+	// 슬라이더 업데이트 (가장 중요!)
+	if (Slider_Light)
+	{
+		// 각도 (-90 ~ 90)를 Slider 값 (0.0 ~ 1.0)으로 변환
+		float NormalizedValue = (ReplicatedLightRotation.Pitch + 90.0f) / 180.0f;
+
+		// 무한 루프 방지: OnValueChanged 콜백을 일시적으로 해제
+		Slider_Light->OnValueChanged.RemoveDynamic(this, &UViewportWidget::OnLightSliderValueChanged);
+		Slider_Light->SetValue(NormalizedValue);
+		Slider_Light->OnValueChanged.AddDynamic(this, &UViewportWidget::OnLightSliderValueChanged);
+
+		// 마지막 회전값 업데이트
+		LastLightRotation = ReplicatedLightRotation;
+
+	}
+}
+
+
+
 void UViewportWidget::OnLightSliderValueChanged(float Value)
 {
 	if (!DirectionalLight)
@@ -126,12 +173,14 @@ void UViewportWidget::OnLightSliderValueChanged(float Value)
 	FRotator NewRotation = DirectionalLight->GetActorRotation();
 	NewRotation.Pitch = Pitch;
 
-	// 로컬에서 즉시 적용
-	DirectionalLight->SetActorRotation(NewRotation);
 
-	// 네트워크 동기화 - PlayerController를 통해 서버에 전송
+	// 서버에게 회전 업데이트 요청 (RPC)
 	if (AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetOwningPlayer()))
 	{
 		PC->Server_UpdateDirectionalLightRotation(NewRotation);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[ViewportWidget] PlayerController is null!"));
 	}
 }

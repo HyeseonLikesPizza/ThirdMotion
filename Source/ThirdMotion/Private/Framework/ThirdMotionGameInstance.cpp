@@ -29,14 +29,7 @@ void UThirdMotionGameInstance::BeginLoadingScreen(const FString& MapName)
 	Attr.bWaitForManualStop = false; // 수동 종료 여부
 
 	// mainMap 레벨로 전환할 때 특정 로딩 이미지 표시
-	if (MapName.Contains(TEXT("mainMap")))
-	{
-		Attr.MoviePaths = { TEXT("/Script/Engine.Texture2D'/Game/Assets/cej/Loading.Loading'") };
-	}
-	else
-	{
-		Attr.MoviePaths = { TEXT("Loading") };
-	}
+	Attr.MoviePaths = { TEXT("Loading") };
 
 	GetMoviePlayer()->SetupLoadingScreen(Attr);
 	GetMoviePlayer()->PlayMovie();

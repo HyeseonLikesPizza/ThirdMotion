@@ -9,7 +9,7 @@
 void ULibraryCategoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	Rebuild();
+	SetFromTag(FGameplayTag::RequestGameplayTag(FName("Library")));
 }
 
 void ULibraryCategoryWidget::SetController(ULibraryWidgetController* InController)
@@ -80,6 +80,9 @@ void ULibraryCategoryWidget::Rebuild()
 		if (i != Last)
 		{
 			UTextBlock* Sep = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
+			FSlateFontInfo Info = Sep->Font; // 또는 Sep->GetFont() (버전에 따라)
+			Info.Size = 12.f;
+			Sep->SetFont(Info);
 			Sep->SetText(FText::FromString(SeparatorSymbol));
 			Sep->SetColorAndOpacity(FSlateColor(SeparatorColor));
 			BreadcrumbBox->AddChildToHorizontalBox(Sep);
@@ -90,7 +93,9 @@ void ULibraryCategoryWidget::Rebuild()
 
 void ULibraryCategoryWidget::AddCrumb(const FGameplayTag& Tag, const FString& Title, bool bActive)
 {
-	UCategoryButton* Btn = WidgetTree->ConstructWidget<UCategoryButton>(UCategoryButton::StaticClass());
+	if (!CategoryBtnClass) return;
+	
+	UCategoryButton* Btn = WidgetTree->ConstructWidget<UCategoryButton>(CategoryBtnClass);
 	Btn->CategoryTag = Tag;
 	Btn->SetText(FText::FromString(Title));
 	Btn->SetActive(bActive);
@@ -101,5 +106,9 @@ void ULibraryCategoryWidget::AddCrumb(const FGameplayTag& Tag, const FString& Ti
 
 void ULibraryCategoryWidget::HandleCrumbClicked(FGameplayTag Tag)
 {
-	
+	// 외부 알림
+	OnCrumbChosen.Broadcast(Tag);
+
+	// 현재 경로를 선택된 태그로 갱신
+	SetFromTag(Tag);
 }

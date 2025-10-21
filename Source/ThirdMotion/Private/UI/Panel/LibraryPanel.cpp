@@ -14,12 +14,14 @@ void ULibraryPanel::NativeConstruct()
 	Super::NativeConstruct();
 	
 	TileView->OnEntryWidgetGenerated().AddUObject(this, &ULibraryPanel::HandleEntryGenerated);
+	CategoryWidget->OnCrumbChosen.AddDynamic(this, &ULibraryPanel::OnCategoryChosen);
 }
 
 void ULibraryPanel::Init(ULibraryWidgetController* Controller)
 {
+	if (!Controller) return;
 	WidgetController = Controller;
-	ShowCategories(FGameplayTag::RequestGameplayTag(TEXT("Category")));
+	ShowCategories(FGameplayTag::RequestGameplayTag(TEXT("Library")));
 	//CategoryWidget->SetController(Controller);
 }
 
@@ -52,6 +54,7 @@ void ULibraryPanel::ShowCategories(FGameplayTag Category)
 	{
 		AsObj.Add(I);
 	}
+	CategoryWidget->SetFromTag(Category);
 	RebuildTileView(AsObj);
 }
 
@@ -87,4 +90,10 @@ void ULibraryPanel::RebuildTileView(const TArray<UObject*>& Items)
 		TileView->AddItem(Obj);
 	}
 	TileView->RequestRefresh();
+}
+
+void ULibraryPanel::OnCategoryChosen(FGameplayTag Tag)
+{
+	CurrentCategoryTag = Tag;
+	ShowCategories(Tag);
 }
