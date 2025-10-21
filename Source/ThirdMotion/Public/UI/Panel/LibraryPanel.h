@@ -40,8 +40,13 @@ private:
 	void HandleItemClicked(ULibraryItemObject* Item);
 
 	void HandleEntryGenerated(UUserWidget& EntryWidget);
-
 	void ShowPreset(FGameplayTag Category);
 	void ShowCategories(FGameplayTag Category);
 	void RebuildTileView(const TArray<UObject*>& Items);
+
+	/* Delegate 처리 */
+	UFUNCTION()
+	void OnCategoryChosen(FGameplayTag Tag);
+
+	FGameplayTag CurrentCategoryTag;
 };

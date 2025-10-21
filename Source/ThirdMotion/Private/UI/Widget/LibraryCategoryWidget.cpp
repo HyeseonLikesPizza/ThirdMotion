@@ -9,7 +9,7 @@
 void ULibraryCategoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	Rebuild();
+	SetFromTag(FGameplayTag::RequestGameplayTag(FName("Category")));
 }
 
 void ULibraryCategoryWidget::SetController(ULibraryWidgetController* InController)
