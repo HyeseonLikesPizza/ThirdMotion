@@ -101,5 +101,9 @@ void ULibraryCategoryWidget::AddCrumb(const FGameplayTag& Tag, const FString& Ti
 
 void ULibraryCategoryWidget::HandleCrumbClicked(FGameplayTag Tag)
 {
-	// 
+	// 외부 알림
+	OnCrumbChosen.Broadcast(Tag);
+
+	// 현재 경로를 선택된 태그로 갱신
+	SetFromTag(Tag);
 }
