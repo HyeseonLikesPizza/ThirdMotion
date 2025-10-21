@@ -48,6 +48,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="Breadcrumb")
 	FOnCrumbChosen OnCrumbChosen;
 
+	/* Category Button 클래스 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Category")
+	TSubclassOf<UCategoryButton> CategoryBtnClass;
+
 public:
 	
 	/** 외부에서 현재 경로를 태그로 지정 */
