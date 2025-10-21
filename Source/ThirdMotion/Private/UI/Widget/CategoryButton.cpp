@@ -7,14 +7,23 @@ void UCategoryButton::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Button->OnClicked.Clear();
-	Button->OnClicked.AddDynamic(this, &UCategoryButton::HandleClicked);
+	if (Button)
+	{
+		Button->OnClicked.Clear();
+		Button->OnClicked.AddDynamic(this, &UCategoryButton::HandleClicked);
+	}
+	
 
 	if (LabelText)
 	{
 		LabelText->SetColorAndOpacity(
-			bIsActive ? FSlateColor(FLinearColor(0.3f, 0.64f, 1.0f))
-				: FSlateColor(FLinearColor(0.85f, 0.85f, 0.85f)));
+			bIsActive ? FSlateColor(ActiveColor)
+				: FSlateColor(NormalColor));
+
+		if (LabelText->GetText().EqualTo(FText::FromString(FString("Library"))))
+		{
+			LabelText->SetColorAndOpacity(FSlateColor(LibraryColor));
+		}
 	}
 
 	SetIsEnabled(!bIsActive);
@@ -33,9 +42,14 @@ void UCategoryButton::SetActive(bool bNewActive)
 	{
 		LabelText->SetColorAndOpacity(
 			bIsActive
-			? FSlateColor(FLinearColor(0.3f, 0.64f, 1.0f))
-			: FSlateColor(FLinearColor(0.85f, 0.85f, 0.85f))
+			? FSlateColor(ActiveColor)
+			: FSlateColor(NormalColor)
 		);
 	}
 	SetIsEnabled(!bIsActive);
+}
+
+void UCategoryButton::HandleClicked()
+{
+	OnCategoryClicked.Broadcast(CategoryTag);
 }

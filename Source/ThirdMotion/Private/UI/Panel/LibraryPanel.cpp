@@ -21,7 +21,7 @@ void ULibraryPanel::Init(ULibraryWidgetController* Controller)
 {
 	if (!Controller) return;
 	WidgetController = Controller;
-	ShowCategories(FGameplayTag::RequestGameplayTag(TEXT("Category")));
+	ShowCategories(FGameplayTag::RequestGameplayTag(TEXT("Library")));
 	//CategoryWidget->SetController(Controller);
 }
 
@@ -54,6 +54,7 @@ void ULibraryPanel::ShowCategories(FGameplayTag Category)
 	{
 		AsObj.Add(I);
 	}
+	CategoryWidget->SetFromTag(Category);
 	RebuildTileView(AsObj);
 }
 
