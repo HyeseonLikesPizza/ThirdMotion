@@ -1,0 +1,1 @@
+"C:\Program Files\Epic Games\UE_5.6\Engine\Binaries\Win64\UnrealEditor.exe" "C:\Users\user\Desktop\Fork\ThirdMotion_share\ThirdMotion.uproject" -game -log -ExecCmds="r.SetRes 1920x1080w"  -WinX=10 -WinY=100
