@@ -9,9 +9,14 @@
 #include "TopBar.generated.h"
 
 class USaveGameManager;
+class UFileWidget;
+class UFileController;
+class UFileDataModel;
+class UTopBarController;
+class UCanvasPanel;
 
 /**
- * Top Bar - Contains menu buttons including Save/Load functionality
+ * Top Bar - Contains file menu and other top-level controls
  */
 UCLASS()
 class THIRDMOTION_API UTopBar : public UBaseWidget
@@ -22,64 +27,53 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-	// Widget Components
+	// File button - Toggle file menu dropdown
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UButton* SaveButton;
+	UButton* FileButton;
 
+	// CanvasPanelFile - File menu dropdown container
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UButton* LoadButton;
+	UCanvasPanel* CanvasPanelFile;
 
+	// FileWidget - File menu panel (inside CanvasPanelFile)
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UButton* SaveAsButton;
+	UFileWidget* FileWidget;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UButton* QuickSaveButton;
+	// Toggle file menu visibility (DEPRECATED - use controller)
+	UFUNCTION(BlueprintCallable, Category = "TopBar")
+	void ToggleFileMenu();
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UButton* QuickLoadButton;
+	// Close file menu (DEPRECATED - use controller)
+	UFUNCTION(BlueprintCallable, Category = "TopBar")
+	void CloseFileMenu();
 
-	// Optional: Text box for Save As functionality
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UEditableTextBox* SaveNameTextBox;
-
-	// Events
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveRequested, const FString&, SaveName);
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoadRequested, const FString&, SaveName);
-
-	UPROPERTY(BlueprintAssignable, Category = "TopBar Events")
-	FOnSaveRequested OnSaveRequested;
-
-	UPROPERTY(BlueprintAssignable, Category = "TopBar Events")
-	FOnLoadRequested OnLoadRequested;
+	// Get TopBar controller
+	UFUNCTION(BlueprintCallable, Category = "TopBar")
+	UTopBarController* GetTopBarController() const { return TopBarController; }
 
 protected:
-	// SaveGameManager reference
+	// TopBar Controller (manages UI state)
 	UPROPERTY()
-	USaveGameManager* SaveGameManager;
+	UTopBarController* TopBarController;
+
+	// File MVC components
+	UPROPERTY()
+	UFileController* FileController;
+
+	UPROPERTY()
+	UFileDataModel* FileDataModel;
+
+	// Setup TopBar MVC system
+	void SetupTopBarMVC();
+
+	// Setup File MVC system
+	void SetupFileMVC();
 
 	// Button click handlers
 	UFUNCTION()
-	void OnSaveClicked();
+	void OnFileButtonClicked();
 
+	// Controller event handlers (Observer Pattern)
 	UFUNCTION()
-	void OnLoadClicked();
-
-	UFUNCTION()
-	void OnSaveAsClicked();
-
-	UFUNCTION()
-	void OnQuickSaveClicked();
-
-	UFUNCTION()
-	void OnQuickLoadClicked();
-
-	// SaveGameManager event callbacks
-	UFUNCTION()
-	void OnSceneSaved(const FString& SlotName);
-
-	UFUNCTION()
-	void OnSceneLoaded(const FString& SlotName);
-
-	UFUNCTION()
-	void OnSaveError(const FString& ErrorMessage, const FString& SlotName);
+	void OnFilePanelStateChanged(bool bIsOpen);
 };
