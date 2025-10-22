@@ -9,8 +9,10 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/TextBlock.h"
+#include "Components/TileView.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
+#include "Data/MaterialThumbnailData.h"
 #include "UI/Widget/ListingMaterials.h"
 
 class UCanvasPanelSlot;
@@ -37,7 +39,8 @@ bool UMaterialGeneratePanel::Initialize()
 	MatTypeBtnArray[7]->OnClicked.AddDynamic(this,&UMaterialGeneratePanel::OnFabricBtnClicked);
 	MatTypeBtnArray[8]->OnClicked.AddDynamic(this,&UMaterialGeneratePanel::OnGlassBtnClicked);
 	MatTypeBtnArray[9]->OnClicked.AddDynamic(this,&UMaterialGeneratePanel::OnStandardBtnClicked);
-	
+
+	MaterialCreateBtn->OnClicked.AddDynamic(this, &UMaterialGeneratePanel::OnCreateMaterialBtnClicked);
 	
 	
 	// 3. 성공 반환
@@ -115,52 +118,106 @@ void UMaterialGeneratePanel::CreateMaterialTypeEnumBtns()
 void UMaterialGeneratePanel::OnTireBtnClicked()
 {
 	MaterialTypeText->SetText(FText::FromString(MatEnumPtr->GetNameStringByIndex(0)));
+	matTypeSelected = EMaterialType::Tire;
+	MaterialTypeChangePanel->SetVisibility(ESlateVisibility::Hidden);
+
 }
 
 void UMaterialGeneratePanel::OnFoliageBtnClicked()
 {
 	MaterialTypeText->SetText(FText::FromString(MatEnumPtr->GetNameStringByIndex(1)));
+	matTypeSelected = EMaterialType::Foliage;
+	MaterialTypeChangePanel->SetVisibility(ESlateVisibility::Hidden);
+
 }
 
 void UMaterialGeneratePanel::OnVideoBtnClicked()
 {
 	MaterialTypeText->SetText(FText::FromString(MatEnumPtr->GetNameStringByIndex(2)));
+	matTypeSelected = EMaterialType::Video;
+	MaterialTypeChangePanel->SetVisibility(ESlateVisibility::Hidden);
 
 }
 
 void UMaterialGeneratePanel::OnSubsurfaceBtnClicked()
 {
 	MaterialTypeText->SetText(FText::FromString(MatEnumPtr->GetNameStringByIndex(3)));
+	matTypeSelected = EMaterialType::Subsurface;
+	MaterialTypeChangePanel->SetVisibility(ESlateVisibility::Hidden);
+
 }
 
 void UMaterialGeneratePanel::OnCarPaintBtnClicked()
 {
 	MaterialTypeText->SetText(FText::FromString(MatEnumPtr->GetNameStringByIndex(4)));
+	matTypeSelected = EMaterialType::CarPaint;
+	MaterialTypeChangePanel->SetVisibility(ESlateVisibility::Hidden);
+
 }
 
 void UMaterialGeneratePanel::OnWaterBtnClicked()
 {
 	MaterialTypeText->SetText(FText::FromString(MatEnumPtr->GetNameStringByIndex(5)));
+	matTypeSelected = EMaterialType::Water;
+	MaterialTypeChangePanel->SetVisibility(ESlateVisibility::Hidden);
+
 }
 
 void UMaterialGeneratePanel::OnEmissiveBtnClicked()
 {
 	MaterialTypeText->SetText(FText::FromString(MatEnumPtr->GetNameStringByIndex(6)));
+	matTypeSelected = EMaterialType::Emissive;
+	MaterialTypeChangePanel->SetVisibility(ESlateVisibility::Hidden);
+
 }
 
 void UMaterialGeneratePanel::OnFabricBtnClicked()
 {
 	MaterialTypeText->SetText(FText::FromString(MatEnumPtr->GetNameStringByIndex(7)));
+	matTypeSelected = EMaterialType::Fabric;
+	MaterialTypeChangePanel->SetVisibility(ESlateVisibility::Hidden);
+
 }
 
 void UMaterialGeneratePanel::OnGlassBtnClicked()
 {
 	MaterialTypeText->SetText(FText::FromString(MatEnumPtr->GetNameStringByIndex(8)));
+	matTypeSelected = EMaterialType::Glass;
+	MaterialTypeChangePanel->SetVisibility(ESlateVisibility::Hidden);
 
 }
 
 void UMaterialGeneratePanel::OnStandardBtnClicked()
 {
 	MaterialTypeText->SetText(FText::FromString(MatEnumPtr->GetNameStringByIndex(9)));
+	matTypeSelected = EMaterialType::Standard;
+	MaterialTypeChangePanel->SetVisibility(ESlateVisibility::Hidden);
+
+}
+
+void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
+{
+	
+	// 데이터 생성
+	UMaterialThumbnailData* NewItem = NewObject<UMaterialThumbnailData>(this);
+	const UEnum* MaterialEnum = StaticEnum<EMaterialType>();
+	FText EnumDisplayNameText = MaterialEnum->GetDisplayNameTextByValue(
+		static_cast<int64>(matTypeSelected)
+	);
+	FString EnumNameString = EnumDisplayNameText.ToString();
+	FString NewMaterialName = FString::Printf(TEXT("New %s"), *EnumNameString);
+	
+	NewItem->MaterialName = NewMaterialName;
+	NewItem->MaterialType = matTypeSelected;
+
+	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialName: %s"), *NewItem->MaterialName);
+	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialType: %d"), static_cast<int32>(NewItem->MaterialType));
+
+
+	// 샘플 썸네일 (임시로 Content 폴더에서 불러오기)
+	NewItem->Thumbnail = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Thumbnails/T_GlassIcon.T_GlassIcon"));
+
+	// TileView에 추가
+	MaterialTileView->AddItem(NewItem);
 }
 

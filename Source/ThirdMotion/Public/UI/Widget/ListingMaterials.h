@@ -4,39 +4,40 @@
 
 #include "CoreMinimal.h"
 #include "BaseWidget.h"
+#include "Blueprint/IUserObjectListEntry.h"
 #include "ListingMaterials.generated.h"
 
 /**
  * 
  */
 
-UENUM(BlueprintType)
-enum class EMaterialType : uint8
-{
-	Tire UMETA(DisplayName = "Tire"),
-	Foliage UMETA(DisplayName = "Foliage"),
-	Video UMETA(DisplayName = "Video"),
-	Subsurface UMETA(DisplayName = "Subsurface"),
-	CarPaint UMETA(DisplayName = "CarPaint"),
-	Water UMETA(DisplayName = "Water"),
-	Emissive UMETA(DisplayName = "Emissive"),
-	Fabric UMETA(DisplayName = "Fabric"),
-	Glass UMETA(DisplayName = "Glass"),
-	Standard UMETA(DisplayName = "Standard")
-};
+
 
 UCLASS()
-class THIRDMOTION_API UListingMaterials : public UBaseWidget
+class THIRDMOTION_API UListingMaterials : public UBaseWidget, public IUserObjectListEntry
 {
 	GENERATED_BODY()
 
 public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 
-	// UPROPERTY()
-	// UEnum* MatEnumPtr = StaticEnum<EMaterialType>();
 
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
+	FString MaterialName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
+	UTexture2D* MaterialThumbnail;
+
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* MaterialNameText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* ThumbnailImage;
 
 	//선택된 메터리얼 타입을 담을 변수
 	

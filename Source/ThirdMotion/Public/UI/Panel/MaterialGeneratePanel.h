@@ -10,20 +10,20 @@
  * 
  */
 
-// UENUM(BlueprintType)
-// enum class EMaterialType : uint8
-// {
-// 	Tire UMETA(DisplayName = "Tire"),
-// 	Foliage UMETA(DisplayName = "Foliage"),
-// 	Video UMETA(DisplayName = "Video"),
-// 	Subsurface UMETA(DisplayName = "Subsurface"),
-// 	CarPaint UMETA(DisplayName = "CarPaint"),
-// 	Water UMETA(DisplayName = "Water"),
-// 	Emissive UMETA(DisplayName = "Emissive"),
-// 	Fabric UMETA(DisplayName = "Fabric"),
-// 	Glass UMETA(DisplayName = "Glass"),
-// 	Standard UMETA(DisplayName = "Standard")
-// };
+UENUM(BlueprintType)
+enum class EMaterialType : uint8
+{
+	Tire UMETA(DisplayName = "Tire"),
+	Foliage UMETA(DisplayName = "Foliage"),
+	Video UMETA(DisplayName = "Video"),
+	Subsurface UMETA(DisplayName = "Subsurface"),
+	CarPaint UMETA(DisplayName = "CarPaint"),
+	Water UMETA(DisplayName = "Water"),
+	Emissive UMETA(DisplayName = "Emissive"),
+	Fabric UMETA(DisplayName = "Fabric"),
+	Glass UMETA(DisplayName = "Glass"),
+	Standard UMETA(DisplayName = "Standard")
+};
 
 UCLASS()
 class THIRDMOTION_API UMaterialGeneratePanel : public UBaseWidget
@@ -67,12 +67,21 @@ protected:
 
 	UPROPERTY()
 	class UButton* MaterialTypeChangeBtn;
+
+	UPROPERTY()
+	class UListingMaterials* MaterialsSlot;
+
+	UPROPERTY(meta=(BindWidget))
+	class UTileView* MaterialTileView;
 	
 	// UPROPERTY(meta = (BindWidget))
 	// class UButton* MaterialTypeSelectionBtn;
-
+	// UPROPERTY(meta = (BindWidget))
+	// class UListingMaterials* MaterialsSlot;
+	//
+	UPROPERTY()
+	EMaterialType matTypeSelected;
 	
-
 private:
 	//MaterialTypeChange패널 켜기
 	UFUNCTION()
@@ -111,7 +120,9 @@ private:
 	void OnGlassBtnClicked();
 	UFUNCTION()
 	void OnStandardBtnClicked();
-	
+
+	UFUNCTION()
+	void OnCreateMaterialBtnClicked();
 };
 // Tire UMETA(DisplayName = "Tire"),
 // Foliage UMETA(DisplayName = "Foliage"),
