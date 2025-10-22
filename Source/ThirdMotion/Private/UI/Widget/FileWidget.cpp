@@ -2,6 +2,7 @@
 
 #include "UI/Widget/FileWidget.h"
 #include "UI/WidgetController/FileController.h"
+#include "UI/WidgetController/TopBarController.h"
 #include "Data/FileDataModel.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
@@ -52,7 +53,6 @@ void UFileWidget::NativeConstruct()
 		QuitButton->OnClicked.AddDynamic(this, &UFileWidget::OnQuitClicked);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("FileWidget constructed"));
 }
 
 void UFileWidget::NativeDestruct()
@@ -79,7 +79,6 @@ void UFileWidget::SetupMVC(UFileController* InController, UFileDataModel* InData
 {
 	if (!InController || !InDataModel)
 	{
-		UE_LOG(LogTemp, Error, TEXT("FileWidget: Invalid controller or model in Initialize"));
 		return;
 	}
 
@@ -98,7 +97,11 @@ void UFileWidget::SetupMVC(UFileController* InController, UFileDataModel* InData
 	// Initial UI refresh
 	RefreshUI();
 
-	UE_LOG(LogTemp, Log, TEXT("FileWidget MVC setup completed with controller and model"));
+}
+
+void UFileWidget::SetTopBarController(class UTopBarController* InTopBarController)
+{
+	TopBarController = InTopBarController;
 }
 
 void UFileWidget::RefreshUI()
@@ -113,34 +116,39 @@ void UFileWidget::RefreshUI()
 	UpdateUnsavedIndicator(DataModel->HasUnsavedChanges());
 	PopulateRecentFilesList(DataModel->GetRecentFiles());
 
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: UI refreshed"));
 }
 
-// Button Click Handlers - Delegate to Controller
 
 void UFileWidget::OnNewSceneClicked()
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: New Scene button clicked"));
-
 	if (FileController)
 	{
 		FileController->NewScene();
+	}
+
+	// Close dropdown menu after action
+	if (TopBarController)
+	{
+		TopBarController->CloseFilePanel();
 	}
 }
 
 void UFileWidget::OnOpenClicked()
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Open button clicked"));
-
 	if (FileController)
 	{
 		FileController->Open();
+	}
+
+	// Close dropdown menu after action
+	if (TopBarController)
+	{
+		TopBarController->CloseFilePanel();
 	}
 }
 
 void UFileWidget::OnOpenRecentClicked()
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Open Recent button clicked"));
 
 	// This button toggles visibility of recent files list
 	if (RecentFilesContainer)
@@ -159,51 +167,71 @@ void UFileWidget::OnOpenRecentClicked()
 
 void UFileWidget::OnShowHomeClicked()
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Show Home button clicked"));
-
 	if (FileController)
 	{
 		FileController->ShowHome();
+	}
+
+	// Close dropdown menu after action
+	if (TopBarController)
+	{
+		TopBarController->CloseFilePanel();
 	}
 }
 
 void UFileWidget::OnSaveClicked()
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Save button clicked"));
-
 	if (FileController)
 	{
 		FileController->Save();
+	}
+
+	// Close dropdown menu after action
+	if (TopBarController)
+	{
+		TopBarController->CloseFilePanel();
 	}
 }
 
 void UFileWidget::OnSaveAsClicked()
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Save As button clicked"));
-
 	if (FileController)
 	{
 		FileController->SaveAs(TEXT(""));
+	}
+
+	// Close dropdown menu after action
+	if (TopBarController)
+	{
+		TopBarController->CloseFilePanel();
 	}
 }
 
 void UFileWidget::OnMergeClicked()
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Merge button clicked"));
-
 	if (FileController)
 	{
 		FileController->Merge();
+	}
+
+	// Close dropdown menu after action
+	if (TopBarController)
+	{
+		TopBarController->CloseFilePanel();
 	}
 }
 
 void UFileWidget::OnQuitClicked()
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Quit button clicked"));
-
 	if (FileController)
 	{
 		FileController->Quit();
+	}
+
+	// Close dropdown menu after action (Quit will close app anyway)
+	if (TopBarController)
+	{
+		//TopBarController->CloseFileMenu();
 	}
 }
 
@@ -211,25 +239,21 @@ void UFileWidget::OnQuitClicked()
 
 void UFileWidget::OnDataChanged()
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Data changed, refreshing UI"));
 	RefreshUI();
 }
 
 void UFileWidget::OnRecentFilesChanged(const TArray<FString>& RecentFiles)
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Recent files changed (%d files)"), RecentFiles.Num());
 	PopulateRecentFilesList(RecentFiles);
 }
 
 void UFileWidget::OnCurrentWorldChanged(const FString& WorldPath)
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Current world changed to '%s'"), *WorldPath);
 	UpdateCurrentFileDisplay(WorldPath);
 }
 
 void UFileWidget::OnDirtyStateChanged(bool bIsDirty)
 {
-	UE_LOG(LogTemp, Log, TEXT("FileWidget: Dirty state changed to %s"), bIsDirty ? TEXT("dirty") : TEXT("clean"));
 	UpdateUnsavedIndicator(bIsDirty);
 }
 
@@ -237,7 +261,6 @@ void UFileWidget::OnFileError(const FString& ErrorMessage)
 {
 	UE_LOG(LogTemp, Error, TEXT("FileWidget: Error - %s"), *ErrorMessage);
 
-	// TODO: Show error popup or notification to user
 }
 
 // Helper Functions
@@ -271,6 +294,7 @@ void UFileWidget::PopulateRecentFilesList(const TArray<FString>& RecentFiles)
 			// Add to container first
 			RecentFilesContainer->AddChild(RecentButton);
 
+			//아직 못함
 			// Note: Dynamic creation of buttons with click events is better handled
 			// through Blueprint or by creating custom button widgets.
 			// For now, buttons are created but click handlers should be set up in Blueprint

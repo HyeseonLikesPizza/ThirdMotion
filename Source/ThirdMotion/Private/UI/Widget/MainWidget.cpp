@@ -13,7 +13,6 @@ void UMainWidget::NativeConstruct()
 
 	// Setup 3D viewport
 	//SetupViewport();
-
 }
 
 void UMainWidget::NativeDestruct()

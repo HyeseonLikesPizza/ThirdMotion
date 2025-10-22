@@ -119,13 +119,21 @@ void URightPanel::InitializeController()
 	if (!SceneController)
 	{
 		SceneController = NewObject<USceneController>(this);
-		SceneController->Initialize(GetWorld());
+
+		// SceneList 먼저 생성
+		if (!SceneListData)
+		{
+			InitializeSceneList();
+		}
+
+		// SceneList와 함께 Controller 초기화
+		SceneController->Initialize(GetWorld(), SceneListData);
 
 		// 델리게이트 바인딩
 		SceneController->OnSelectionChanged.AddDynamic(this, &URightPanel::OnSelectionChanged);
 		SceneController->OnSceneChanged.AddDynamic(this, &URightPanel::OnSceneDataChanged);
 
-		UE_LOG(LogTemp, Log, TEXT("RightPanel: SceneController initialized"));
+		UE_LOG(LogTemp, Log, TEXT("RightPanel: SceneController initialized with SceneList"));
 	}
 }
 
@@ -138,10 +146,24 @@ void URightPanel::InitializeSceneList()
 
 		// 델리게이트 바인딩
 		SceneListData->OnDataChanged.AddDynamic(this, &URightPanel::OnSceneDataChanged);
+		SceneListData->OnActorAdded.AddDynamic(this, &URightPanel::OnActorAddedToScene);
+		SceneListData->OnActorRemoved.AddDynamic(this, &URightPanel::OnActorRemovedFromScene);
 
 		UE_LOG(LogTemp, Log, TEXT("RightPanel: SceneList initialized with %d items"),
 			SceneListData->GetItemCount());
 	}
+}
+
+void URightPanel::OnActorAddedToScene(USceneItemData* AddedItem)
+{
+	UE_LOG(LogTemp, Log, TEXT("RightPanel: Actor added to scene"));
+	RefreshUI();
+}
+
+void URightPanel::OnActorRemovedFromScene(AActor* RemovedActor)
+{
+	UE_LOG(LogTemp, Log, TEXT("RightPanel: Actor removed from scene"));
+	RefreshUI();
 }
 
 void URightPanel::OnSceneDataChanged()

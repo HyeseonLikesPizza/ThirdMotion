@@ -29,6 +29,10 @@ public:
 	UFUNCTION()
 	void SetupMVC(UFileController* InController, UFileDataModel* InDataModel);
 
+	// Set TopBar controller (for closing menu after action)
+	UFUNCTION()
+	void SetTopBarController(class UTopBarController* InTopBarController);
+
 	// Refresh UI based on model data
 	UFUNCTION()
 	void RefreshUI();
@@ -78,6 +82,10 @@ protected:
 	// Data Model reference
 	UPROPERTY()
 	UFileDataModel* DataModel;
+
+	// TopBar Controller reference (for closing dropdown menu)
+	UPROPERTY()
+	class UTopBarController* TopBarController;
 
 	// Button click handlers - Delegate to Controller
 	UFUNCTION()
