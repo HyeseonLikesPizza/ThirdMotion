@@ -10,20 +10,20 @@
  * 
  */
 
-UENUM(BlueprintType)
-enum class EMaterialType : uint8
-{
-	Tire UMETA(DisplayName = "Tire"),
-	Foliage UMETA(DisplayName = "Foliage"),
-	Video UMETA(DisplayName = "Subsurface"),
-	Subsurface UMETA(DisplayName = "Subsurface"),
-	CarPaint UMETA(DisplayName = "CarPaint"),
-	Water UMETA(DisplayName = "Water"),
-	Emissive UMETA(DisplayName = "Emissive"),
-	Fabric UMETA(DisplayName = "Fabric"),
-	Glass UMETA(DisplayName = "Glass"),
-	Standard UMETA(DisplayName = "Standard")
-};
+// UENUM(BlueprintType)
+// enum class EMaterialType : uint8
+// {
+// 	Tire UMETA(DisplayName = "Tire"),
+// 	Foliage UMETA(DisplayName = "Foliage"),
+// 	Video UMETA(DisplayName = "Video"),
+// 	Subsurface UMETA(DisplayName = "Subsurface"),
+// 	CarPaint UMETA(DisplayName = "CarPaint"),
+// 	Water UMETA(DisplayName = "Water"),
+// 	Emissive UMETA(DisplayName = "Emissive"),
+// 	Fabric UMETA(DisplayName = "Fabric"),
+// 	Glass UMETA(DisplayName = "Glass"),
+// 	Standard UMETA(DisplayName = "Standard")
+// };
 
 UCLASS()
 class THIRDMOTION_API UMaterialGeneratePanel : public UBaseWidget
@@ -32,17 +32,41 @@ class THIRDMOTION_API UMaterialGeneratePanel : public UBaseWidget
 
 public:
 	virtual bool Initialize() override;
+	virtual void NativeConstruct() override;
 
 protected:
 
+	// 생성된 모든 버튼을 순서대로 저장할 TArray 선언
+	UPROPERTY()
+	TArray<class UButton*> MatTypeBtnArray;
+
+	UPROPERTY()
+	UEnum* MatEnumPtr;
+	//
+	// UPROPERTY()
+	// TMap<class UButton*, EMaterialType> MatTypeChangeBtnMap;
+	//
+	//메터리얼 타입
+	
+	
 	//canvas
 	UPROPERTY(meta=(BindWidget))
-	class UCanvasPanel* MaterialTypeCanvas;
+	class UCanvasPanel* MaterialsLeftPanel;
 	
-	// //vertical Box
-	// UPROPERTY(meta=(BindWidget))
-	// class UVerticalBox* MaterialTypeSelectionBtnListBox;
+	UPROPERTY(meta=(BindWidget))
+	class UButton* MaterialCreateBtn;
 
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* MaterialTypeText;
+	
+	UPROPERTY(meta=(BindWidget))
+	class UButton* MaterialTypeChangePanelOnOffBtn;
+
+	UPROPERTY()
+	class UBorder* MaterialTypeChangePanel;
+
+	UPROPERTY()
+	class UButton* MaterialTypeChangeBtn;
 	
 	// UPROPERTY(meta = (BindWidget))
 	// class UButton* MaterialTypeSelectionBtn;
@@ -50,6 +74,11 @@ protected:
 	
 
 private:
+	//MaterialTypeChange패널 켜기
+	UFUNCTION()
+	void TurnOnOffMaterialTypeChangePanel();
+
+
 	//메터리얼 정렬 필터 버튼 함수
 
 	//안쓰이는 메터리얼 삭제 함수
@@ -58,9 +87,39 @@ private:
 	UFUNCTION()
 	void CreateMaterialTypeEnumBtns();
 	
-	//Material 기본 재질 설정 버튼 리스트...버튼 함수
-	UFUNCTION()
-	void OnMaterialTypeSelectionBtnClicked();
 
 	//Material 생성 함수
+
+
+	UFUNCTION()
+	void OnTireBtnClicked();
+	UFUNCTION()
+	void OnFoliageBtnClicked();
+	UFUNCTION()
+	void OnVideoBtnClicked();
+	UFUNCTION()
+	void OnSubsurfaceBtnClicked();
+	UFUNCTION()
+	void OnCarPaintBtnClicked();
+	UFUNCTION()
+	void OnWaterBtnClicked();
+	UFUNCTION()
+	void OnEmissiveBtnClicked();
+	UFUNCTION()
+	void OnFabricBtnClicked();
+	UFUNCTION()
+	void OnGlassBtnClicked();
+	UFUNCTION()
+	void OnStandardBtnClicked();
+	
 };
+// Tire UMETA(DisplayName = "Tire"),
+// Foliage UMETA(DisplayName = "Foliage"),
+// Video UMETA(DisplayName = "Subsurface"),
+// Subsurface UMETA(DisplayName = "Subsurface"),
+// CarPaint UMETA(DisplayName = "CarPaint"),
+// Water UMETA(DisplayName = "Water"),
+// Emissive UMETA(DisplayName = "Emissive"),
+// Fabric UMETA(DisplayName = "Fabric"),
+// Glass UMETA(DisplayName = "Glass"),
+// Standard UMETA(DisplayName = "Standard")
