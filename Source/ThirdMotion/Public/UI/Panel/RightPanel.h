@@ -16,9 +16,22 @@ class AActor;
 class USceneItemData;
 
 /**
- * RightPanel - View 역할
- * UI 표시만 담당
- * SceneController와 SceneList를 사용하여 데이터 표시
+ * RightPanel - View 역할 (MVC Pattern)
+ *
+ * 책임:
+ * - UI 표시만 담당 (TreeView, 위젯 업데이트)
+ * - 사용자 입력을 SceneController에게 위임
+ * - Model(SceneList)의 데이터 변경 알림을 받아 UI 업데이트
+ *
+ * 역할 분리:
+ * - View: UI 표시 및 사용자 입력 수신
+ * - Controller: SceneController가 모든 비즈니스 로직 처리
+ * - Model: SceneList가 데이터 관리
+ *
+ * 데이터 흐름:
+ * 1. User Input -> RightPanel(View) -> SceneController(Controller)
+ * 2. SceneController -> SceneList(Model) 데이터 업데이트
+ * 3. SceneList -> Observer 알림 -> RightPanel(View) UI 업데이트
  */
 UCLASS()
 class THIRDMOTION_API URightPanel : public UBaseWidget
@@ -26,7 +39,8 @@ class THIRDMOTION_API URightPanel : public UBaseWidget
 	GENERATED_BODY()
 
 public:
-	// UI 위젯
+	// ==================== UI 위젯 ====================
+
 	UPROPERTY(meta = (BindWidget))
 	UTreeView* SceneList;
 
@@ -37,13 +51,19 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Scene List")
 	TSubclassOf<UUserWidget> SceneItemWidgetClass;
 
-	// Row 생성
+	// ==================== Public Interface ====================
+
+	// Row 생성 (TreeView 델리게이트)
 	UFUNCTION()
 	UUserWidget* OnGenerateRow(UObject* Item);
 
-	// SceneController 접근자
+	// SceneController 접근자 (외부에서 접근 가능)
 	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
 	USceneController* GetSceneController() const { return SceneController; }
+
+	// SceneList 접근자 (외부에서 접근 가능)
+	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
+	USceneList* GetSceneListData() const { return SceneListData; }
 
 protected:
 	virtual void NativeConstruct() override;
@@ -72,19 +92,6 @@ private:
 	void InitializeController();
 	void InitializeSceneList();
 
-	// 델리게이트 콜백
-	UFUNCTION()
-	void OnSceneDataChanged();
-
-	UFUNCTION()
-	void OnSelectionChanged(const TArray<AActor*>& SelectedActors);
-
 	// UI 업데이트
 	void RefreshUI();
-
-#if WITH_EDITOR
-	void OnEditorSelectionChanged(UObject* NewSelection);
-	void SyncSelectionFromEditor();
-	bool bIsSelectingFromList = false;
-#endif
 };

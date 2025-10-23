@@ -31,6 +31,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UUserWidget* BottomBar;
 
+	
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UBorder* ViewportContainer;
 
