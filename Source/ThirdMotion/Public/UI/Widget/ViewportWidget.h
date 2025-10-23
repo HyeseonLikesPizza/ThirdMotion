@@ -36,11 +36,53 @@ public:
 	// 슬라이더 업데이트 함수 (Multicast에서 수동 호출)
 	void OnRep_LightRotation();
 
+	// ==================== Screenshot & Video Recording ====================
+
+	// Shoot Button (Screenshot)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* ShootButton;
+
+	// Video Button (Start/Stop Recording)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* VideoButton;
+
+	// Video Button Text (녹화 상태 표시)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* VideoButtonText;
+
+	// Screenshot button click handler
+	UFUNCTION()
+	void OnShootButtonClicked();
+
+	// Video recording button click handler
+	UFUNCTION()
+	void OnVideoButtonClicked();
+
+	// Take screenshot
+	UFUNCTION(BlueprintCallable, Category = "Viewport")
+	void TakeScreenshot();
+
+	// Start video recording
+	UFUNCTION(BlueprintCallable, Category = "Viewport")
+	void StartRecording();
+
+	// Stop video recording
+	UFUNCTION(BlueprintCallable, Category = "Viewport")
+	void StopRecording();
+
+	// Check if currently recording
+	UFUNCTION(BlueprintPure, Category = "Viewport")
+	bool IsRecording() const { return bIsRecording; }
+
 private:
-	
+
 	TSharedPtr<class SOverlay> RootWidget;
 	TSharedPtr<class SViewport> ViewportWidget;
 	TSharedPtr<class FSceneViewport> SceneViewport;
 
-	
+	// Recording state
+	bool bIsRecording = false;
+
+	// Screenshot counter for unique filenames
+	int32 ScreenshotCounter = 0;
 };

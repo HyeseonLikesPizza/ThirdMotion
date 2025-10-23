@@ -10,6 +10,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "Framework/ThirdMotionPlayerController.h"
 #include "Net/UnrealNetwork.h"
+#include "Components/Button.h"
+#include "Components/TextBlock.h"
+#include "HighResScreenshot.h"
+#include "Misc/Paths.h"
+#include "HAL/PlatformFileManager.h"
 
 /*
 TSharedRef<SWidget> UViewportWidget::RebuildWidget()
@@ -125,6 +130,26 @@ void UViewportWidget::NativeConstruct()
 			Slider_Light->SetValue(0.5f); // 기본값 (0도)
 		}
 	}
+
+	// ==================== Screenshot & Video Recording 버튼 바인딩 ====================
+
+	if (ShootButton)
+	{
+		ShootButton->OnClicked.AddDynamic(this, &UViewportWidget::OnShootButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: ShootButton bound"));
+	}
+
+	if (VideoButton)
+	{
+		VideoButton->OnClicked.AddDynamic(this, &UViewportWidget::OnVideoButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: VideoButton bound"));
+	}
+
+	// VideoButtonText 초기 설정
+	if (VideoButtonText)
+	{
+		VideoButtonText->SetText(FText::FromString(TEXT("Start Recording")));
+	}
 }
 
 // ViewportWidget은 UUserWidget이므로 자동 복제되지 않음
@@ -182,5 +207,157 @@ void UViewportWidget::OnLightSliderValueChanged(float Value)
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("[ViewportWidget] PlayerController is null!"));
+	}
+}
+
+// ==================== Screenshot & Video Recording Implementation ====================
+
+void UViewportWidget::OnShootButtonClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Shoot button clicked"));
+	TakeScreenshot();
+}
+
+void UViewportWidget::OnVideoButtonClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Video button clicked"));
+
+	if (bIsRecording)
+	{
+		StopRecording();
+	}
+	else
+	{
+		StartRecording();
+	}
+}
+
+void UViewportWidget::TakeScreenshot()
+{
+	if (!GetWorld())
+	{
+		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: GetWorld() is null, cannot take screenshot"));
+		return;
+	}
+
+	// 프로젝트의 Saved/Screenshots 폴더 경로 생성
+	FString SavedDir = FPaths::ProjectSavedDir() / TEXT("Screenshots");
+
+	// 디렉토리가 존재하지 않으면 생성
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	if (!PlatformFile.DirectoryExists(*SavedDir))
+	{
+		PlatformFile.CreateDirectory(*SavedDir);
+	}
+
+	// 파일 이름 생성 (타임스탬프 + 카운터)
+	FString Timestamp = FDateTime::Now().ToString(TEXT("%Y%m%d_%H%M%S"));
+	FString FileName = FString::Printf(TEXT("Screenshot_%s_%04d.png"), *Timestamp, ScreenshotCounter);
+	FString FullPath = SavedDir / FileName;
+
+	// 스크린샷 캡처 (콘솔 커맨드 사용)
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		// HighResShot 콘솔 커맨드 실행 (UI 포함)
+		FString Command = FString::Printf(TEXT("HighResShot 1920x1080 filename=\"%s\""), *FullPath);
+		PC->ConsoleCommand(Command);
+
+		ScreenshotCounter++;
+
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Screenshot taken - %s"), *FullPath);
+
+		// 화면에 메시지 출력 (옵션)
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green,
+				FString::Printf(TEXT("Screenshot saved: %s"), *FileName));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: PlayerController is null, cannot take screenshot"));
+	}
+}
+
+void UViewportWidget::StartRecording()
+{
+	if (bIsRecording)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Already recording"));
+		return;
+	}
+
+	if (!GetWorld())
+	{
+		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: GetWorld() is null, cannot start recording"));
+		return;
+	}
+
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: PlayerController is null, cannot start recording"));
+		return;
+	}
+
+	// 녹화 시작 (Unreal의 기본 Sequence Recorder 사용)
+	// 또는 StartMovieCapture 커맨드 사용
+	PC->ConsoleCommand(TEXT("StartMovieCapture"));
+
+	bIsRecording = true;
+
+	// 버튼 텍스트 업데이트
+	if (VideoButtonText)
+	{
+		VideoButtonText->SetText(FText::FromString(TEXT("Stop Recording")));
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Video recording started"));
+
+	// 화면에 메시지 출력
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Recording started"));
+	}
+}
+
+void UViewportWidget::StopRecording()
+{
+	if (!bIsRecording)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Not currently recording"));
+		return;
+	}
+
+	if (!GetWorld())
+	{
+		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: GetWorld() is null, cannot stop recording"));
+		return;
+	}
+
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: PlayerController is null, cannot stop recording"));
+		return;
+	}
+
+	// 녹화 중지
+	PC->ConsoleCommand(TEXT("StopMovieCapture"));
+
+	bIsRecording = false;
+
+	// 버튼 텍스트 업데이트
+	if (VideoButtonText)
+	{
+		VideoButtonText->SetText(FText::FromString(TEXT("Start Recording")));
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Video recording stopped"));
+
+	// 화면에 메시지 출력
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Recording stopped - Video saved to Saved/VideoCaptures"));
 	}
 }
