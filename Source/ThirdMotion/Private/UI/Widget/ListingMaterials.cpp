@@ -5,7 +5,7 @@
 
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
-#include "Data/MaterialThumbnailData.h"
+#include "Data/MaterialPreviewData.h"
 
 void UListingMaterials::NativeConstruct()
 {
@@ -24,15 +24,27 @@ void UListingMaterials::NativeOnListItemObjectSet(UObject* ListItemObject)
 	// Super::NativeOnListItemObjectSet(ListItemObject);
 	
 	
-	UMaterialThumbnailData* ItemData = Cast<UMaterialThumbnailData>(ListItemObject);
-	if (!ItemData) return;
+	MaterialData = Cast<UMaterialPreviewData>(ListItemObject);
+	if (!MaterialData) return;
 	
 	// 텍스트와 썸네일 표시 (BindWidget으로 선언되어 있다고 가정)
 	if (MaterialNameText)
-		MaterialNameText->SetText(FText::FromString(ItemData->MaterialName));
+		MaterialNameText->SetText(FText::FromString(MaterialData->MaterialName));
 	
-	if (ThumbnailImage && ItemData->Thumbnail)
-		ThumbnailImage->SetBrushFromTexture(ItemData->Thumbnail);
+	if (ThumbnailImage && MaterialData->PreviewImage)
+		ThumbnailImage->SetBrushFromTexture(MaterialData->PreviewImage);
+}
+
+FReply UListingMaterials::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+
+	if (MaterialData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Canvas Tile Clicked: %s"), *MaterialData->MaterialName);
+	}
+
+	// 클릭 이벤트가 처리되었다고 엔진에 알림
+	return FReply::Handled();
 }
 
 

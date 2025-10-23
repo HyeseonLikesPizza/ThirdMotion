@@ -12,7 +12,7 @@
  */
 
 
-
+//View 
 UCLASS()
 class THIRDMOTION_API UListingMaterials : public UBaseWidget, public IUserObjectListEntry
 {
@@ -22,22 +22,23 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
-
-
-
+	UPROPERTY()
+	class UMaterialPreviewData* MaterialData;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
 	FString MaterialName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
 	UTexture2D* MaterialThumbnail;
-
-
+	
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* MaterialNameText;
 
 	UPROPERTY(meta = (BindWidget))
 	class UImage* ThumbnailImage;
+
 
 	//선택된 메터리얼 타입을 담을 변수
 	
@@ -48,5 +49,4 @@ public:
 
 	//메테리얼 이름 기본 (기본이름 설정되어 있음)
 	
-
 };
