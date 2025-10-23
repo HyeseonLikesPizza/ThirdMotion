@@ -92,25 +92,6 @@ private:
 	void InitializeController();
 	void InitializeSceneList();
 
-	// 델리게이트 콜백
-	UFUNCTION()
-	void OnSceneDataChanged();
-
-	UFUNCTION()
-	void OnActorAddedToScene(USceneItemData* AddedItem);
-
-	UFUNCTION()
-	void OnActorRemovedFromScene(AActor* RemovedActor);
-
-	UFUNCTION()
-	void OnSelectionChanged(const TArray<AActor*>& SelectedActors);
-
 	// UI 업데이트
 	void RefreshUI();
-
-#if WITH_EDITOR
-	void OnEditorSelectionChanged(UObject* NewSelection);
-	void SyncSelectionFromEditor();
-	bool bIsSelectingFromList = false;
-#endif
 };
