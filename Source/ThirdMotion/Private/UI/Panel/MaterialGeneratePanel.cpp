@@ -12,7 +12,7 @@
 #include "Components/TileView.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
-#include "Data/MaterialThumbnailData.h"
+#include "Data/MaterialPreviewData.h"
 #include "UI/Widget/ListingMaterials.h"
 
 class UCanvasPanelSlot;
@@ -199,7 +199,7 @@ void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 {
 	
 	// 데이터 생성
-	UMaterialThumbnailData* NewItem = NewObject<UMaterialThumbnailData>(this);
+	UMaterialPreviewData* NewItem = NewObject<UMaterialPreviewData>(this);
 	const UEnum* MaterialEnum = StaticEnum<EMaterialType>();
 	FText EnumDisplayNameText = MaterialEnum->GetDisplayNameTextByValue(
 		static_cast<int64>(matTypeSelected)
@@ -209,13 +209,14 @@ void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 	
 	NewItem->MaterialName = NewMaterialName;
 	NewItem->MaterialType = matTypeSelected;
-
+	
+	
 	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialName: %s"), *NewItem->MaterialName);
 	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialType: %d"), static_cast<int32>(NewItem->MaterialType));
 
 
 	// 샘플 썸네일 (임시로 Content 폴더에서 불러오기)
-	NewItem->Thumbnail = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Thumbnails/T_GlassIcon.T_GlassIcon"));
+	NewItem->PreviewImage = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Thumbnails/T_GlassIcon.T_GlassIcon"));
 
 	// TileView에 추가
 	MaterialTileView->AddItem(NewItem);

@@ -4,15 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "UI/Panel/MaterialGeneratePanel.h"
-#include "UI/Widget/ListingMaterials.h"
 #include "UObject/Object.h"
-#include "MaterialThumbnailData.generated.h"
+#include "MaterialPreviewData.generated.h"
 
 /**
  * 
  */
+
+//Model
 UCLASS()
-class THIRDMOTION_API UMaterialThumbnailData : public UObject
+class THIRDMOTION_API UMaterialPreviewData : public UObject
 {
 	GENERATED_BODY()
 
@@ -21,7 +22,7 @@ public:
 	FString MaterialName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
-	UTexture2D* Thumbnail;
+	UTexture2D* PreviewImage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
 	EMaterialType MaterialType;
