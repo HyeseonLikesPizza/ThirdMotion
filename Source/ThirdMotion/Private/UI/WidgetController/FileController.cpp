@@ -376,9 +376,7 @@ void UFileController::ShowSaveDialog()
 
 FString UFileController::GetProjectFileFolderPath() const
 {
-	// C:\Users\user\Desktop\Fork\ThirdMotion_share\File
-	FString ProjectDir = FPaths::ProjectDir();
-	return FPaths::Combine(ProjectDir, TEXT("File"));
+	return FPaths::ProjectDir() / TEXT("Data/ThirdMotion_share/File");
 }
 
 FString UFileController::GetEpicGamesLauncherPath() const

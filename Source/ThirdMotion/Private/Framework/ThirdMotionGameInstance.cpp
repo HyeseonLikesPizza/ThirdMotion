@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "Framework/ThirdMotionGameInstance.h"
 
@@ -14,7 +12,6 @@ void UThirdMotionGameInstance::Init()
 
 	// 맵 로드 콜백 바인딩
 	FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UThirdMotionGameInstance::BeginLoadingScreen);
-	FCoreUObjectDelegates::PreLoadMapWithContext.AddUObject(this, &UThirdMotionGameInstance::BeginLoadingScreen_WithContext);
 	
 }
 
@@ -36,9 +33,6 @@ void UThirdMotionGameInstance::BeginLoadingScreen(const FString& MapName)
 
 }
 
-/*void UThirdMotionGameInstance::EndLoadingScreen(UWorld* LoadedWorld)
-{
-}*/
 
 void UThirdMotionGameInstance::BeginLoadingScreen_WithContext(const FWorldContext& inWorldContext, const FString& MapName)
 {
