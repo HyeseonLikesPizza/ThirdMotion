@@ -10,6 +10,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Framework/ThirdMotionPlayerController.h"
 #include "Net/UnrealNetwork.h"
+#include "Components/Button.h"
+#include "Components/TextBlock.h"
+#include "Components/WidgetSwitcher.h"
+#include "UI/WidgetController/ViewportController.h"
 
 /*
 TSharedRef<SWidget> UViewportWidget::RebuildWidget()
@@ -86,6 +90,9 @@ void UViewportWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	// ==================== Controller 초기화 ====================
+	InitializeController();
+
 	// DirectionalLight 찾기
 	TArray<AActor*> FoundLights;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADirectionalLight::StaticClass(), FoundLights);
@@ -124,6 +131,73 @@ void UViewportWidget::NativeConstruct()
 		{
 			Slider_Light->SetValue(0.5f); // 기본값 (0도)
 		}
+	}
+
+	// ==================== Panel Buttons 바인딩 ====================
+
+	if (TimeLight)
+	{
+		TimeLight->OnClicked.AddDynamic(this, &UViewportWidget::OnLightButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: TimeLight button bound"));
+	}
+
+	if (Screen)
+	{
+		Screen->OnClicked.AddDynamic(this, &UViewportWidget::OnScreenButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Screen button bound"));
+	}
+
+	if (Cubic)
+	{
+		Cubic->OnClicked.AddDynamic(this, &UViewportWidget::OnCubicButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Cubic button bound"));
+	}
+
+	// ==================== Screenshot & Video Recording 버튼 바인딩 ====================
+
+	if (ShootButton)
+	{
+		ShootButton->OnClicked.AddDynamic(this, &UViewportWidget::OnShootButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: ShootButton bound"));
+	}
+
+	if (VideoButton)
+	{
+		VideoButton->OnClicked.AddDynamic(this, &UViewportWidget::OnVideoButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: VideoButton bound"));
+	}
+
+	// VideoButtonText 초기 설정
+	if (VideoButtonText)
+	{
+		VideoButtonText->SetText(FText::FromString(TEXT("Start Recording")));
+	}
+}
+
+void UViewportWidget::NativeDestruct()
+{
+	// Unbind from Controller events
+	if (ViewportController)
+	{
+		ViewportController->OnPanelChanged.RemoveDynamic(this, &UViewportWidget::OnPanelChanged);
+		ViewportController->OnRecordingStateChanged.RemoveDynamic(this, &UViewportWidget::OnRecordingStateChanged);
+	}
+
+	Super::NativeDestruct();
+}
+
+void UViewportWidget::InitializeController()
+{
+	if (!ViewportController)
+	{
+		ViewportController = NewObject<UViewportController>(this);
+		ViewportController->Init();
+
+		// Observer Pattern: Controller 이벤트 구독
+		ViewportController->OnPanelChanged.AddDynamic(this, &UViewportWidget::OnPanelChanged);
+		ViewportController->OnRecordingStateChanged.AddDynamic(this, &UViewportWidget::OnRecordingStateChanged);
+
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: ViewportController initialized"));
 	}
 }
 
@@ -182,5 +256,96 @@ void UViewportWidget::OnLightSliderValueChanged(float Value)
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("[ViewportWidget] PlayerController is null!"));
+	}
+}
+
+// ==================== Panel Button Handlers (View -> Controller) ====================
+
+void UViewportWidget::OnLightButtonClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Light button clicked"));
+
+	if (ViewportController)
+	{
+		ViewportController->SwitchToLightPanel();
+	}
+}
+
+void UViewportWidget::OnScreenButtonClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Screen button clicked"));
+
+	if (ViewportController)
+	{
+		ViewportController->SwitchToScreenPanel();
+	}
+}
+
+void UViewportWidget::OnCubicButtonClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Cubic button clicked"));
+
+	if (ViewportController)
+	{
+		ViewportController->SwitchToCubicPanel();
+	}
+}
+
+// ==================== Screenshot & Video Recording Handlers (View -> Controller) ====================
+
+void UViewportWidget::OnShootButtonClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Shoot button clicked"));
+
+	if (ViewportController)
+	{
+		ViewportController->TakeScreenshot();
+	}
+}
+
+void UViewportWidget::OnVideoButtonClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Video button clicked"));
+
+	if (ViewportController)
+	{
+		ViewportController->ToggleRecording();
+	}
+}
+
+// ==================== Observer Pattern: Controller Event Handlers (Controller -> View) ====================
+
+void UViewportWidget::OnPanelChanged(EViewportPanelType NewPanelType)
+{
+	// Widget Switcher의 Active Index 업데이트
+	if (WidgetSwitcher)
+	{
+		int32 PanelIndex = static_cast<int32>(NewPanelType);
+		WidgetSwitcher->SetActiveWidgetIndex(PanelIndex);
+
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget View: Widget Switcher set to index %d"), PanelIndex);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ViewportWidget View: WidgetSwitcher is null"));
+	}
+}
+
+void UViewportWidget::OnRecordingStateChanged(bool bIsRecording)
+{
+	// 녹화 상태에 따라 VideoButtonText 업데이트
+	if (VideoButtonText)
+	{
+		if (bIsRecording)
+		{
+			VideoButtonText->SetText(FText::FromString(TEXT("Stop Recording")));
+		}
+		else
+		{
+			VideoButtonText->SetText(FText::FromString(TEXT("Start Recording")));
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget View: VideoButtonText updated - Recording: %s"),
+			bIsRecording ? TEXT("true") : TEXT("false"));
 	}
 }
