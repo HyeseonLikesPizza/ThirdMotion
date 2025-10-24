@@ -1,5 +1,8 @@
 #pragma once
 
+#include "CoreMinimal.h"
+#include "MeshDataRow.generated.h"
+
 USTRUCT(BlueprintType)
 struct FMeshDataRow : public FTableRowBase
 {
@@ -10,6 +13,5 @@ public:
 	UPROPERTY(EditAnywhere)
 	FName MeshName;
 
-	UPROPERTY(EditAnywhere)
 	
 };
