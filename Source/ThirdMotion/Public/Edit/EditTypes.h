@@ -102,10 +102,10 @@ struct FLibraryRow : public FTableRowBase
 	TSoftObjectPtr<UTexture2D> Icon;
 
 	UPROPERTY(EditAnywhere)
-	EPresetType PresetType;
+	EPresetType PresetType = EPresetType::Mesh;
 
 	UPROPERTY(EditAnywhere)
-	ELibraryIconType IconType;
+	ELibraryIconType IconType = ELibraryIconType::Category;
 
 	
 
