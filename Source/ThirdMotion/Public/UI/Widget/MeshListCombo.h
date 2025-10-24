@@ -13,6 +13,7 @@ class THIRDMOTION_API UMeshListCombo : public UWidget
 {
 	GENERATED_BODY()
 
+	/*
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnMeshPicked OnMeshPicked;
@@ -32,4 +33,5 @@ private:
 	TSharedRef<SWidget> GenerateItem(TSharedPtr<FMeshDataRow> Row) const;
 	void OnChanged(TSharedPtr<FMeshDataRow> NewSel, ESelectInfo::Type);
 	FText GetSelectedLabel() const;
+	*/
 };

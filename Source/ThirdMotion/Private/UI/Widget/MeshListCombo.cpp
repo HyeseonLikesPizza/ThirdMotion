@@ -3,6 +3,7 @@
 
 #include "Data/MeshDataRow.h"
 
+/*
 void UMeshListCombo::SetItems(const TArray<FMeshDataRow>& InRows)
 {
 	Items.Reset(InRows.Num());
@@ -72,3 +73,4 @@ FText UMeshListCombo::GetSelectedLabel() const
 {
 	return Current.IsValid() ? FText::FromName(Current->MeshName) : FText::FromString(TEXT("Select Mesh"));
 }
+*/
