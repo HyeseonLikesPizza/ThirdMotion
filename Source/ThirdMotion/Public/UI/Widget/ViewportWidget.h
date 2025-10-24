@@ -3,6 +3,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "UI/WidgetController/ViewportController.h"
 #include "ViewportWidget.generated.h"
 
 UCLASS()
@@ -14,6 +15,7 @@ public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 	// Slider_Light 바인딩
 	UPROPERTY(meta = (BindWidget))
@@ -35,6 +37,36 @@ public:
 
 	// 슬라이더 업데이트 함수 (Multicast에서 수동 호출)
 	void OnRep_LightRotation();
+
+	// ==================== Widget Switcher & Panel Buttons ====================
+
+	// Widget Switcher (Light, Screen, Cubic 패널 전환)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UWidgetSwitcher* WidgetSwitcher;
+
+	// Light Button
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* TimeLight;
+
+	// Screen Button
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* Screen;
+
+	// Cubic Button
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* Cubic;
+
+	// Light 버튼 클릭 핸들러
+	UFUNCTION()
+	void OnLightButtonClicked();
+
+	// Screen 버튼 클릭 핸들러
+	UFUNCTION()
+	void OnScreenButtonClicked();
+
+	// Cubic 버튼 클릭 핸들러
+	UFUNCTION()
+	void OnCubicButtonClicked();
 
 	// ==================== Screenshot & Video Recording ====================
 
@@ -58,21 +90,19 @@ public:
 	UFUNCTION()
 	void OnVideoButtonClicked();
 
-	// Take screenshot
-	UFUNCTION(BlueprintCallable, Category = "Viewport")
-	void TakeScreenshot();
+	// ==================== MVC Pattern ====================
 
-	// Start video recording
+	// ViewportController 
 	UFUNCTION(BlueprintCallable, Category = "Viewport")
-	void StartRecording();
+	UViewportController* GetViewportController() const { return ViewportController; }
 
-	// Stop video recording
-	UFUNCTION(BlueprintCallable, Category = "Viewport")
-	void StopRecording();
+protected:
+	// Observer Pattern: Controller 이벤트 핸들러
+	UFUNCTION()
+	void OnPanelChanged(EViewportPanelType NewPanelType);
 
-	// Check if currently recording
-	UFUNCTION(BlueprintPure, Category = "Viewport")
-	bool IsRecording() const { return bIsRecording; }
+	UFUNCTION()
+	void OnRecordingStateChanged(bool bIsRecording);
 
 private:
 
@@ -80,9 +110,12 @@ private:
 	TSharedPtr<class SViewport> ViewportWidget;
 	TSharedPtr<class FSceneViewport> SceneViewport;
 
-	// Recording state
-	bool bIsRecording = false;
+	// ==================== MVC Pattern ====================
 
-	// Screenshot counter for unique filenames
-	int32 ScreenshotCounter = 0;
+	// ViewportController
+	UPROPERTY()
+	UViewportController* ViewportController;
+
+	// 초기화
+	void InitializeController();
 };

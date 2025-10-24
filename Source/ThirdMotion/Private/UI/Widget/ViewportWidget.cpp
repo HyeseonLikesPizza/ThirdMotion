@@ -12,9 +12,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include "HighResScreenshot.h"
-#include "Misc/Paths.h"
-#include "HAL/PlatformFileManager.h"
+#include "Components/WidgetSwitcher.h"
+#include "UI/WidgetController/ViewportController.h"
 
 /*
 TSharedRef<SWidget> UViewportWidget::RebuildWidget()
@@ -91,6 +90,9 @@ void UViewportWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	// ==================== Controller 초기화 ====================
+	InitializeController();
+
 	// DirectionalLight 찾기
 	TArray<AActor*> FoundLights;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADirectionalLight::StaticClass(), FoundLights);
@@ -131,6 +133,26 @@ void UViewportWidget::NativeConstruct()
 		}
 	}
 
+	// ==================== Panel Buttons 바인딩 ====================
+
+	if (TimeLight)
+	{
+		TimeLight->OnClicked.AddDynamic(this, &UViewportWidget::OnLightButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: TimeLight button bound"));
+	}
+
+	if (Screen)
+	{
+		Screen->OnClicked.AddDynamic(this, &UViewportWidget::OnScreenButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Screen button bound"));
+	}
+
+	if (Cubic)
+	{
+		Cubic->OnClicked.AddDynamic(this, &UViewportWidget::OnCubicButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Cubic button bound"));
+	}
+
 	// ==================== Screenshot & Video Recording 버튼 바인딩 ====================
 
 	if (ShootButton)
@@ -149,6 +171,33 @@ void UViewportWidget::NativeConstruct()
 	if (VideoButtonText)
 	{
 		VideoButtonText->SetText(FText::FromString(TEXT("Start Recording")));
+	}
+}
+
+void UViewportWidget::NativeDestruct()
+{
+	// Unbind from Controller events
+	if (ViewportController)
+	{
+		ViewportController->OnPanelChanged.RemoveDynamic(this, &UViewportWidget::OnPanelChanged);
+		ViewportController->OnRecordingStateChanged.RemoveDynamic(this, &UViewportWidget::OnRecordingStateChanged);
+	}
+
+	Super::NativeDestruct();
+}
+
+void UViewportWidget::InitializeController()
+{
+	if (!ViewportController)
+	{
+		ViewportController = NewObject<UViewportController>(this);
+		ViewportController->Init();
+
+		// Observer Pattern: Controller 이벤트 구독
+		ViewportController->OnPanelChanged.AddDynamic(this, &UViewportWidget::OnPanelChanged);
+		ViewportController->OnRecordingStateChanged.AddDynamic(this, &UViewportWidget::OnRecordingStateChanged);
+
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: ViewportController initialized"));
 	}
 }
 
@@ -210,154 +259,93 @@ void UViewportWidget::OnLightSliderValueChanged(float Value)
 	}
 }
 
-// ==================== Screenshot & Video Recording Implementation ====================
+// ==================== Panel Button Handlers (View -> Controller) ====================
+
+void UViewportWidget::OnLightButtonClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Light button clicked"));
+
+	if (ViewportController)
+	{
+		ViewportController->SwitchToLightPanel();
+	}
+}
+
+void UViewportWidget::OnScreenButtonClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Screen button clicked"));
+
+	if (ViewportController)
+	{
+		ViewportController->SwitchToScreenPanel();
+	}
+}
+
+void UViewportWidget::OnCubicButtonClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Cubic button clicked"));
+
+	if (ViewportController)
+	{
+		ViewportController->SwitchToCubicPanel();
+	}
+}
+
+// ==================== Screenshot & Video Recording Handlers (View -> Controller) ====================
 
 void UViewportWidget::OnShootButtonClicked()
 {
 	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Shoot button clicked"));
-	TakeScreenshot();
+
+	if (ViewportController)
+	{
+		ViewportController->TakeScreenshot();
+	}
 }
 
 void UViewportWidget::OnVideoButtonClicked()
 {
 	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Video button clicked"));
 
-	if (bIsRecording)
+	if (ViewportController)
 	{
-		StopRecording();
-	}
-	else
-	{
-		StartRecording();
+		ViewportController->ToggleRecording();
 	}
 }
 
-void UViewportWidget::TakeScreenshot()
+// ==================== Observer Pattern: Controller Event Handlers (Controller -> View) ====================
+
+void UViewportWidget::OnPanelChanged(EViewportPanelType NewPanelType)
 {
-	if (!GetWorld())
+	// Widget Switcher의 Active Index 업데이트
+	if (WidgetSwitcher)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: GetWorld() is null, cannot take screenshot"));
-		return;
+		int32 PanelIndex = static_cast<int32>(NewPanelType);
+		WidgetSwitcher->SetActiveWidgetIndex(PanelIndex);
+
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget View: Widget Switcher set to index %d"), PanelIndex);
 	}
-
-	// 프로젝트의 Saved/Screenshots 폴더 경로 생성
-	FString SavedDir = FPaths::ProjectSavedDir() / TEXT("Screenshots");
-
-	// 디렉토리가 존재하지 않으면 생성
-	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-	if (!PlatformFile.DirectoryExists(*SavedDir))
+	else
 	{
-		PlatformFile.CreateDirectory(*SavedDir);
+		UE_LOG(LogTemp, Warning, TEXT("ViewportWidget View: WidgetSwitcher is null"));
 	}
+}
 
-	// 파일 이름 생성 (타임스탬프 + 카운터)
-	FString Timestamp = FDateTime::Now().ToString(TEXT("%Y%m%d_%H%M%S"));
-	FString FileName = FString::Printf(TEXT("Screenshot_%s_%04d.png"), *Timestamp, ScreenshotCounter);
-	FString FullPath = SavedDir / FileName;
-
-	// 스크린샷 캡처 (콘솔 커맨드 사용)
-	if (APlayerController* PC = GetOwningPlayer())
+void UViewportWidget::OnRecordingStateChanged(bool bIsRecording)
+{
+	// 녹화 상태에 따라 VideoButtonText 업데이트
+	if (VideoButtonText)
 	{
-		// HighResShot 콘솔 커맨드 실행 (UI 포함)
-		FString Command = FString::Printf(TEXT("HighResShot 1920x1080 filename=\"%s\""), *FullPath);
-		PC->ConsoleCommand(Command);
-
-		ScreenshotCounter++;
-
-		UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Screenshot taken - %s"), *FullPath);
-
-		// 화면에 메시지 출력 (옵션)
-		if (GEngine)
+		if (bIsRecording)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green,
-				FString::Printf(TEXT("Screenshot saved: %s"), *FileName));
+			VideoButtonText->SetText(FText::FromString(TEXT("Stop Recording")));
 		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: PlayerController is null, cannot take screenshot"));
-	}
-}
+		else
+		{
+			VideoButtonText->SetText(FText::FromString(TEXT("Start Recording")));
+		}
 
-void UViewportWidget::StartRecording()
-{
-	if (bIsRecording)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Already recording"));
-		return;
-	}
-
-	if (!GetWorld())
-	{
-		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: GetWorld() is null, cannot start recording"));
-		return;
-	}
-
-	APlayerController* PC = GetOwningPlayer();
-	if (!PC)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: PlayerController is null, cannot start recording"));
-		return;
-	}
-
-	// 녹화 시작 (Unreal의 기본 Sequence Recorder 사용)
-	// 또는 StartMovieCapture 커맨드 사용
-	PC->ConsoleCommand(TEXT("StartMovieCapture"));
-
-	bIsRecording = true;
-
-	// 버튼 텍스트 업데이트
-	if (VideoButtonText)
-	{
-		VideoButtonText->SetText(FText::FromString(TEXT("Stop Recording")));
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Video recording started"));
-
-	// 화면에 메시지 출력
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Recording started"));
-	}
-}
-
-void UViewportWidget::StopRecording()
-{
-	if (!bIsRecording)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Not currently recording"));
-		return;
-	}
-
-	if (!GetWorld())
-	{
-		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: GetWorld() is null, cannot stop recording"));
-		return;
-	}
-
-	APlayerController* PC = GetOwningPlayer();
-	if (!PC)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ViewportWidget: PlayerController is null, cannot stop recording"));
-		return;
-	}
-
-	// 녹화 중지
-	PC->ConsoleCommand(TEXT("StopMovieCapture"));
-
-	bIsRecording = false;
-
-	// 버튼 텍스트 업데이트
-	if (VideoButtonText)
-	{
-		VideoButtonText->SetText(FText::FromString(TEXT("Start Recording")));
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Video recording stopped"));
-
-	// 화면에 메시지 출력
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Recording stopped - Video saved to Saved/VideoCaptures"));
+		UE_LOG(LogTemp, Log, TEXT("ViewportWidget View: VideoButtonText updated - Recording: %s"),
+			bIsRecording ? TEXT("true") : TEXT("false"));
 	}
 }
