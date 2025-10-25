@@ -6,6 +6,7 @@
 #include "UI/Widget/BaseWidget.h"
 #include "RightPanel.generated.h"
 
+class UMeshSettingsWidget;
 class UTreeView;
 class USceneController;
 class USceneList;
@@ -50,6 +51,10 @@ public:
 	// SceneItemWidget 클래스
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Scene List")
 	TSubclassOf<UUserWidget> SceneItemWidgetClass;
+
+	// Properties 패널
+	UPROPERTY(meta = (BindWidget))
+	UMeshSettingsWidget* MeshSettingsWidget;
 
 	// ==================== Public Interface ====================
 
@@ -97,6 +102,8 @@ private:
 	// SceneController (Scene 패널 전용)
 	UPROPERTY()
 	USceneController* SceneController;
+
+	
 
 	// SceneList (Scene 패널 데이터)
 	UPROPERTY()

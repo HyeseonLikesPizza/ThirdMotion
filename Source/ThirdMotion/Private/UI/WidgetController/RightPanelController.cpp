@@ -1,7 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UI/WidgetController/RightPanelController.h"
+#include "ThirdMotion/ThirdMotion.h"
 #include "UI/Panel/RightPanel.h"
+#include "UI/WidgetController/MeshWidgetController.h"
+#include "Edit/AssetResolver.h"
+#include "Framework/ThirdMotionPlayerController.h"
 
 void URightPanelController::InitializeWithRightPanel(URightPanel* InRightPanel)
 {
@@ -17,6 +21,22 @@ void URightPanelController::InitializeWithRightPanel(URightPanel* InRightPanel)
 
 	// RightPanel 초기 상태: 숨김
 	RightPanel->SetRightPanelVisibility(false);
+
+	// MeshWidgetController 생성 후 설정
+	UMeshSettingsWidget* MeshWidget = RightPanel->MeshSettingsWidget;
+	if (!MeshWidget)
+	{
+		PRINTLOG(TEXT("MeshWidget Invalid"));
+		return;
+	}
+
+	UAssetResolver* Resolver = GetWorld()->GetSubsystem<UAssetResolver>();
+	AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetWorld()->GetFirstPlayerController());
+
+	MeshWidgetController = NewObject<UMeshWidgetController>(this);
+	MeshWidgetController->Initialize(Resolver);
+	MeshWidgetController->AttachView(MeshWidget);
+	MeshWidgetController->BindPlayerController(PC);
 
 	UE_LOG(LogTemp, Log, TEXT("RightPanelController: Initialized with RightPanel (hidden)"));
 }

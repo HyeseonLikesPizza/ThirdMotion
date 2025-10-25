@@ -11,6 +11,8 @@ class THIRDMOTION_API UMeshSettingsWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	virtual void NativeConstruct() override;
+	
 	UPROPERTY(meta=(BindWidget))
 	class UMeshListCombo* MeshListCombo;
 
@@ -19,6 +21,8 @@ public:
 	
 
 private:
+	void UpdateSelectionFromActor();
+
 	UFUNCTION()
 	void ApplyStaticMesh(UStaticMesh* NewMesh);
 

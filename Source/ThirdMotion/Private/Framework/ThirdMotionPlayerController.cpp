@@ -97,6 +97,11 @@ void AThirdMotionPlayerController::SetupInputComponent()
 	
 }
 
+AActor* AThirdMotionPlayerController::GetSelectedActor()
+{
+	return SelectedActor;
+}
+
 void AThirdMotionPlayerController::StartPlacement(const FGameplayTag& PresetTag)
 {
 	if (!LibraryWidgetController) return;
@@ -146,6 +151,7 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 				H->EnableHighlight(false);
 
 		SelectedActor = NewSel;
+		OnActorSelected.Broadcast(SelectedActor);
 
 		// 새 대상 하이라이트 켜기
 		if (IsValid(SelectedActor))
@@ -167,8 +173,7 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 				}
 			}
 		}
-
-		// 
+		
 	}
 }
 

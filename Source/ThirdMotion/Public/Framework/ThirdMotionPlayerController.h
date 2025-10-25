@@ -12,6 +12,8 @@ class UMainWidget;
 class UInputMappingContext;
 class UInputAction;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActorSelected, AActor*, SelectedActor);
+
 UCLASS()
 class THIRDMOTION_API AThirdMotionPlayerController : public APlayerController
 {
@@ -21,6 +23,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupInputComponent() override;
+
+	/* */
+	AActor* GetSelectedActor();
 
 	/* 배치 */
 	UFUNCTION(Server, Reliable)
@@ -67,8 +72,10 @@ private:
 	
 	void SelectUnderCursor();
 
+public:
+	FOnActorSelected OnActorSelected;
 
-	
+private:
 
 	/* 메인 오버레이 위젯 */
 

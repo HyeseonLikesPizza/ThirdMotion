@@ -46,12 +46,9 @@ void URightPanel::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// RightPanelController 초기화
-	InitializeRightPanelController();
-
 	// SceneController 초기화 (Scene 패널용)
 	InitializeSceneController();
-
+	
 	// SceneList 초기화 (Scene 패널용)
 	InitializeSceneList();
 
@@ -60,6 +57,9 @@ void URightPanel::NativeConstruct()
 	{
 		SceneList->SetOnGetItemChildren(this, &URightPanel::OnGetItemChildren);
 	}
+	
+	// RightPanelController 초기화
+	InitializeRightPanelController();
 
 	// UI 새로고침
 	RefreshUI();

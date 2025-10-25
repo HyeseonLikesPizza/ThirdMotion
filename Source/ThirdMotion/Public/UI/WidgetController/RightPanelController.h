@@ -7,6 +7,7 @@
 #include "UI/WidgetController/BottomController.h"
 #include "RightPanelController.generated.h"
 
+class UMeshWidgetController;
 class URightPanel;
 
 /**
@@ -62,4 +63,8 @@ protected:
 	void InitializePropertiesPanel();
 	void InitializeXYZPanel();
 	void InitializeUserListPanel();
+
+private:
+	UPROPERTY()
+	UMeshWidgetController* MeshWidgetController;
 };

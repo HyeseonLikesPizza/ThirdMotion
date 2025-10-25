@@ -6,7 +6,12 @@
 #include "MeshWidgetController.generated.h"
 
 
+class AThirdMotionPlayerController;
 class UAssetResolver;
+class UMeshSettingsWidget;
+class USceneController;
+class UStaticMesh;
+class AActor;
 struct FMeshDataRow;
 
 UCLASS()
@@ -16,15 +21,27 @@ class THIRDMOTION_API UMeshWidgetController : public UBaseWidgetController
 
 public:
 	void Initialize(UAssetResolver* InResolver);
-	void AttachView(class UMeshSettingsWidget* InView);
+	void AttachView(UMeshSettingsWidget* InView);
+	void BindPlayerController(AThirdMotionPlayerController* InPC);
 	void SetTargetActor(AActor* InActor);
 
+protected:
+	virtual void BeginDestroy() override;
+
 private:
+	void RefreshList();
+	void SyncSelectionToActor();
+	void ApplySelectionToCombo(UStaticMesh* Mesh);
+	AActor* ResolveSelectionFromArray(const TArray<AActor*>& SelectedActors) const;
+
 	UPROPERTY()
 	UAssetResolver* Resolver = nullptr;
 	
 	UPROPERTY()
 	UMeshSettingsWidget* View = nullptr;
+
+	UPROPERTY()
+	AThirdMotionPlayerController* PC = nullptr;
 	
 	TWeakObjectPtr<AActor> TargetActor;
 
@@ -34,5 +51,8 @@ private:
 	UFUNCTION()
 	void HandleMeshPicked(UStaticMesh* NewMesh);
 
-	void RefreshList();
+	UFUNCTION()
+	void HandleSelectionChanged(AActor* SelectedActor);
+
+	bool bComboUpdating = false;
 };

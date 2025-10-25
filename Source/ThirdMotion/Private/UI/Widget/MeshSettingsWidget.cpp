@@ -8,6 +8,14 @@
 void UMeshSettingsWidget::SetTargetActor(AActor* NewTargetActor)
 {
 	TargetActor = NewTargetActor;
+	UpdateSelectionFromActor();
+}
+
+void UMeshSettingsWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	
 }
 
 void UMeshSettingsWidget::InitFromResolver(class UAssetResolver* Resolver)
@@ -34,4 +42,30 @@ void UMeshSettingsWidget::ApplyStaticMesh(UStaticMesh* NewMesh)
 
 	if (UStaticMeshComponent* Comp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
 		Comp->SetStaticMesh(NewMesh);
+}
+
+void UMeshSettingsWidget::UpdateSelectionFromActor()
+{
+	if (!MeshListCombo)
+	{
+		return;
+	}
+
+	UStaticMesh* CurrentMesh = nullptr;
+	if (TargetActor.IsValid())
+	{
+		if (UStaticMeshComponent* Comp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
+		{
+			CurrentMesh = Comp->GetStaticMesh();
+		}
+	}
+
+	if (CurrentMesh)
+	{
+		MeshListCombo->SelectMesh(CurrentMesh, /*bBroadcastChange=*/false);
+	}
+	else
+	{
+		MeshListCombo->ClearSelection(false);
+	}
 }
