@@ -13,5 +13,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	FName MeshName;
 
+	UPROPERTY(EditAnywhere)
+	TSoftObjectPtr<UStaticMesh> MeshAssetRef;
+
+	UPROPERTY(EditAnywhere)
+	UTexture2D* PreviewImage = nullptr;
 	
 };
