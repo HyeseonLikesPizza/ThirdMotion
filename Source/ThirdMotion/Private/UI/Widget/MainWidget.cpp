@@ -4,6 +4,8 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Widget.h"
 #include "UI/Widget/ViewportWidget.h"
+#include "UI/Panel/BottomBar.h"
+#include "UI/Panel/RightPanel.h"
 #include "Blueprint/WidgetTree.h"
 #include "Camera/CameraActor.h"
 
@@ -13,6 +15,27 @@ void UMainWidget::NativeConstruct()
 
 	// Setup 3D viewport
 	//SetupViewport();
+
+	// BottomBar와 RightPanel 연결
+	if (BottomBar && RightPanel)
+	{
+		UBottomBar* BottomBarWidget = Cast<UBottomBar>(BottomBar);
+		URightPanel* RightPanelWidget = Cast<URightPanel>(RightPanel);
+
+		if (BottomBarWidget && RightPanelWidget)
+		{
+			BottomBarWidget->InitializeWithRightPanel(RightPanelWidget);
+			UE_LOG(LogTemp, Log, TEXT("MainWidget: BottomBar and RightPanel connected"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MainWidget: Failed to cast BottomBar or RightPanel"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MainWidget: BottomBar or RightPanel is null"));
+	}
 }
 
 void UMainWidget::NativeDestruct()

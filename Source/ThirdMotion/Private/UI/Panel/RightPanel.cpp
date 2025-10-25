@@ -1,10 +1,12 @@
 #include "UI/Panel/RightPanel.h"
 #include "UI/Widget/SceneItemWidget.h"
 #include "Data/SceneItemData.h"
+#include "UI/WidgetController/RightPanelController.h"
 #include "UI/WidgetController/SceneController.h"
 #include "Data/SceneList.h"
 #include "Components/TreeView.h"
 #include "Components/TextBlock.h"
+#include "Components/WidgetSwitcher.h"
 #include "Engine/World.h"
 
 
@@ -44,13 +46,16 @@ void URightPanel::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// Controller 초기화
-	InitializeController();
+	// RightPanelController 초기화
+	InitializeRightPanelController();
 
-	// SceneList 초기화
+	// SceneController 초기화 (Scene 패널용)
+	InitializeSceneController();
+
+	// SceneList 초기화 (Scene 패널용)
 	InitializeSceneList();
 
-	// TreeView 설정
+	// TreeView 설정 (Scene 패널용)
 	if (SceneList)
 	{
 		SceneList->SetOnGetItemChildren(this, &URightPanel::OnGetItemChildren);
@@ -82,7 +87,18 @@ void URightPanel::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	}
 }
 
-void URightPanel::InitializeController()
+void URightPanel::InitializeRightPanelController()
+{
+	if (!RightPanelController)
+	{
+		RightPanelController = NewObject<URightPanelController>(this);
+		RightPanelController->InitializeWithRightPanel(this);
+
+		UE_LOG(LogTemp, Log, TEXT("RightPanel: RightPanelController initialized"));
+	}
+}
+
+void URightPanel::InitializeSceneController()
 {
 	if (!SceneController)
 	{
@@ -147,5 +163,33 @@ void URightPanel::OnItemSelectionChangedEvent(UObject* Item, bool bIsSelected)
 			SceneController->SelectActor(ItemData->Actor);
 			UE_LOG(LogTemp, Log, TEXT("RightPanel: Selected actor %s"), *ItemData->Actor->GetName());
 		}
+	}
+}
+
+void URightPanel::SetWidgetSwitcherIndex(int32 Index)
+{
+	if (!WidgetSwitcher_Right)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RightPanel View: WidgetSwitcher_Right is null"));
+		return;
+	}
+
+	// WidgetSwitcher 인덱스 변경 (View 기능만)
+	WidgetSwitcher_Right->SetActiveWidgetIndex(Index);
+
+	UE_LOG(LogTemp, Log, TEXT("RightPanel View: WidgetSwitcher set to index %d"), Index);
+}
+
+void URightPanel::SetRightPanelVisibility(bool bVisible)
+{
+	if (bVisible)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+		UE_LOG(LogTemp, Log, TEXT("RightPanel View: Panel shown"));
+	}
+	else
+	{
+		SetVisibility(ESlateVisibility::Collapsed);
+		UE_LOG(LogTemp, Log, TEXT("RightPanel View: Panel hidden"));
 	}
 }

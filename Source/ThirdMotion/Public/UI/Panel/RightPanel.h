@@ -10,6 +10,7 @@ class UTreeView;
 class USceneController;
 class USceneList;
 class USceneItemWidget;
+class URightPanelController;
 class AActor;
 
 // Forward declaration
@@ -19,19 +20,14 @@ class USceneItemData;
  * RightPanel - View 역할 (MVC Pattern)
  *
  * 책임:
- * - UI 표시만 담당 (TreeView, 위젯 업데이트)
- * - 사용자 입력을 SceneController에게 위임
- * - Model(SceneList)의 데이터 변경 알림을 받아 UI 업데이트
+ * - UI 표시만 담당 (WidgetSwitcher, TreeView 등)
+ * - 사용자 입력을 RightPanelController에게 위임
+ * - 비즈니스 로직은 RightPanelController가 처리
  *
  * 역할 분리:
- * - View: UI 표시 및 사용자 입력 수신
- * - Controller: SceneController가 모든 비즈니스 로직 처리
- * - Model: SceneList가 데이터 관리
- *
- * 데이터 흐름:
- * 1. User Input -> RightPanel(View) -> SceneController(Controller)
- * 2. SceneController -> SceneList(Model) 데이터 업데이트
- * 3. SceneList -> Observer 알림 -> RightPanel(View) UI 업데이트
+ * - View (RightPanel): UI 표시만 담당
+ * - Controller (RightPanelController): 패널 전환 및 비즈니스 로직
+ * - Scene 관련: SceneController + SceneList
  */
 UCLASS()
 class THIRDMOTION_API URightPanel : public UBaseWidget
@@ -46,6 +42,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* PanelTitle;
+
+	// WidgetSwitcher for panel switching (Library, Scene, Properties)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UWidgetSwitcher* WidgetSwitcher_Right;
 
 	// SceneItemWidget 클래스
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Scene List")
@@ -65,6 +65,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
 	USceneList* GetSceneListData() const { return SceneListData; }
 
+	// RightPanelController 접근자
+	UFUNCTION(BlueprintCallable, Category = "Right Panel")
+	URightPanelController* GetRightPanelController() const { return RightPanelController; }
+
+	// WidgetSwitcher 인덱스 변경 (View 기능만)
+	UFUNCTION(BlueprintCallable, Category = "Right Panel")
+	void SetWidgetSwitcherIndex(int32 Index);
+
+	// RightPanel 가시성 설정 (View 기능만)
+	UFUNCTION(BlueprintCallable, Category = "Right Panel")
+	void SetRightPanelVisibility(bool bVisible);
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -78,18 +90,23 @@ protected:
 	void OnItemSelectionChangedEvent(UObject* Item, bool bIsSelected);
 
 private:
-	// SceneController (모든 액션 처리)
+	// RightPanelController (패널 전환 및 비즈니스 로직)
+	UPROPERTY()
+	URightPanelController* RightPanelController;
+
+	// SceneController (Scene 패널 전용)
 	UPROPERTY()
 	USceneController* SceneController;
 
-	// SceneList (데이터 관리)
+	// SceneList (Scene 패널 데이터)
 	UPROPERTY()
 	class USceneList* SceneListData;
 
 	float RefreshTimer = 0.0f;
 
 	// 초기화
-	void InitializeController();
+	void InitializeRightPanelController();
+	void InitializeSceneController();
 	void InitializeSceneList();
 
 	// UI 업데이트
