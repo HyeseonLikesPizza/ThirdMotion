@@ -10,7 +10,7 @@ public class ThirdMotion : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "MoviePlayer", "Sockets", "Networking", "GameplayTags", "NetCore" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "ImageWrapper", "MoviePlayer", "MoviePlayer" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "ImageWrapper", "MoviePlayer", "MoviePlayer", "UMG" });
 
 		// 에디터 전용 모듈 추가
 		if (Target.bBuildEditor)

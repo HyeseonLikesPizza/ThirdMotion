@@ -1,9 +1,14 @@
 
 #include "UI/Widget/MeshListCombo.h"
-
+#include "Widgets/Input/SComboBox.h"
+#include "Widgets/Images/SImage.h"
+#include "Widgets/Text/STextBlock.h"
+#include "Widgets/SBoxPanel.h"
+#include "Styling/SlateBrush.h"
 #include "Data/MeshDataRow.h"
+#include "Widgets/DeclarativeSyntaxSupport.h"
 
-/*
+
 void UMeshListCombo::SetItems(const TArray<FMeshDataRow>& InRows)
 {
 	Items.Reset(InRows.Num());
@@ -27,11 +32,18 @@ TSharedRef<SWidget> UMeshListCombo::RebuildWidget()
 {
 	return SAssignNew(Combo, SComboBox<TSharedPtr<FMeshDataRow>>)
 		.OptionsSource(&Items)
-		.OnGenerateWidget(this, &UMeshListCombo::GenerateItem)
-		.OnSelectionChanged(this, &UMeshListCombo::OnChanged)
-		[
-			SNew(STextBlock).Text(this, &UMeshListCombo::GetSelectedLabel)
-		];
+		.OnGenerateWidget_UObject(this, &UMeshListCombo::GenerateItem)
+		.OnSelectionChanged_Lambda([this](TSharedPtr<FMeshDataRow> NewSel, ESelectInfo::Type)
+		{
+			Current = NewSel;
+			if (Current.IsValid() && !Current->MeshAssetRef.IsNull())
+			{
+				if (UStaticMesh* Mesh = Current->MeshAssetRef.LoadSynchronous())
+				{
+					OnMeshPicked.Broadcast(Mesh);
+				}
+			}
+		});
 }
 
 void UMeshListCombo::ReleaseSlateResources(bool bReleaseChildren)
@@ -73,4 +85,3 @@ FText UMeshListCombo::GetSelectedLabel() const
 {
 	return Current.IsValid() ? FText::FromName(Current->MeshName) : FText::FromString(TEXT("Select Mesh"));
 }
-*/

@@ -6,6 +6,8 @@
 #include "Data/MeshDataRow.h"
 #include "MeshListCombo.generated.h"
 
+template <typename OptionType> class SComboBox;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMeshPicked, UStaticMesh*, Mesh);
 
 UCLASS()
@@ -13,7 +15,7 @@ class THIRDMOTION_API UMeshListCombo : public UWidget
 {
 	GENERATED_BODY()
 
-	/*
+	
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnMeshPicked OnMeshPicked;
@@ -33,5 +35,5 @@ private:
 	TSharedRef<SWidget> GenerateItem(TSharedPtr<FMeshDataRow> Row) const;
 	void OnChanged(TSharedPtr<FMeshDataRow> NewSel, ESelectInfo::Type);
 	FText GetSelectedLabel() const;
-	*/
+	
 };
