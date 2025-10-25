@@ -3,6 +3,32 @@
 #include "Edit/EditTypes.h"
 #include "ThirdMotion/ThirdMotion.h"
 
+void UAssetResolver::GetAllStaticMeshRows(TArray<const FMeshDataRow*>& OutRows)
+{
+	if (!MeshTable) return;
+	if (MeshDataArray.IsEmpty())
+	{
+		CacheMeshData();
+	}
+	
+	OutRows.Reset();
+	OutRows.Reserve(MeshDataArray.Num());
+	
+	for (const FMeshDataRow* Row : MeshDataArray)
+	{
+		OutRows.Add(Row);
+	}
+	
+}
+
+void UAssetResolver::CacheMeshData()
+{
+	MeshDataArray.Reset();
+	if (!MeshTable) return;
+	
+	MeshTable->GetAllRows<FMeshDataRow>(TEXT("AssetResolver::GetAllStaticMeshRows"), MeshDataArray);
+}
+
 void UAssetResolver::BuildIndex(UDataTable* DT)
 {
 	TagToRow.Empty();
@@ -143,6 +169,12 @@ void UAssetResolver::EnsureLoadedAndBuildIndex()
 		PRINTLOG(TEXT("[Resolver] No LibraryTableAsset assigned"));
 		return;
 	}
+
+	if (!MeshTable && MeshRowTableAsset.IsValid())
+		MeshTable = MeshRowTableAsset.Get();
+
+	if (!MeshTable && MeshRowTableAsset.IsNull() == false)
+		MeshTable = MeshRowTableAsset.LoadSynchronous();
 
 	BuildIndex(LibraryTable);
 	bReady = true;

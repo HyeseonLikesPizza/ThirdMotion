@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/MeshDataRow.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Edit/EditTypes.h"
 #include "AssetResolver.generated.h"
@@ -14,10 +15,25 @@ class THIRDMOTION_API UAssetResolver : public UWorldSubsystem
 	GENERATED_BODY()
 
 public:
+	/* -------------- Static Mesh Data --------------*/
+	
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DataTable")
+	TSoftObjectPtr<UDataTable> MeshRowTableAsset;
 
-	UPROPERTY(Config, EditDefaultsOnly, Category = "Library")
+	UPROPERTY()
+	TObjectPtr<UDataTable> MeshTable = nullptr;
+	
+	TArray<FMeshDataRow*> MeshDataArray;
+	
+	void GetAllStaticMeshRows(TArray<const FMeshDataRow*>& OutRows);
+	void CacheMeshData();
+	
+	
+	/* -------------- Library Panel Widget Data --------------*/
+
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DataTable")
 	TSoftObjectPtr<UDataTable> LibraryTableAsset;
-
+	
 	bool IsReady() const { return bReady; }
 	FOnReady OnReady;
 	
