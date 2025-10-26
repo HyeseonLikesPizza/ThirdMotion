@@ -1,8 +1,8 @@
 
-#include "UI/Widget/MeshSettingsWidget.h"
+#include "UI/Widget/Mesh/MeshSettingsWidget.h"
 #include "Data/MeshDataRow.h"
 #include "Edit/AssetResolver.h"
-#include "UI/Widget/MeshListCombo.h"
+#include "UI/Widget/Mesh/MeshListCombo.h"
 
 
 void UMeshSettingsWidget::SetTargetActor(AActor* NewTargetActor)

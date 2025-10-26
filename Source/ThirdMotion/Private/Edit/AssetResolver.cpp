@@ -2,6 +2,7 @@
 #include "Edit/AssetResolver.h"
 #include "Edit/EditTypes.h"
 #include "ThirdMotion/ThirdMotion.h"
+#include "Data/MaterialDataTypes.h"
 
 void UAssetResolver::GetAllStaticMeshRows(TArray<const FMeshDataRow*>& OutRows)
 {
@@ -19,6 +20,32 @@ void UAssetResolver::GetAllStaticMeshRows(TArray<const FMeshDataRow*>& OutRows)
 		OutRows.Add(Row);
 	}
 	
+}
+
+void UAssetResolver::GetAllStaticMaterialRows(TArray<const FMaterialEntryRow*>& OutRows)
+{
+	if (!MaterialTable) return;
+	if (MaterialArray.IsEmpty())
+	{
+		CacheMaterialData();
+	}
+	
+	OutRows.Reset();
+	OutRows.Reserve(MaterialArray.Num());
+	
+	for (const FMaterialEntryRow* Row : MaterialArray)
+	{
+		if (Row->Kind == EMaterialEntryKind::Asset)
+			OutRows.Add(Row);
+	}
+}
+
+void UAssetResolver::CacheMaterialData()
+{
+	MaterialArray.Reset();
+	if (!MaterialTable) return;
+
+	MaterialTable->GetAllRows<FMaterialEntryRow>(TEXT("AssetResolver::GetAllStaticMaterialRows"), MaterialArray);
 }
 
 void UAssetResolver::CacheMeshData()

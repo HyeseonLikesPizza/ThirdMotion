@@ -1,8 +1,6 @@
 #include "UI/WidgetController/MeshWidgetController.h"
-
-#include "UI/Widget/MeshSettingsWidget.h"
-#include "UI/Widget/MeshListCombo.h"
-#include "UI/WidgetController/SceneController.h"
+#include "UI/Widget/Mesh/MeshSettingsWidget.h"
+#include "UI/Widget/Mesh/MeshListCombo.h"
 #include "Edit/AssetResolver.h"
 #include "Data/MeshDataRow.h"
 #include "Components/StaticMeshComponent.h"

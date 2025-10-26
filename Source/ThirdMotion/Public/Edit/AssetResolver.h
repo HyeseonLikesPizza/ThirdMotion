@@ -7,6 +7,7 @@
 #include "Edit/EditTypes.h"
 #include "AssetResolver.generated.h"
 
+struct FMaterialEntryRow;
 DECLARE_MULTICAST_DELEGATE(FOnReady)
 
 UCLASS(Config=Game)
@@ -22,7 +23,10 @@ public:
 	UPROPERTY()
 	TObjectPtr<UDataTable> MaterialTable = nullptr;
 
-	TArray<FMeshDataRow*> MaterialArray;
+	TArray<FMaterialEntryRow*> MaterialArray;
+
+	void GetAllStaticMaterialRows(TArray<const FMaterialEntryRow*>& OutRows);
+	void CacheMaterialData();
 
 	
 	/* -------------- Static Mesh Data --------------*/
