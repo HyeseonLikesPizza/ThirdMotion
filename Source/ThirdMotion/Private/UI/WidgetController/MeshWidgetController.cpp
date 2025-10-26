@@ -7,6 +7,7 @@
 #include "Framework/ThirdMotionPlayerController.h"
 #include "GameFramework/Actor.h"
 #include "ThirdMotion/ThirdMotion.h"
+#include "UI/Widget/Mesh/MaterialListCombo.h"
 
 void UMeshWidgetController::Initialize(UAssetResolver* InResolver)
 {
@@ -32,6 +33,11 @@ void UMeshWidgetController::AttachView(UMeshSettingsWidget* InView)
 	if (View && View->MeshListCombo)
 	{
 		View->MeshListCombo->OnMeshPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMeshPicked);
+	}
+
+	if (View && View->MaterialListCombo)
+	{
+		View->MaterialListCombo->OnMaterialPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMaterialPicked);
 	}
 
 	View = InView;
@@ -99,6 +105,22 @@ void UMeshWidgetController::HandleMeshPicked(UStaticMesh* NewMesh)
 	}
 }
 
+void UMeshWidgetController::HandleMaterialPicked(UMaterialInterface* NewMaterial)
+{
+	if (bComboUpdating || !TargetActor.IsValid() || !NewMaterial)
+	{
+		return;
+	}
+
+	if (UStaticMeshComponent* StaticMeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
+	{
+		if (StaticMeshComp->GetMaterial(0) != NewMaterial)
+		{
+			StaticMeshComp->SetMaterial(0, NewMaterial);
+		}
+	}
+}
+
 void UMeshWidgetController::HandleSelectionChanged(AActor* SelectedActor)
 {
 	PRINTLOG(TEXT("HandleSelectionChanged"));
@@ -135,24 +157,26 @@ void UMeshWidgetController::RefreshList()
 
 void UMeshWidgetController::SyncSelectionToActor()
 {
-	if (!View || !View->MeshListCombo)
-	{
-		return;
-	}
+	if (!View || !View->MeshListCombo) return;
+	if (!View || !View->MaterialListCombo) return;
 
 	UStaticMesh* MeshToApply = nullptr;
+	UMaterialInterface* MaterialToApply = nullptr;
+	
 	if (TargetActor.IsValid())
 	{
 		if (UStaticMeshComponent* StaticMeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
 		{
 			MeshToApply = StaticMeshComp->GetStaticMesh();
+			MaterialToApply = StaticMeshComp->GetMaterial(0);
 		}
 	}
 
-	ApplySelectionToCombo(MeshToApply);
+	ApplySelectionToMeshCombo(MeshToApply);
+	ApplySelectionToMaterialCombo(MaterialToApply);
 }
 
-void UMeshWidgetController::ApplySelectionToCombo(UStaticMesh* Mesh)
+void UMeshWidgetController::ApplySelectionToMeshCombo(UStaticMesh* Mesh)
 {
 	if (!View || !View->MeshListCombo)
 	{
@@ -167,6 +191,23 @@ void UMeshWidgetController::ApplySelectionToCombo(UStaticMesh* Mesh)
 	else
 	{
 		View->MeshListCombo->ClearSelection(false);
+	}
+	bComboUpdating = false;
+}
+
+void UMeshWidgetController::ApplySelectionToMaterialCombo(UMaterialInterface* Material)
+{
+	if (!View || !View->MaterialListCombo) return;
+
+	bComboUpdating = true;
+	
+	if (Material)
+	{
+		View->MaterialListCombo->SelectMaterial(Material, /*bBroadcastChange=*/false);
+	}
+	else
+	{
+		View->MaterialListCombo->ClearSelection(false);
 	}
 	bComboUpdating = false;
 }
