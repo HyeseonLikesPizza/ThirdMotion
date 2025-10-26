@@ -9,6 +9,7 @@
 #include "DesktopPlatformModule.h"
 #include "IDesktopPlatform.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Kismet/GameplayStatics.h"
 
 UFileController::UFileController()
 {
@@ -321,6 +322,24 @@ void UFileController::Quit()
 	// Broadcast quit event with unsaved status
 	OnQuitRequested.Broadcast(bHasUnsaved);
 
+	auto StopPlaySession = [this]()
+	{
+		if (UWorld* World = GetWorld())
+		{
+#if WITH_EDITOR
+			if (World->IsPlayInEditor())
+			{
+				if (APlayerController* PC = World->GetFirstPlayerController())
+				{
+					PC->ConsoleCommand(TEXT("Exit"));
+					return;
+				}
+			}
+#endif
+			FPlatformMisc::RequestExit(false);
+		}
+	};
+
 	if (bHasUnsaved)
 	{
 		// Show save dialog
@@ -333,12 +352,12 @@ void UFileController::Quit()
 		{
 			// Save before quitting
 			Save();
-			FPlatformMisc::RequestExit(false);
+			StopPlaySession();
 		}
 		else if (Response == EAppReturnType::No)
 		{
 			// Quit without saving
-			FPlatformMisc::RequestExit(false);
+			StopPlaySession();
 		}
 		else
 		{
@@ -349,7 +368,7 @@ void UFileController::Quit()
 	else
 	{
 		// No unsaved changes, quit directly
-		FPlatformMisc::RequestExit(false);
+		StopPlaySession();
 	}
 }
 
