@@ -6,7 +6,7 @@
 void UMaterialListCombo::SetItems(const TArray<FMaterialEntryRow>& InRows)
 {
 	Items.Reset(InRows.Num());
-	for (const FMaterialEntryRow Row : InRows)
+	for (const FMaterialEntryRow& Row : InRows)
 	{
 		Items.Add(MakeShared<FMaterialEntryRow>(Row));
 	}

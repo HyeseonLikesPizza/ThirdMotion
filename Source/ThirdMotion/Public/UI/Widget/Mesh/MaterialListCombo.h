@@ -3,9 +3,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/Widget.h"
-#include "Data/MaterialDataTypes.h"
 #include "MaterialListCombo.generated.h"
 
+struct FMaterialEntryRow;
 template <typename OptionType> class SComboBox;
 class UMaterialInstance;
 
@@ -20,7 +20,8 @@ class THIRDMOTION_API UMaterialListCombo : public UWidget
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnMaterialPicked OnMaterialPicked;
-	
+
+	UFUNCTION(BlueprintCallable)
 	void SetItems(const TArray<FMaterialEntryRow>& InRows);
 
 	/** 코드에서 머티리얼을 선택 상태로 반영한다. */

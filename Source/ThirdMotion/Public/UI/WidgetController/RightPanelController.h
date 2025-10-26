@@ -47,9 +47,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Right Panel Controller")
 	bool IsPanelVisible() const { return bIsPanelVisible; }
 
-	UPROPERTY()
-	UMeshWidgetController* MeshWidgetController;
-
 protected:
 	// RightPanel 참조 (View)
 	UPROPERTY()
@@ -67,4 +64,7 @@ protected:
 	void InitializeXYZPanel();
 	void InitializeUserListPanel();
 
+private:
+	UPROPERTY()
+	UMeshWidgetController* MeshWidgetController;
 };
