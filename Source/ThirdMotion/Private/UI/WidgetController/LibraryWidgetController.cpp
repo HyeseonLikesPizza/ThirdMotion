@@ -5,6 +5,7 @@
 #include "Edit/SceneManager.h"
 #include "Edit/AssetResolver.h"
 #include "Framework/ThirdMotionPlayerController.h"
+#include "Data/SceneList.h"
 
 void ULibraryWidgetController::Init()
 {
@@ -105,16 +106,44 @@ AActor* ULibraryWidgetController::SpawnPreviewGhost_Simple(const FGameplayTag& P
 	if (!R) return nullptr;
 
 	const FLibraryRow* Row = R->FindRowByTag(PresetTag);
-	
+
 	UClass* PreviewClass = Row->ClassRef.LoadSynchronous();
-	
+
 	AActor* Ghost = GetWorld()->SpawnActor<AActor>(PreviewClass, Xf);
+	UE_LOG(LogTemp, Warning, TEXT("PreviewClass: %s"), *PreviewClass->GetName());
 	if (!Ghost) return nullptr;
-	
+
 	Ghost->SetReplicates(false);
 	Ghost->SetActorEnableCollision(false);
 	Ghost->SetActorHiddenInGame(false);
-	
+
+	// Ghost Actor에 DisplayName 설정 (Ghost 표시)
+	FString GhostName = FString::Printf(TEXT("%s (Ghost)"), *Row->DisplayName.ToString());
+	Ghost->SetActorLabel(GhostName);
+
+	UE_LOG(LogTemp, Warning, TEXT("LibraryWidgetController: Ghost spawned - %s, Class=%s"),
+		*GhostName, *Ghost->GetClass()->GetName());
+
+	// SceneManager를 통해 SceneList에 Ghost 추가
+	if (USceneManager* SceneMgr = GetWorld()->GetSubsystem<USceneManager>())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SceneMgr: %s"), *SceneMgr->GetName());
+		if (USceneList* SceneListRef = SceneMgr->GetSceneList())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SceneListRef: %s"), *SceneListRef->GetName());
+			UE_LOG(LogTemp, Warning, TEXT("LibraryWidgetController: Adding Ghost to SceneList"));
+			SceneListRef->AddActor(Ghost);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("LibraryWidgetController: SceneList is NULL!"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("LibraryWidgetController: SceneManager is NULL!"));
+	}
+
 	return Ghost;
 }
 
@@ -122,11 +151,22 @@ void ULibraryWidgetController::DestroyPreviewGhost()
 {
 	if (AActor* G = PreviewGhost.Get())
 	{
-		if (IsValid(G)) G->Destroy();
+		if (IsValid(G))
+		{
+			// SceneList에서 Ghost 제거
+			if (USceneManager* SceneMgr = GetWorld()->GetSubsystem<USceneManager>())
+			{
+				if (USceneList* SceneListRef = SceneMgr->GetSceneList())
+				{
+					SceneListRef->RemoveActor(G);
+				}
+			}
+
+			G->Destroy();
+		}
 	}
-	
+
 	PreviewGhost = nullptr;
-	
 }
 
 

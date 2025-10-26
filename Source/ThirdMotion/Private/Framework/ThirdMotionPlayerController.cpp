@@ -183,6 +183,12 @@ void AThirdMotionPlayerController::Server_RequestSpawnByTag_Implementation(FGame
 		M->SpawnByTag(PresetTag, Xf);
 }
 
+void AThirdMotionPlayerController::Server_RequestDestroyByGuid_Implementation(const FGuid& ActorGuid)
+{
+	if (auto* M = GetWorld()->GetSubsystem<USceneManager>())
+		M->DestroyByGuid(ActorGuid);
+}
+
 void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
 {
 	UE_LOG(LogTemp, Warning, TEXT("[Server RPC] Received rotation update: Pitch=%f"), NewRotation.Pitch);

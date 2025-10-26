@@ -42,7 +42,27 @@ private:
 	UPROPERTY()
 	TMap<FGuid, TWeakObjectPtr<AActor>> GuidCache;
 
+	// SceneList 참조 (자동 업데이트용)
+	UPROPERTY()
+	TWeakObjectPtr<class USceneList> SceneListRef;
+
+	// Actor 타입별 일련번호 카운터 (네트워크 동기화용)
+	UPROPERTY()
+	TMap<FString, int32> ActorTypeCounters;
+
 	void AttachEditComponentAndMeta(AActor* Actor, const struct FLibraryRow& Row);
+
+	// 고유 Actor 이름 생성 (중앙 집중식)
+	FString GenerateUniqueActorName(const FString& BaseClassName);
+
+public:
+	// SceneList 등록 (RightPanel에서 호출)
+	void RegisterSceneList(class USceneList* InSceneList);
+
+	// SceneList 접근자 (LibraryWidgetController에서 사용)
+	class USceneList* GetSceneList() const { return SceneListRef.Get(); }
+
+private:
 
 	// 델리게이트 핸들
 	FDelegateHandle OnSpawnedHandle;

@@ -9,6 +9,7 @@
 #include "Engine/SpotLight.h"
 #include "Camera/CameraActor.h"
 #include "Engine/StaticMeshActor.h"
+#include "Edit/EditSyncComponent.h"
 
 void USceneList::Initialize(UWorld* InWorld)
 {
@@ -91,7 +92,26 @@ USceneItemData* USceneList::CreateItemData(AActor* Actor)
 {
 	USceneItemData* ItemData = NewObject<USceneItemData>(this);
 	ItemData->Actor = Actor;
-	ItemData->DisplayName = Actor->GetActorLabel();
+
+	// EditSyncComponent가 있으면 복제된 DisplayName 사용
+	if (UEditSyncComponent* EditComp = Actor->FindComponentByClass<UEditSyncComponent>())
+	{
+		const FEditMeta& Meta = EditComp->GetMeta();
+		if (!Meta.DisplayName.IsNone())
+		{
+			ItemData->DisplayName = Meta.DisplayName.ToString();
+		}
+		else
+		{
+			ItemData->DisplayName = Actor->GetActorLabel();
+		}
+	}
+	else
+	{
+		// EditSyncComponent가 없으면 ActorLabel 사용 (Ghost 등)
+		ItemData->DisplayName = Actor->GetActorLabel();
+	}
+
 	ItemData->ActorType = GetActorTypeString(Actor);
 	ItemData->bIsVisible = !Actor->IsHidden();
 	ItemData->bIsExpanded = false;
@@ -173,6 +193,84 @@ bool USceneList::ShouldIncludeActor(AActor* Actor) const
 
 	// 나머지는 모두 제외
 	return false;
+}
+
+void USceneList::AddActor(AActor* Actor)
+{
+	if (!Actor)
+	{
+		UE_LOG(LogTemp, Error, TEXT("SceneList: AddActor - Actor is NULL"));
+		return;
+	}
+
+	if (!ShouldIncludeActor(Actor))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SceneList: AddActor - Actor filtered out: %s (%s)"),
+			*Actor->GetActorLabel(), *Actor->GetClass()->GetName());
+		return;
+	}
+
+	// 이미 존재하면 무시
+	if (ActorToItemMap.Contains(Actor))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SceneList: AddActor - Actor already exists: %s"),
+			*Actor->GetActorLabel());
+		return;
+	}
+
+	// ItemData 생성
+	USceneItemData* ItemData = CreateItemData(Actor);
+	ActorToItemMap.Add(Actor, ItemData);
+
+	UE_LOG(LogTemp, Warning, TEXT("SceneList: AddActor - Added: %s (DisplayName=%s)"),
+		*Actor->GetActorLabel(), *ItemData->DisplayName);
+
+	// 부모 관계 설정
+	AActor* ParentActor = Actor->GetAttachParentActor();
+	if (ParentActor)
+	{
+		if (USceneItemData** ParentDataPtr = ActorToItemMap.Find(ParentActor))
+		{
+			(*ParentDataPtr)->Children.Add(ItemData);
+		}
+	}
+	else
+	{
+		// 부모가 없으면 루트 아이템
+		RootItems.Add(ItemData);
+	}
+
+	NotifyDataChanged();
+}
+
+void USceneList::RemoveActor(AActor* Actor)
+{
+	if (!Actor) return;
+
+	USceneItemData** ItemDataPtr = ActorToItemMap.Find(Actor);
+	if (!ItemDataPtr) return;
+
+	USceneItemData* ItemData = *ItemDataPtr;
+
+	// 부모에서 제거
+	AActor* ParentActor = Actor->GetAttachParentActor();
+	if (ParentActor)
+	{
+		if (USceneItemData** ParentDataPtr = ActorToItemMap.Find(ParentActor))
+		{
+			(*ParentDataPtr)->Children.Remove(ItemData);
+		}
+	}
+	else
+	{
+		// 루트 아이템에서 제거
+		RootItems.Remove(ItemData);
+	}
+
+	// 맵에서 제거
+	ActorToItemMap.Remove(Actor);
+
+	NotifyDataChanged();
 }
 
 void USceneList::NotifyDataChanged()

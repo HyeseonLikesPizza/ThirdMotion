@@ -31,6 +31,10 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_RequestSpawnByTag(FGameplayTag PresetTag, const FTransform& Xf);
 
+	/* Actor 삭제 */
+	UFUNCTION(Server, Reliable)
+	void Server_RequestDestroyByGuid(const FGuid& ActorGuid);
+
 	void StartPlacement(const FGameplayTag& PresetTag);
 	void StopPlacement(bool bCancel);
 

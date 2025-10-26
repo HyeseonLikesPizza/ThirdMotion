@@ -40,6 +40,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Scene List")
 	int32 GetItemCount() const { return ActorToItemMap.Num(); }
 
+	// 런타임 Actor 추가/삭제
+	void AddActor(AActor* Actor);
+	void RemoveActor(AActor* Actor);
+
 	// 델리게이트: 데이터 변경 알림
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDataChanged);
 	UPROPERTY(BlueprintAssignable, Category = "Scene List")
