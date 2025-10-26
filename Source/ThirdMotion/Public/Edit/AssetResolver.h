@@ -15,6 +15,16 @@ class THIRDMOTION_API UAssetResolver : public UWorldSubsystem
 	GENERATED_BODY()
 
 public:
+	/* --------------- Material Data ---------------*/
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DataTable")
+	TSoftObjectPtr<UDataTable> MaterialTableAsset;
+
+	UPROPERTY()
+	TObjectPtr<UDataTable> MaterialTable = nullptr;
+
+	TArray<FMeshDataRow*> MaterialArray;
+
+	
 	/* -------------- Static Mesh Data --------------*/
 	
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DataTable")

@@ -158,6 +158,8 @@ void UAssetResolver::EnsureLoadedAndBuildIndex()
 {
 	if (bReady) return;
 
+	// Library Data Table 준비
+
 	if (!LibraryTable && LibraryTableAsset.IsValid())
 		LibraryTable = LibraryTableAsset.Get(); // 이미 메모리에 있으면 바로
 
@@ -170,12 +172,22 @@ void UAssetResolver::EnsureLoadedAndBuildIndex()
 		return;
 	}
 
+	// Mesh Data Table 준비
+
 	if (!MeshTable && MeshRowTableAsset.IsValid())
 		MeshTable = MeshRowTableAsset.Get();
 
 	if (!MeshTable && MeshRowTableAsset.IsNull() == false)
 		MeshTable = MeshRowTableAsset.LoadSynchronous();
 
+	// Material Data Table 준비
+
+	if (!MaterialTable && MaterialTableAsset.IsValid())
+		MaterialTable = MaterialTableAsset.Get();
+
+	if (!MaterialTable && MaterialTableAsset.IsNull() == false)
+		MaterialTable = MaterialTableAsset.LoadSynchronous();
+	
 	BuildIndex(LibraryTable);
 	bReady = true;
 	OnReady.Broadcast();
