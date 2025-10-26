@@ -1,10 +1,10 @@
 
-#include "UI/Widget/LibraryCategoryWidget.h"
+#include "UI/Widget/Library/LibraryCategoryWidget.h"
 
 #include "Blueprint/WidgetTree.h"
 #include "Components/HorizontalBox.h"
 #include "Components/TextBlock.h"
-#include "UI/Widget/CategoryButton.h"
+#include "UI/Widget/Library/CategoryButton.h"
 
 void ULibraryCategoryWidget::NativeConstruct()
 {

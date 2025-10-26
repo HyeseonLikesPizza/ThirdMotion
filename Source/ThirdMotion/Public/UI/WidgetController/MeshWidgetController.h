@@ -6,6 +6,7 @@
 #include "MeshWidgetController.generated.h"
 
 
+struct FMaterialEntryRow;
 class AThirdMotionPlayerController;
 class UAssetResolver;
 class UMeshSettingsWidget;
@@ -31,7 +32,8 @@ protected:
 private:
 	void RefreshList();
 	void SyncSelectionToActor();
-	void ApplySelectionToCombo(UStaticMesh* Mesh);
+	void ApplySelectionToMeshCombo(UStaticMesh* Mesh);
+	void ApplySelectionToMaterialCombo(UMaterialInterface* Material);
 	AActor* ResolveSelectionFromArray(const TArray<AActor*>& SelectedActors) const;
 
 	UPROPERTY()
@@ -45,11 +47,16 @@ private:
 	
 	TWeakObjectPtr<AActor> TargetActor;
 
-	TArray<FMeshDataRow> CachedRows; 
+	TArray<FMeshDataRow> CachedMeshRows;
+
+	TArray<FMaterialEntryRow> CachedMaterialRows;
 
 	// View 이벤트 핸들러
 	UFUNCTION()
 	void HandleMeshPicked(UStaticMesh* NewMesh);
+
+	UFUNCTION()
+	void HandleMaterialPicked(UMaterialInterface* NewMaterial);
 
 	UFUNCTION()
 	void HandleSelectionChanged(AActor* SelectedActor);

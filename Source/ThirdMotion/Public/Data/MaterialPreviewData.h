@@ -21,8 +21,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
 	FString MaterialName;
 
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
+	// UTexture2D* PreviewImage;
+	//
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
-	UTexture2D* PreviewImage;
+	UTextureRenderTarget2D* RenderTarget;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
 	EMaterialType MaterialType;

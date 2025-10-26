@@ -73,3 +73,6 @@ Plugins/**/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 .idea/.idea.ThirdMotion/.idea/vcs.xml
+/Content/TwinmotionMaterials
+/Content/TwinmotionMaterials/LevelContent
+/Content/TwinmotionMaterials/LevelContent/PreviewMeshes

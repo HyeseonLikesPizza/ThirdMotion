@@ -37,9 +37,11 @@ public:
 	class UTextBlock* MaterialNameText;
 
 	UPROPERTY(meta = (BindWidget))
-	class UImage* ThumbnailImage;
+	class UImage* PreviewImage;
 
 
+
+	
 	//선택된 메터리얼 타입을 담을 변수
 	
 	

@@ -131,7 +131,6 @@ void AThirdMotionPlayerController::OnClick()
 	}
 	else // 일반 상태일 때
 	{
-		if (bGizmoShowed) return;
 		PRINTLOG(TEXT("SelectUnderCursor"));
 		SelectUnderCursor();
 	}

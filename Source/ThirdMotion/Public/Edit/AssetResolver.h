@@ -7,6 +7,7 @@
 #include "Edit/EditTypes.h"
 #include "AssetResolver.generated.h"
 
+struct FMaterialEntryRow;
 DECLARE_MULTICAST_DELEGATE(FOnReady)
 
 UCLASS(Config=Game)
@@ -15,6 +16,19 @@ class THIRDMOTION_API UAssetResolver : public UWorldSubsystem
 	GENERATED_BODY()
 
 public:
+	/* --------------- Material Data ---------------*/
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DataTable")
+	TSoftObjectPtr<UDataTable> MaterialTableAsset;
+
+	UPROPERTY()
+	TObjectPtr<UDataTable> MaterialTable = nullptr;
+
+	TArray<FMaterialEntryRow*> MaterialArray;
+
+	void GetAllStaticMaterialRows(TArray<const FMaterialEntryRow*>& OutRows);
+	void CacheMaterialData();
+
+	
 	/* -------------- Static Mesh Data --------------*/
 	
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DataTable")
