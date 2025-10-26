@@ -3,11 +3,15 @@
 #include "UI/Panel/BottomBar.h"
 #include "UI/WidgetController/BottomController.h"
 #include "UI/Panel/RightPanel.h"
+#include "UI/Panel/LibraryPanel.h"
 #include "Components/Button.h"
 
 void UBottomBar::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	// 초기 상태 설정
+	bIsLibraryPanelVisible = false;
 
 	// Bind button click events
 	if (LibraryButton)
@@ -51,12 +55,47 @@ void UBottomBar::InitializeWithRightPanel(URightPanel* InRightPanel)
 	}
 }
 
+void UBottomBar::InitializeWithLibraryPanel(ULibraryPanel* InLibraryPanel)
+{
+	if (!InLibraryPanel)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BottomBar: LibraryPanel is null"));
+		return;
+	}
+
+	LibraryPanel = InLibraryPanel;
+
+	// LibraryPanel 초기 상태: 숨김
+	LibraryPanel->SetLibraryPanelVisibility(false);
+	bIsLibraryPanelVisible = false;
+
+	UE_LOG(LogTemp, Log, TEXT("BottomBar: LibraryPanel initialized (hidden)"));
+}
+
 void UBottomBar::OnLibraryClicked()
 {
 	OnLibraryButtonClicked.Broadcast();
 	UE_LOG(LogTemp, Log, TEXT("BottomBar: Library button clicked"));
 
-	// Library 버튼은 기존 기능 유지 (BottomController 사용 안함)
+	// LibraryPanel 토글
+	if (LibraryPanel)
+	{
+		bIsLibraryPanelVisible = !bIsLibraryPanelVisible;
+		LibraryPanel->SetLibraryPanelVisibility(bIsLibraryPanelVisible);
+
+		if (bIsLibraryPanelVisible)
+		{
+			UE_LOG(LogTemp, Log, TEXT("BottomBar: LibraryPanel shown"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("BottomBar: LibraryPanel hidden"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BottomBar: LibraryPanel is null"));
+	}
 }
 
 void UBottomBar::OnSceneClicked()

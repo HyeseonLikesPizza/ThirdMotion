@@ -31,6 +31,10 @@ public:
 
 	void Init(ULibraryWidgetController* Controller);
 
+	// LibraryPanel 가시성 설정
+	UFUNCTION(BlueprintCallable, Category = "Library Panel")
+	void SetLibraryPanelVisibility(bool bVisible);
+
 private:
 
 	UPROPERTY()
