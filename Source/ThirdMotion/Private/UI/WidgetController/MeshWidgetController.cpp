@@ -9,6 +9,8 @@
 #include "ThirdMotion/ThirdMotion.h"
 #include "UI/Widget/Mesh/MaterialListCombo.h"
 #include "Data/MaterialDataTypes.h"
+#include "Data/MaterialPreviewData.h"
+#include "UI/Panel/MaterialGeneratePanel.h"
 
 void UMeshWidgetController::Initialize(UAssetResolver* InResolver)
 {
@@ -25,32 +27,32 @@ void UMeshWidgetController::Initialize(UAssetResolver* InResolver)
 
 void UMeshWidgetController::AttachView(UMeshSettingsWidget* InView)
 {
-	if (View == InView)
+	if (MeshPanel == InView)
 	{
 		return;
 	}
 
 	// 기존 뷰에서 델리게이트 정리
-	if (View && View->MeshListCombo)
+	if (MeshPanel && MeshPanel->MeshListCombo)
 	{
-		View->MeshListCombo->OnMeshPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMeshPicked);
+		MeshPanel->MeshListCombo->OnMeshPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMeshPicked);
 	}
 
-	if (View && View->MaterialListCombo)
+	if (MeshPanel && MeshPanel->MaterialListCombo)
 	{
-		View->MaterialListCombo->OnMaterialPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMaterialPicked);
+		MeshPanel->MaterialListCombo->OnMaterialPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMaterialPicked);
 	}
 
-	View = InView;
+	MeshPanel = InView;
 
-	if (!View)
+	if (!MeshPanel)
 	{
 		return;
 	}
 
 	// 뷰 초기화 및 콤보 갱신
 	RefreshList();
-	View->SetTargetActor(TargetActor.Get());
+	MeshPanel->SetTargetActor(TargetActor.Get());
 	SyncSelectionToActor();
 
 	// 현재 PC가 있으면 선택 상태를 즉시 반영
@@ -78,13 +80,27 @@ void UMeshWidgetController::BindPlayerController(AThirdMotionPlayerController* I
 	}
 }
 
+void UMeshWidgetController::BindMaterialPanel(UMaterialGeneratePanel* InView)
+{
+	if (!InView) return;
+	
+	if (MaterialPanel)
+	{
+		MaterialPanel->OnMaterialCreated.RemoveDynamic(this, &UMeshWidgetController::HandleMaterialCreated);
+	}
+
+	MaterialPanel = InView;
+	
+	MaterialPanel->OnMaterialCreated.AddDynamic(this, &UMeshWidgetController::HandleMaterialCreated);
+}
+
 void UMeshWidgetController::SetTargetActor(AActor* InActor)
 {
 	TargetActor = InActor;
 
-	if (View)
+	if (MeshPanel)
 	{
-		View->SetTargetActor(InActor);
+		MeshPanel->SetTargetActor(InActor);
 	}
 
 	SyncSelectionToActor();
@@ -128,9 +144,21 @@ void UMeshWidgetController::HandleSelectionChanged(AActor* SelectedActor)
 	SetTargetActor(SelectedActor);
 }
 
+void UMeshWidgetController::HandleMaterialCreated(UMaterialPreviewData* InObject)
+{
+	FMaterialEntryRow EntryRow;
+	EntryRow.EntryName = FName(*InObject->MaterialName);
+	CachedMaterialRows.Add(EntryRow);
+	
+	if (UMaterialListCombo* MaterialCombo = MeshPanel->MaterialListCombo)
+	{
+		MaterialCombo->SetItems(CachedMaterialRows);	
+	}
+}
+
 void UMeshWidgetController::RefreshList()
 {
-	if (!View || !Resolver) return;
+	if (!MeshPanel || !Resolver) return;
 
 	/* ----------- Mesh ----------- */
 
@@ -147,7 +175,7 @@ void UMeshWidgetController::RefreshList()
 		}
 	}
 
-	if (UMeshListCombo* Combo = View->MeshListCombo)
+	if (UMeshListCombo* Combo = MeshPanel->MeshListCombo)
 	{
 		Combo->OnMeshPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMeshPicked);
 		Combo->SetItems(CachedMeshRows);
@@ -158,18 +186,15 @@ void UMeshWidgetController::RefreshList()
 	
 	// Resolver에서 최신 데이터 복사
 	CachedMaterialRows.Reset();
-	TArray<const FMaterialEntryRow*> MaterialRows;
+	TArray<FMaterialEntryRow> MaterialRows;
 	Resolver->GetAllStaticMaterialRows(MaterialRows);
 	CachedMaterialRows.Reserve(MaterialRows.Num());
-	for (const FMaterialEntryRow* Row : MaterialRows)
+	for (const FMaterialEntryRow Row : MaterialRows)
 	{
-		if (Row)
-		{
-			CachedMaterialRows.Add(*Row);
-		}
+		CachedMaterialRows.Add(Row);
 	}
 
-	if (UMaterialListCombo* MaterialCombo = View->MaterialListCombo)
+	if (UMaterialListCombo* MaterialCombo = MeshPanel->MaterialListCombo)
 	{
 		MaterialCombo->OnMaterialPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMaterialPicked);
 		MaterialCombo->SetItems(CachedMaterialRows);
@@ -180,8 +205,8 @@ void UMeshWidgetController::RefreshList()
 
 void UMeshWidgetController::SyncSelectionToActor()
 {
-	if (!View || !View->MeshListCombo) return;
-	if (!View || !View->MaterialListCombo) return;
+	if (!MeshPanel || !MeshPanel->MeshListCombo) return;
+	if (!MeshPanel || !MeshPanel->MaterialListCombo) return;
 
 	UStaticMesh* MeshToApply = nullptr;
 	UMaterialInterface* MaterialToApply = nullptr;
@@ -201,7 +226,7 @@ void UMeshWidgetController::SyncSelectionToActor()
 
 void UMeshWidgetController::ApplySelectionToMeshCombo(UStaticMesh* Mesh)
 {
-	if (!View || !View->MeshListCombo)
+	if (!MeshPanel || !MeshPanel->MeshListCombo)
 	{
 		return;
 	}
@@ -209,28 +234,28 @@ void UMeshWidgetController::ApplySelectionToMeshCombo(UStaticMesh* Mesh)
 	bComboUpdating = true;
 	if (Mesh)
 	{
-		View->MeshListCombo->SelectMesh(Mesh, /*bBroadcastChange=*/false);
+		MeshPanel->MeshListCombo->SelectMesh(Mesh, /*bBroadcastChange=*/false);
 	}
 	else
 	{
-		View->MeshListCombo->ClearSelection(false);
+		MeshPanel->MeshListCombo->ClearSelection(false);
 	}
 	bComboUpdating = false;
 }
 
 void UMeshWidgetController::ApplySelectionToMaterialCombo(UMaterialInterface* Material)
 {
-	if (!View || !View->MaterialListCombo) return;
+	if (!MeshPanel || !MeshPanel->MaterialListCombo) return;
 
 	bComboUpdating = true;
 	
 	if (Material)
 	{
-		View->MaterialListCombo->SelectMaterial(Material, /*bBroadcastChange=*/false);
+		MeshPanel->MaterialListCombo->SelectMaterial(Material, /*bBroadcastChange=*/false);
 	}
 	else
 	{
-		View->MaterialListCombo->ClearSelection(false);
+		MeshPanel->MaterialListCombo->ClearSelection(false);
 	}
 	bComboUpdating = false;
 }
@@ -255,9 +280,9 @@ void UMeshWidgetController::BeginDestroy()
 		PC = nullptr;
 	}
 
-	if (View && View->MeshListCombo)
+	if (MeshPanel && MeshPanel->MeshListCombo)
 	{
-		View->MeshListCombo->OnMeshPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMeshPicked);
+		MeshPanel->MeshListCombo->OnMeshPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMeshPicked);
 	}
 
 	Super::BeginDestroy();

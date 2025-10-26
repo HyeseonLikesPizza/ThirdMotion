@@ -25,7 +25,7 @@ public:
 
 	TArray<FMaterialEntryRow*> MaterialArray;
 
-	void GetAllStaticMaterialRows(TArray<const FMaterialEntryRow*>& OutRows);
+	void GetAllStaticMaterialRows(TArray<FMaterialEntryRow>& OutRows);
 	void CacheMaterialData();
 
 	

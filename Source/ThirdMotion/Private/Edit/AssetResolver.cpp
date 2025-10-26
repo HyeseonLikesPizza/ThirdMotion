@@ -22,7 +22,7 @@ void UAssetResolver::GetAllStaticMeshRows(TArray<const FMeshDataRow*>& OutRows)
 	
 }
 
-void UAssetResolver::GetAllStaticMaterialRows(TArray<const FMaterialEntryRow*>& OutRows)
+void UAssetResolver::GetAllStaticMaterialRows(TArray<FMaterialEntryRow>& OutRows)
 {
 	if (!MaterialTable) return;
 	if (MaterialArray.IsEmpty())
@@ -36,7 +36,7 @@ void UAssetResolver::GetAllStaticMaterialRows(TArray<const FMaterialEntryRow*>& 
 	for (const FMaterialEntryRow* Row : MaterialArray)
 	{
 		if (Row->Kind == EMaterialEntryKind::Asset)
-			OutRows.Add(Row);
+			OutRows.Add(*Row);
 	}
 }
 

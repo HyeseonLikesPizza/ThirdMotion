@@ -42,14 +42,14 @@ void UMeshSettingsWidget::InitFromResolver(class UAssetResolver* Resolver)
 
 	/* ---------- Material Setting ---------- */
 	
-	TArray<const FMaterialEntryRow*> MaterialRows;
+	TArray<FMaterialEntryRow> MaterialRows;
 	Resolver->GetAllStaticMaterialRows(MaterialRows);
 
 	// UMaterialListCombo는 값 배열을 받도록 만들었으니 복사해서 넘김
 	TArray<FMaterialEntryRow> MCopies;
 	MCopies.Reserve(MCopies.Num());
-	for (const FMaterialEntryRow* R : MaterialRows)
-		MCopies.Add(*R);
+	for (const FMaterialEntryRow R : MaterialRows)
+		MCopies.Add(R);
 
 	MaterialListCombo->SetItems(MCopies);
 	// 선택 시 메시 교체

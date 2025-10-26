@@ -5,6 +5,7 @@
 #include "Edit/SceneManager.h"
 #include "Blueprint/UserWidget.h"
 #include "TimerManager.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Edit/HighlightComponent.h"
 #include "Engine/World.h"
 #include "ThirdMotion/ThirdMotion.h"
@@ -16,7 +17,10 @@
 #include "Engine/DirectionalLight.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/Panel/MaterialGeneratePanel.h"
 #include "UI/Widget/ViewportWidget.h"
+#include "UI/WidgetController/MeshWidgetController.h"
+#include "UI/WidgetController/RightPanelController.h"
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -49,6 +53,21 @@ void AThirdMotionPlayerController::BeginPlay()
 		ULibraryPanel* LBWidget = Cast<ULibraryPanel>(MainWidget->LibraryPanel);
 		LBWidget->Init(LibraryWidgetController);
 		MainWidget->AddToViewport();
+	}
+
+	// MaterialGeneratePanel에 MeshWidgetController 바인딩
+	if (MainWidget)
+	{
+		TArray<UUserWidget*> Widgets;
+		UWidgetBlueprintLibrary::GetAllWidgetsOfClass(GetWorld(), Widgets, MaterialGeneratePanelClass);
+		if (Widgets.Num() == 0) return;
+	
+		URightPanel* Right = Cast<URightPanel>(MainWidget->RightPanel);
+		URightPanelController* RC = Right->GetRightPanelController();
+		UMeshWidgetController* MeshWC = RC->MeshWidgetController;
+		
+		if (UMaterialGeneratePanel* MPanel = Cast<UMaterialGeneratePanel>(Widgets[0]))
+			MeshWC->BindMaterialPanel(MPanel);
 	}
 }
 

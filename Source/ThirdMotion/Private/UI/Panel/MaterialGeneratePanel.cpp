@@ -237,6 +237,9 @@ void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 	// NewItem에 RenderTarget 할당
 	NewItem->RenderTarget = RenderTarget;
 
+	// 델리게이트 호출
+	OnMaterialCreated.Broadcast(NewItem);
+
 	// TileView에 추가
 	MaterialTileView->AddItem(NewItem);
 	

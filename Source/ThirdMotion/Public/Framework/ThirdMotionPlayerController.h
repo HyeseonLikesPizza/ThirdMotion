@@ -45,6 +45,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> MainWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> MaterialGeneratePanelClass;
+
 	// 로딩 화면 위젯 클래스
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> LoadingWidgetClass;
@@ -56,6 +59,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Click;
+
+	
 
 	UPROPERTY(BlueprintReadWrite, Category="Gizmo")
 	bool bGizmoShowed;

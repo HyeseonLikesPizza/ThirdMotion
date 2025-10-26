@@ -6,6 +6,7 @@
 #include "MeshWidgetController.generated.h"
 
 
+class UMaterialGeneratePanel;
 struct FMaterialEntryRow;
 class AThirdMotionPlayerController;
 class UAssetResolver;
@@ -24,6 +25,7 @@ public:
 	void Initialize(UAssetResolver* InResolver);
 	void AttachView(UMeshSettingsWidget* InView);
 	void BindPlayerController(AThirdMotionPlayerController* InPC);
+	void BindMaterialPanel(UMaterialGeneratePanel* InView);
 	void SetTargetActor(AActor* InActor);
 
 protected:
@@ -40,7 +42,10 @@ private:
 	UAssetResolver* Resolver = nullptr;
 	
 	UPROPERTY()
-	UMeshSettingsWidget* View = nullptr;
+	UMeshSettingsWidget* MeshPanel = nullptr;
+
+	UPROPERTY()
+	UMaterialGeneratePanel* MaterialPanel = nullptr;
 
 	UPROPERTY()
 	AThirdMotionPlayerController* PC = nullptr;
@@ -60,6 +65,9 @@ private:
 
 	UFUNCTION()
 	void HandleSelectionChanged(AActor* SelectedActor);
+
+	UFUNCTION()
+	void HandleMaterialCreated(UMaterialPreviewData* InObject);
 
 	bool bComboUpdating = false;
 };

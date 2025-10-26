@@ -5,6 +5,7 @@
 #include "UI/Widget/BaseWidget.h"
 #include "MaterialGeneratePanel.generated.h"
 
+class UMaterialPreviewData;
 
 UENUM(BlueprintType)
 enum class EMaterialType : uint8
@@ -21,6 +22,8 @@ enum class EMaterialType : uint8
 	Standard UMETA(DisplayName = "Standard")
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaterialCreated, UMaterialPreviewData*, NewItem);
+
 UCLASS()
 class THIRDMOTION_API UMaterialGeneratePanel : public UBaseWidget
 {
@@ -29,6 +32,9 @@ class THIRDMOTION_API UMaterialGeneratePanel : public UBaseWidget
 public:
 	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
+
+	// 머티리얼 객체 생성 시 호출되는 델리게이트
+	FOnMaterialCreated OnMaterialCreated;
 
 protected:
 
@@ -79,6 +85,8 @@ protected:
 	//
 	UPROPERTY()
 	EMaterialType matTypeSelected;
+
+	
 	
 private:
 	//MaterialTypeChange패널 켜기
