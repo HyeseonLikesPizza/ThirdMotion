@@ -33,7 +33,7 @@ public:
 
 	/* Actor 삭제 */
 	UFUNCTION(Server, Reliable)
-	void Server_RequestDestroyByGuid(const FGuid& ActorGuid);
+	void Server_RequestDestroyByGuid(const FGuid& GuidToDestroy);
 
 	void StartPlacement(const FGameplayTag& PresetTag);
 	void StopPlacement(bool bCancel);

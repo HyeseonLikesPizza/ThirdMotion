@@ -183,10 +183,10 @@ void AThirdMotionPlayerController::Server_RequestSpawnByTag_Implementation(FGame
 		M->SpawnByTag(PresetTag, Xf);
 }
 
-void AThirdMotionPlayerController::Server_RequestDestroyByGuid_Implementation(const FGuid& ActorGuid)
+void AThirdMotionPlayerController::Server_RequestDestroyByGuid_Implementation(const FGuid& GuidToDestroy)
 {
 	if (auto* M = GetWorld()->GetSubsystem<USceneManager>())
-		M->DestroyByGuid(ActorGuid);
+		M->DestroyByGuid(GuidToDestroy);
 }
 
 void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
