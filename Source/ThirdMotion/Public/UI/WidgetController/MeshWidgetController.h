@@ -6,6 +6,7 @@
 #include "MeshWidgetController.generated.h"
 
 
+struct FMaterialEntryRow;
 class AThirdMotionPlayerController;
 class UAssetResolver;
 class UMeshSettingsWidget;
@@ -46,7 +47,9 @@ private:
 	
 	TWeakObjectPtr<AActor> TargetActor;
 
-	TArray<FMeshDataRow> CachedRows; 
+	TArray<FMeshDataRow> CachedMeshRows;
+
+	TArray<FMaterialEntryRow> CachedMaterialRows;
 
 	// View 이벤트 핸들러
 	UFUNCTION()

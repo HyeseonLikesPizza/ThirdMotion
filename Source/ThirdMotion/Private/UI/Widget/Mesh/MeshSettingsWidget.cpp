@@ -47,7 +47,7 @@ void UMeshSettingsWidget::InitFromResolver(class UAssetResolver* Resolver)
 
 	// UMaterialListCombo는 값 배열을 받도록 만들었으니 복사해서 넘김
 	TArray<FMaterialEntryRow> MCopies;
-	MCopies.Reserve(Rows.Num());
+	MCopies.Reserve(MCopies.Num());
 	for (const FMaterialEntryRow* R : MaterialRows)
 		MCopies.Add(*R);
 

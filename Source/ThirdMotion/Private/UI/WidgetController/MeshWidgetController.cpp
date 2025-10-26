@@ -8,6 +8,7 @@
 #include "GameFramework/Actor.h"
 #include "ThirdMotion/ThirdMotion.h"
 #include "UI/Widget/Mesh/MaterialListCombo.h"
+#include "Data/MaterialDataTypes.h"
 
 void UMeshWidgetController::Initialize(UAssetResolver* InResolver)
 {
@@ -129,30 +130,52 @@ void UMeshWidgetController::HandleSelectionChanged(AActor* SelectedActor)
 
 void UMeshWidgetController::RefreshList()
 {
-	if (!View || !Resolver)
-	{
-		return;
-	}
+	if (!View || !Resolver) return;
+
+	/* ----------- Mesh ----------- */
 
 	// Resolver에서 최신 데이터 복사
-	CachedRows.Reset();
+	CachedMeshRows.Reset();
 	TArray<const FMeshDataRow*> Rows;
 	Resolver->GetAllStaticMeshRows(Rows);
-	CachedRows.Reserve(Rows.Num());
+	CachedMeshRows.Reserve(Rows.Num());
 	for (const FMeshDataRow* Row : Rows)
 	{
 		if (Row)
 		{
-			CachedRows.Add(*Row);
+			CachedMeshRows.Add(*Row);
 		}
 	}
 
 	if (UMeshListCombo* Combo = View->MeshListCombo)
 	{
 		Combo->OnMeshPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMeshPicked);
-		Combo->SetItems(CachedRows);
+		Combo->SetItems(CachedMeshRows);
 		Combo->OnMeshPicked.AddDynamic(this, &UMeshWidgetController::HandleMeshPicked);
 	}
+
+	/* ----------- Material ----------- */
+	
+	// Resolver에서 최신 데이터 복사
+	CachedMaterialRows.Reset();
+	TArray<const FMaterialEntryRow*> MaterialRows;
+	Resolver->GetAllStaticMaterialRows(MaterialRows);
+	CachedMaterialRows.Reserve(MaterialRows.Num());
+	for (const FMaterialEntryRow* Row : MaterialRows)
+	{
+		if (Row)
+		{
+			CachedMaterialRows.Add(*Row);
+		}
+	}
+
+	if (UMaterialListCombo* MaterialCombo = View->MaterialListCombo)
+	{
+		MaterialCombo->OnMaterialPicked.RemoveDynamic(this, &UMeshWidgetController::HandleMaterialPicked);
+		MaterialCombo->SetItems(CachedMaterialRows);
+		MaterialCombo->OnMaterialPicked.AddDynamic(this, &UMeshWidgetController::HandleMaterialPicked);
+	}
+	
 }
 
 void UMeshWidgetController::SyncSelectionToActor()
