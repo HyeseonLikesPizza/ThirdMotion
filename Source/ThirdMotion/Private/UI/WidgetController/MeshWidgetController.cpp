@@ -103,6 +103,7 @@ void UMeshWidgetController::HandleMeshPicked(UStaticMesh* NewMesh)
 
 void UMeshWidgetController::HandleSelectionChanged(AActor* SelectedActor)
 {
+	PRINTLOG(TEXT("HandleSelectionChanged"));
 	SetTargetActor(SelectedActor);
 }
 
