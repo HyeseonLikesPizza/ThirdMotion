@@ -89,6 +89,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* UserCountText;
 
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* Button_Steam;
+
 	// Functions to manage user list
 	UFUNCTION(BlueprintCallable, Category = "Network")
 	void RefreshUserList();
@@ -114,4 +117,8 @@ protected:
 
 	// Helper function to extract IP from player controller
 	FString GetPlayerIPAddress(class APlayerController* PlayerController);
+
+private:
+	UFUNCTION()
+	void OnSteamButtonClicked();
 };
