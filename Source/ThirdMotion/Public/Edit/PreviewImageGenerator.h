@@ -26,11 +26,26 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere)
-	USceneComponent* Root;
+	class USceneComponent* Root;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* PreviewSphere;
+	class UStaticMeshComponent* PreviewSphere;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class USceneCaptureComponent2D* CaptureComponent2D;
+
+	// UPROPERTY()
+	TSharedPtr<FPreviewScene> PreviewScene;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* MID = nullptr;
+	
+	UPROPERTY()
+	UTextureRenderTarget2D* RenderTarget = nullptr;
+
+	
+	// UPROPERTY()
+	// class UTextureRenderTarget2D* RenderTarget;
 
 public:
 	//인자값을 하나 받아서 MatType을 판단한 후 MatType에 맞는 기본 메터리얼을 설정

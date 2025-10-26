@@ -8,12 +8,17 @@
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "Components/SceneCaptureComponent2D.h"
 #include "Components/TextBlock.h"
 #include "Components/TileView.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "Data/MaterialPreviewData.h"
+#include "Edit/PreviewImageGenerator.h"
+#include "Edit/PreviewMaterialRenderer.h"
+#include "Engine/TextureRenderTarget2D.h"
 #include "UI/Widget/ListingMaterials.h"
+#include "Kismet/GameplayStatics.h"
 
 class UCanvasPanelSlot;
 class UVerticalBoxSlot;
@@ -50,6 +55,8 @@ bool UMaterialGeneratePanel::Initialize()
 void UMaterialGeneratePanel::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	preivewImageGen = Cast<APreviewImageGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), APreviewImageGenerator::StaticClass()));
 
 	MaterialTypeChangePanelOnOffBtn->OnClicked.AddDynamic(this, &UMaterialGeneratePanel::TurnOnOffMaterialTypeChangePanel);
 }
@@ -214,11 +221,24 @@ void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialName: %s"), *NewItem->MaterialName);
 	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialType: %d"), static_cast<int32>(NewItem->MaterialType));
 
+	// UPreviewMaterialRenderer를 사용하여 프리뷰 이미지 생성
+	UPreviewMaterialRenderer* PreviewMaterialRenderer = NewObject<UPreviewMaterialRenderer>();
 
-	// 샘플 썸네일 (임시로 Content 폴더에서 불러오기)
-	NewItem->PreviewImage = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Thumbnails/T_GlassIcon.T_GlassIcon"));
+	// StaticMesh와 Material 준비
+	UStaticMesh* SphereMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+	UMaterialInterface* Material = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Blueprints/UI/DefaultMaterials/M_Standard.M_Standard"));
+
+	// 초기화 (내부적으로 씬 캡처가 일어남)
+	PreviewMaterialRenderer->Initialize(SphereMesh, Material);
+
+	// 결과 RenderTarget 가져오기
+	UTextureRenderTarget2D* RenderTarget = PreviewMaterialRenderer->GetRenderTarget();
+	
+	// NewItem에 RenderTarget 할당
+	NewItem->RenderTarget = RenderTarget;
 
 	// TileView에 추가
 	MaterialTileView->AddItem(NewItem);
+	
 }
 
