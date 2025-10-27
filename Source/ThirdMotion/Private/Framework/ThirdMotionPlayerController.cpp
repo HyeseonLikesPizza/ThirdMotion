@@ -93,6 +93,8 @@ void AThirdMotionPlayerController::SetupInputComponent()
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		EIC->BindAction(IA_Click, ETriggerEvent::Started, this, &AThirdMotionPlayerController::OnClick);
+		EIC->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::MoveCamera);
+		EIC->BindAction(IA_MoveUp, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::MoveCameraUp);
 	}
 	
 }
@@ -119,6 +121,34 @@ void AThirdMotionPlayerController::StopPlacement(bool bCancel)
 		LibraryWidgetController->CancelPreview();
 	
 	bPlacing = false;
+}
+
+void AThirdMotionPlayerController::MoveCamera(const FInputActionValue& Value)
+{
+	FVector2D Ax  = Value.Get<FVector2D>();
+
+	APawn* P = GetPawn();
+	if (!P) return;
+
+	PRINTLOG(TEXT("Move Camera Called"));
+
+	// 컨트롤 회전 기준 전후좌우
+	const FRotator YawRot(0.f, GetControlRotation().Yaw, 0.f);
+	const FVector Forward = FRotationMatrix(YawRot).GetUnitAxis(EAxis::X);
+	const FVector Right   = FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y);
+
+	P->AddMovementInput(Forward, Ax.Y);
+	P->AddMovementInput(Right,   Ax.X);
+}
+
+void AThirdMotionPlayerController::MoveCameraUp(const FInputActionValue& Value)
+{
+	float AxisValue = Value.Get<float>();
+	APawn* P = GetPawn();
+	if (!P) return;
+
+	FVector Up = FVector::UpVector;
+	P->AddMovementInput(Up, AxisValue);
 }
 
 void AThirdMotionPlayerController::OnClick()

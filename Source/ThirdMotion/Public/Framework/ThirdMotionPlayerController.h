@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerController.h"
 #include "ThirdMotionPlayerController.generated.h"
 
+struct FInputActionValue;
 class ULibraryWidgetController;
 struct FGameplayTag;
 class UUserWidget;
@@ -57,9 +58,20 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Click;
 
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_Move;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_MoveUp;
+
 	UPROPERTY(BlueprintReadWrite, Category="Gizmo")
 	bool bGizmoShowed;
 
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float CameraMoveSpeed = 1000.f;
+
+	void MoveCamera(const FInputActionValue& Value);
+	void MoveCameraUp(const FInputActionValue& Value);
 	
 private:
 	
