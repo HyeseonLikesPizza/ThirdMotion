@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UI/Panel/MaterialGeneratePanel.h"
 #include "UObject/Object.h"
 #include "PreviewMaterialRenderer.generated.h"
 
@@ -17,7 +18,10 @@ class THIRDMOTION_API UPreviewMaterialRenderer : public UObject
 
 public:
 	void Initialize(UStaticMesh* InMesh, UMaterialInterface* InMaterial);
+	void ChangeMaterialType(EMaterialType NewMaterialType);
 	void UpdateMaterialParameter(FName ParamName, float Value);
+	
+	
 	UTextureRenderTarget2D* GetRenderTarget() const { return RenderTarget; }
 
 private:
@@ -34,4 +38,7 @@ private:
 	
 	UPROPERTY()
 	UTextureRenderTarget2D* RenderTarget = nullptr;
+
+	UPROPERTY()
+	class USpotLightComponent* SpotLight = nullptr;
 };

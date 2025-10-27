@@ -84,6 +84,8 @@ FReply UListingMaterials::NativeOnMouseButtonDown(const FGeometry& InGeometry, c
 		UE_LOG(LogTemp, Warning, TEXT("Canvas Tile Clicked: %s"), *MaterialData->MaterialName);
 	}
 
+	
+	
 	//버튼이 눌리면 우측 디테일창에 해당 메터리얼인스턴스의 정보값이 표시된다
 
 	// 클릭 이벤트가 처리되었다고 엔진에 알림
