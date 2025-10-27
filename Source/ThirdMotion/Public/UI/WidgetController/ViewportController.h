@@ -39,6 +39,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScreenshotTaken, const FString&, 
 // Observer Pattern: 녹화 상태 변경 이벤트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRecordingStateChanged, bool, bIsRecording);
 
+/*VideoPath = TEXT("Saved\VideoCaptures");
+FPlatformProcess::CreateProc(*VideoPath, TEXT(""), true, false, false, nullptr, 0, *ProjectDir, nullptr);*/
+		
+
 UCLASS()
 class THIRDMOTION_API UViewportController : public UBaseWidgetController
 {
