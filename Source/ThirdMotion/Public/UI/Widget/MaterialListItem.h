@@ -7,6 +7,7 @@
 #include "Blueprint/IUserObjectListEntry.h"
 #include "MaterialListItem.generated.h"
 
+
 /**
  * 
  */
@@ -27,7 +28,4 @@ public:
 	//메테리얼 이름 기본 (기본이름 설정되어 있음)
 	
 	
-	
-
-
 };

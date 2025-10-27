@@ -48,10 +48,15 @@ public:
 	// class UTextureRenderTarget2D* RenderTarget;
 
 public:
+	void RenderMaterialToTarget(EMaterialType NewMaterialType, UTextureRenderTarget2D* Target);
 	//인자값을 하나 받아서 MatType을 판단한 후 MatType에 맞는 기본 메터리얼을 설정
 	void ApplyMaterialToSphere(EMaterialType eMatType);
 	//프리뷰 이미지 캡쳐 후 텍스쳐 생성
 	void CaptureAndGeneratePreviewImage();
-	
-	
+
+	void ChangeMaterialType(EMaterialType NewMaterialType);
+
+	UFUNCTION()
+	UTextureRenderTarget2D* GetRenderTarget() const { return RenderTarget; }
+
 };

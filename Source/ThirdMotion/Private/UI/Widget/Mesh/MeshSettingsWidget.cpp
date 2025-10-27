@@ -96,7 +96,7 @@ void UMeshSettingsWidget::UpdateSelectionFromActor()
 		MeshListCombo->ClearSelection(false);
 	}
 
-	/* ------------ Material ------------*/
+	/* ------------ Material ------------ */
 
 	UMaterialInterface* CurrentMaterial = nullptr;
 	if (TargetActor.IsValid())

@@ -205,6 +205,33 @@ void UMaterialGeneratePanel::OnStandardBtnClicked()
 void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 {
 	
+	// // 데이터 생성
+	// UMaterialPreviewData* NewItem = NewObject<UMaterialPreviewData>(this);
+	// const UEnum* MaterialEnum = StaticEnum<EMaterialType>();
+	// FText EnumDisplayNameText = MaterialEnum->GetDisplayNameTextByValue(
+	// 	static_cast<int64>(matTypeSelected)
+	// );
+	// FString EnumNameString = EnumDisplayNameText.ToString();
+	// FString NewMaterialName = FString::Printf(TEXT("New %s"), *EnumNameString);
+	//
+	// NewItem->MaterialName = NewMaterialName;
+	// NewItem->MaterialType = matTypeSelected;
+	//
+	//
+	// UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialName: %s"), *NewItem->MaterialName);
+	// UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialType: %d"), static_cast<int32>(NewItem->MaterialType));
+	//
+	// if (NewItem->MaterialType == EMaterialType::Standard)
+	// {
+	// 	PreviewMaterialRenderer->ChangeMaterialType(EMaterialType::Standard);
+	// }
+	//
+	// // NewItem에 RenderTarget 할당
+	// NewItem->RenderTarget = PreviewMaterialRenderer->GetRenderTarget();
+	//
+	// // TileView에 추가
+	// MaterialTileView->AddItem(NewItem);
+
 	// 데이터 생성
 	UMaterialPreviewData* NewItem = NewObject<UMaterialPreviewData>(this);
 	const UEnum* MaterialEnum = StaticEnum<EMaterialType>();
@@ -221,21 +248,18 @@ void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialName: %s"), *NewItem->MaterialName);
 	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialType: %d"), static_cast<int32>(NewItem->MaterialType));
 
-	// UPreviewMaterialRenderer를 사용하여 프리뷰 이미지 생성
-	UPreviewMaterialRenderer* PreviewMaterialRenderer = NewObject<UPreviewMaterialRenderer>();
+	// Create a new Render Target
+	UTextureRenderTarget2D* NewRenderTarget = NewObject<UTextureRenderTarget2D>();
+	NewRenderTarget->RenderTargetFormat = RTF_RGBA8;
+	NewRenderTarget->InitAutoFormat(256, 256);
+	NewRenderTarget->UpdateResourceImmediate(true);
 
-	// StaticMesh와 Material 준비
-	UStaticMesh* SphereMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-	UMaterialInterface* Material = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Blueprints/UI/DefaultMaterials/M_Standard.M_Standard"));
+	NewItem->RenderTarget = NewRenderTarget;
 
-	// 초기화 (내부적으로 씬 캡처가 일어남)
-	PreviewMaterialRenderer->Initialize(SphereMesh, Material);
-
-	// 결과 RenderTarget 가져오기
-	UTextureRenderTarget2D* RenderTarget = PreviewMaterialRenderer->GetRenderTarget();
-	
-	// NewItem에 RenderTarget 할당
-	NewItem->RenderTarget = RenderTarget;
+	if (PreviewImagen)
+	{
+		PreviewImagen->RenderMaterialToTarget(NewItem->MaterialType, NewItem->RenderTarget);
+	}
 
 	// TileView에 추가
 	MaterialTileView->AddItem(NewItem);
