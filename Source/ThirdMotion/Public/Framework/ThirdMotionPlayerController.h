@@ -64,14 +64,28 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_MoveUp;
 
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_RMB;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_Look;
+
 	UPROPERTY(BlueprintReadWrite, Category="Gizmo")
 	bool bGizmoShowed;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float CameraMoveSpeed = 1000.f;
 
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float MouseSensitivity = 1.0f;
+
+	bool bLookMode = false;
+
 	void MoveCamera(const FInputActionValue& Value);
 	void MoveCameraUp(const FInputActionValue& Value);
+	void OnLook(const FInputActionValue& Value);
+	void OnRMB_Pressed(const FInputActionValue& Value);
+	void OnRMB_Released(const FInputActionValue& Value);
 	
 private:
 	
