@@ -1,10 +1,12 @@
 #include "UI/WidgetController/ViewportController.h"
+#include "Framework/ThirdMotionPlayerController.h"
 #include "Engine/Engine.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "HighResScreenshot.h"
 #include "Misc/Paths.h"
 #include "HAL/PlatformFileManager.h"
+#include "HAL/PlatformProcess.h"
 
 void UViewportController::Init()
 {
@@ -16,6 +18,15 @@ void UViewportController::Init()
 	ScreenshotCounter = 0;
 
 	UE_LOG(LogTemp, Log, TEXT("ViewportController: Initialized"));
+}
+
+void UViewportController::SetCameraView(ECameraView ViewType)
+{
+	AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetPlayerController());
+	if (PC)
+	{
+		PC->SetCameraView(ViewType);
+	}
 }
 
 // ==================== Panel Switching ====================
@@ -94,6 +105,15 @@ void UViewportController::TakeScreenshot()
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green,
 			FString::Printf(TEXT("Screenshot saved: %s"), *FileName));
 	}
+
+	// CreateProc를 사용하여 explorer.exe로 폴더 열기
+	FString ProjectDir = FPaths::ProjectDir();
+	FString ScreenshotPath = TEXT("Saved\\Screenshots");
+	FString FullScreenshotPath = FPaths::ConvertRelativePathToFull(ProjectDir / ScreenshotPath);
+
+	// Windows Explorer로 폴더 열기
+	FPlatformProcess::CreateProc(TEXT("explorer.exe"), *FullScreenshotPath, true, false, false, nullptr, 0, nullptr, nullptr);
+	UE_LOG(LogTemp, Log, TEXT("ViewportController: Opened folder via CreateProc - %s"), *FullScreenshotPath);
 }
 
 void UViewportController::ToggleRecording()
@@ -170,6 +190,25 @@ void UViewportController::StopRecording()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Recording stopped - Video saved to Saved/VideoCaptures"));
 	}
+
+	// VideoCaptures 폴더 열기
+	FString VideoDir = FPaths::ProjectSavedDir() / TEXT("VideoCaptures");
+
+	// 디렉토리가 존재하지 않으면 생성
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	if (!PlatformFile.DirectoryExists(*VideoDir))
+	{
+		PlatformFile.CreateDirectory(*VideoDir);
+	}
+
+	// CreateProc를 사용하여 explorer.exe로 폴더 열기
+	FString ProjectDir = FPaths::ProjectDir();
+	FString VideoPath = TEXT("Saved\\VideoCaptures");
+	FString FullVideoPath = FPaths::ConvertRelativePathToFull(ProjectDir / VideoPath);
+
+	// Windows Explorer로 폴더 열기
+	FPlatformProcess::CreateProc(TEXT("explorer.exe"), *FullVideoPath, true, false, false, nullptr, 0, nullptr, nullptr);
+	UE_LOG(LogTemp, Log, TEXT("ViewportController: Opened folder via CreateProc - %s"), *FullVideoPath);
 }
 
 // ==================== Helper Functions ====================

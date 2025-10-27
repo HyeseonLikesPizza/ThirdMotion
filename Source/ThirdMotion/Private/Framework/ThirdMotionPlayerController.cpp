@@ -17,6 +17,8 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/Widget/ViewportWidget.h"
+#include "Camera/PlayerCameraManager.h"
+#include "Engine/PostProcessVolume.h"
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -33,6 +35,17 @@ void AThirdMotionPlayerController::BeginPlay()
 
 	PRINTLOG(TEXT("BeginPlay"));
 
+	// 초기 카메라 위치 및 회전 저장 (Perspective 버튼으로 되돌아갈 뷰)
+	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn)
+	{
+		InitialCameraLocation = ControlledPawn->GetActorLocation();
+		InitialCameraRotation = GetControlRotation();
+		bHasInitialView = true;
+		UE_LOG(LogTemp, Log, TEXT("Initial camera view saved: Location=%s, Rotation=%s"),
+			*InitialCameraLocation.ToString(), *InitialCameraRotation.ToString());
+	}
+
 	// Library Widget Controller 생성
 	if (!LibraryWidgetController)
 	{
@@ -40,7 +53,7 @@ void AThirdMotionPlayerController::BeginPlay()
 		LibraryWidgetController->Init();
 	}
 
-	
+
 	// 메인 Form 생성
 	if (MainWidgetClass)
 	{
@@ -345,5 +358,120 @@ void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Impl
 				}
 			}
 		}
+	}
+}
+
+void AThirdMotionPlayerController::SetCameraView(ECameraView ViewType)
+{
+	TArray<AActor*> FoundVolumes;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APostProcessVolume::StaticClass(), FoundVolumes);
+
+	FVector VolumeCenter = FVector::ZeroVector;
+	if (FoundVolumes.Num() > 0)
+	{
+		VolumeCenter = FoundVolumes[0]->GetActorLocation();
+		UE_LOG(LogTemp, Log, TEXT("SetCameraView: PostProcessVolume found at %s"), *VolumeCenter.ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SetCameraView: No PostProcessVolume found, using world origin"));
+	}
+
+	FRotator NewRotation = FRotator::ZeroRotator;
+	FVector NewLocation = FVector::ZeroVector;
+	bool bRestoreLocation = false;
+
+	switch (ViewType)
+	{
+	case ECameraView::Perspective:
+		// Perspective 모드: 초기 뷰로 복원
+		if (bHasInitialView)
+		{
+			NewRotation = InitialCameraRotation;
+			NewLocation = InitialCameraLocation;
+			bRestoreLocation = true;
+			UE_LOG(LogTemp, Log, TEXT("Camera View: Perspective (restored to initial view)"));
+		}
+		else
+		{
+			NewRotation = GetControlRotation();
+			UE_LOG(LogTemp, Log, TEXT("Camera View: Perspective (no initial view saved)"));
+		}
+		break;
+
+	case ECameraView::Top:
+		NewRotation.Pitch = -90.0f;
+		NewRotation.Yaw = -90.0f;
+		NewRotation.Roll = 0.0f;
+		NewLocation = VolumeCenter + FVector(0.0f, 0.0f, Distance);
+		bRestoreLocation = true;
+		break;
+
+	case ECameraView::Bottom:
+		NewRotation.Pitch = 90.0f;
+		NewRotation.Yaw = -90.0f;
+		NewRotation.Roll = 0.0f;
+		NewLocation = VolumeCenter + FVector(0.0f, 0.0f, -Distance);
+		bRestoreLocation = true;
+		break;
+
+	case ECameraView::Front:
+		NewRotation.Pitch = 0.0f;
+		NewRotation.Yaw = 0.0f;
+		NewRotation.Roll = 0.0f;
+		NewLocation = VolumeCenter + FVector(-Distance, 0.0f, 0.0f);
+		bRestoreLocation = true;
+		break;
+
+	case ECameraView::Back:
+		NewRotation.Pitch = 0.0f;
+		NewRotation.Yaw = 180.0f;
+		NewRotation.Roll = 0.0f;
+		NewLocation = VolumeCenter + FVector(Distance, 0.0f,  0.0f);
+		bRestoreLocation = true;
+		break;
+
+	case ECameraView::Left:
+		NewRotation.Pitch = 0.0f;
+		NewRotation.Yaw = 90.0f;
+		NewRotation.Roll = 0.0f;
+		NewLocation = VolumeCenter + FVector(0, -Distance, 0.0f);
+		bRestoreLocation = true;
+		break;
+
+	case ECameraView::Right:
+		NewRotation.Pitch = 0.0f;
+		NewRotation.Yaw = -90.0f;
+		NewRotation.Roll = 0.0f;
+		NewLocation = VolumeCenter + FVector(0, Distance, 0.0f);
+		bRestoreLocation = true;
+		break;
+	}
+
+	// 카메라 회전 적용
+	SetControlRotation(NewRotation);
+
+	// Pawn이 있으면 Pawn의 회전 및 위치 설정
+	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn)
+	{
+		ControlledPawn->SetActorRotation(NewRotation);
+
+		// Orthographic 뷰 또는 Perspective 복원 시 위치 설정
+		if (bRestoreLocation)
+		{
+			ControlledPawn->SetActorLocation(NewLocation);
+			UE_LOG(LogTemp, Log, TEXT("SetCameraView: Set position - Location=%s, Rotation=%s"),
+				*NewLocation.ToString(), *NewRotation.ToString());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("SetCameraView: Applied rotation to Pawn - Pitch=%.2f, Yaw=%.2f, Roll=%.2f"),
+				NewRotation.Pitch, NewRotation.Yaw, NewRotation.Roll);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SetCameraView: No Pawn found!"));
 	}
 }

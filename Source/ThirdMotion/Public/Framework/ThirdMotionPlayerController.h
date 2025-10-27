@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "GameFramework/PlayerController.h"
+#include "Data/ViewportTypes.h"
 #include "ThirdMotionPlayerController.generated.h"
 
 struct FInputActionValue;
@@ -24,6 +25,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupInputComponent() override;
+
+	/* Camera Control */
+	void SetCameraView(ECameraView ViewType);
 
 	/* */
 	AActor* GetSelectedActor();
@@ -125,5 +129,12 @@ private:
 	bool bPlacing = false;
 	FGameplayTag CurrentPreset;
 	FTransform LastPreviewXf;
-	
+
+	// 초기 카메라 위치 및 회전 (Perspective 버튼으로 되돌아갈 뷰)
+	FVector InitialCameraLocation;
+	FRotator InitialCameraRotation;
+	bool bHasInitialView = false;
+
+	float Distance = 500;// PostProcessVolume으로부터 떨어진 거리
+
 };
