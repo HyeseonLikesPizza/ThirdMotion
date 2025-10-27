@@ -114,6 +114,11 @@ void URightPanelController::HidePanel()
 	UE_LOG(LogTemp, Log, TEXT("RightPanelController: Panel hidden"));
 }
 
+void URightPanelController::BindMaterialPanel(UMaterialGeneratePanel* InView)
+{
+	MeshWidgetController->BindMaterialPanel(InView);
+}
+
 void URightPanelController::InitializeScenePanel()
 {
 	// Scene 패널 초기화 로직

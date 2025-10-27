@@ -47,6 +47,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Right Panel Controller")
 	bool IsPanelVisible() const { return bIsPanelVisible; }
 
+	// MaterialGeneratePanel과 MeshWidgetController 바인딩 헬퍼 함수
+	UFUNCTION(BlueprintCallable)
+	void BindMaterialPanel(UMaterialGeneratePanel* InView);
+
 protected:
 	// RightPanel 참조 (View)
 	UPROPERTY()

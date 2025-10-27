@@ -26,8 +26,10 @@ public:
 	//
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
 	UTextureRenderTarget2D* RenderTarget;
-
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Material")
 	EMaterialType MaterialType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterialInterface* BaseMaterial;
 };
