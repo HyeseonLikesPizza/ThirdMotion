@@ -3,6 +3,12 @@
 #include "Data/MaterialDataTypes.h"
 
 
+void UMaterialListCombo::AddMaterialItem(FMaterialEntryRow* InRow)
+{
+	Items.Add(MakeShared<FMaterialEntryRow>(*InRow));
+	//SelectMaterial()
+}
+
 void UMaterialListCombo::SetItems(const TArray<FMaterialEntryRow>& InRows)
 {
 	Items.Reset(InRows.Num());

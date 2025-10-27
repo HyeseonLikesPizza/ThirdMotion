@@ -21,6 +21,9 @@ enum class EMaterialType : uint8
 	Standard UMETA(DisplayName = "Standard")
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaterialCreated, UMaterialPreviewData*, Object);
+
+
 UCLASS()
 class THIRDMOTION_API UMaterialGeneratePanel : public UBaseWidget
 {
@@ -29,6 +32,9 @@ class THIRDMOTION_API UMaterialGeneratePanel : public UBaseWidget
 public:
 	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
+
+	// Material 생성 델리게이트
+	FOnMaterialCreated OnMaterialCreated;
 
 protected:
 

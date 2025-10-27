@@ -204,7 +204,6 @@ void UMaterialGeneratePanel::OnStandardBtnClicked()
 
 void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 {
-	
 	// 데이터 생성
 	UMaterialPreviewData* NewItem = NewObject<UMaterialPreviewData>(this);
 	const UEnum* MaterialEnum = StaticEnum<EMaterialType>();
@@ -236,6 +235,8 @@ void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 	
 	// NewItem에 RenderTarget 할당
 	NewItem->RenderTarget = RenderTarget;
+
+	
 
 	// TileView에 추가
 	MaterialTileView->AddItem(NewItem);

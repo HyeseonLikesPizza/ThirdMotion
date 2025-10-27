@@ -21,6 +21,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnMaterialPicked OnMaterialPicked;
 
+	void AddMaterialItem(FMaterialEntryRow* InRow);
+
 	UFUNCTION(BlueprintCallable)
 	void SetItems(const TArray<FMaterialEntryRow>& InRows);
 
