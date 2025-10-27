@@ -1,6 +1,9 @@
 #include "UI/WidgetController/SceneController.h"
 #include "GameFramework/Actor.h"
 #include "Engine/World.h"
+#include "Edit/SceneManager.h"
+#include "Edit/EditSyncComponent.h"
+#include "Framework/ThirdMotionPlayerController.h"
 
 void USceneController::Initialize(UWorld* InWorld)
 {
@@ -76,19 +79,45 @@ void USceneController::RenameActor(AActor* Actor, const FString& NewName)
 // 액터 삭제
 void USceneController::DeleteActor(AActor* Actor)
 {
-	/*if (!Actor) return;
+	if (!Actor || !World) return;
 
-	FString ActorName = Actor->GetActorLabel();
+	// EditSyncComponent가 있으면 SceneManager를 통해 삭제 (네트워크 동기화)
+	if (UEditSyncComponent* EditComp = Actor->FindComponentByClass<UEditSyncComponent>())
+	{
+		const FGuid ActorGuid = EditComp->GetMeta().Guid;
+		if (ActorGuid.IsValid())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SceneController: Deleting actor via RPC - GUID=%s"),
+				*ActorGuid.ToString());
+
+			// PlayerController를 통해 Server RPC 호출
+			if (APlayerController* PC = World->GetFirstPlayerController())
+			{
+				if (AThirdMotionPlayerController* TMPC = Cast<AThirdMotionPlayerController>(PC))
+				{
+					TMPC->Server_RequestDestroyByGuid(ActorGuid);
+				}
+			}
+		}
+		else
+		{
+			// GUID가 없으면 직접 삭제
+			UE_LOG(LogTemp, Warning, TEXT("SceneController: Actor has no GUID, deleting directly"));
+			Actor->Destroy();
+		}
+	}
+	else
+	{
+		// EditSyncComponent가 없으면 직접 삭제 (Ghost 등)
+		UE_LOG(LogTemp, Warning, TEXT("SceneController: Actor has no EditSyncComponent, deleting directly"));
+		Actor->Destroy();
+	}
 
 	// 선택된 목록에서 제거
 	SelectedActors.Remove(Actor);
 
-	// 액터 삭제
-	Actor->Destroy();
-
 	NotifySelectionChanged();
-	NotifySceneChanged();*/
-
+	NotifySceneChanged();
 }
 
 void USceneController::DeleteSelectedActors()

@@ -50,8 +50,30 @@ void USceneItemWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 
 		// View 업데이트
 		UpdateView();
-
 	}
+}
+
+void USceneItemWidget::NativeOnItemSelectionChanged(bool bIsSelected)
+{
+	IUserObjectListEntry::NativeOnItemSelectionChanged(bIsSelected);
+
+	// 선택 상태에 따라 텍스트 색상 변경
+	if (ItemLabel)
+	{
+		FLinearColor TextColor = bIsSelected ? FLinearColor::Yellow : FLinearColor::White;
+		ItemLabel->SetColorAndOpacity(TextColor);
+	}
+
+	if (ItemType)
+	{
+		FLinearColor TypeColor = bIsSelected ?
+			FLinearColor::Yellow :
+			FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);  // 회색
+		ItemType->SetColorAndOpacity(TypeColor);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("SceneItemWidget: Selection changed - %s, Selected=%d"),
+		ItemData ? *ItemData->DisplayName : TEXT("None"), bIsSelected);
 }
 
 void USceneItemWidget::OnModelDataChanged(USceneItemData* ChangedData)
@@ -66,14 +88,10 @@ void USceneItemWidget::UpdateView()
 {
 	if (!ItemData) return;
 
-	// 선택 상태에 따른 색상 결정 (빨간색으로 변경)
-	FLinearColor TextColor = ItemData->bIsSelected ? FLinearColor::Red : FLinearColor::White;
-
 	// 이름 표시
 	if (ItemLabel)
 	{
 		ItemLabel->SetText(FText::FromString(ItemData->DisplayName));
-		ItemLabel->SetColorAndOpacity(TextColor);
 	}
 
 	// 타입 표시
@@ -81,12 +99,6 @@ void USceneItemWidget::UpdateView()
 	{
 		FString TypeText = ItemData->ActorType.IsEmpty() ? TEXT("Actor") : ItemData->ActorType;
 		ItemType->SetText(FText::FromString(TypeText));
-
-		// 타입은 선택 시 빨간색, 미선택 시 회색
-		FLinearColor TypeColor = ItemData->bIsSelected ?
-			FLinearColor::Red : // 빨간색
-			FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);  // 회색
-		ItemType->SetColorAndOpacity(TypeColor);
 	}
 
 	// 가시성 상태 표시

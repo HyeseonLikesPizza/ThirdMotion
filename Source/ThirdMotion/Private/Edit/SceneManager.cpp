@@ -5,6 +5,7 @@
 #include "GameplayTagContainer.h"
 #include "Edit/AssetResolver.h"
 #include "Edit/EditSyncComponent.h"
+#include "Data/SceneList.h"
 #include "ThirdMotion/ThirdMotion.h"
 
 void USceneManager::Initialize(FSubsystemCollectionBase& Collection)
@@ -35,11 +36,9 @@ void USceneManager::OnWorldBeginPlay(UWorld& InWorld)
 		PRINTLOG(TEXT("AssetResolver not found"));
 	}
 
-	if (IsAuthority())
-	{
-		BuildInitialGuidCache();
-		BindWorldDelegates();
-	}
+	// 서버와 클라이언트 모두 델리게이트 바인드
+	BuildInitialGuidCache();
+	BindWorldDelegates();
 }
 
 bool USceneManager::IsAuthority() const
@@ -87,7 +86,18 @@ AActor* USceneManager::SpawnByTag(FGameplayTag PresetTag, const FTransform& T)
 	AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(ClassToSpawn, T);
 	if (!NewActor) return nullptr;
 
+	// 서버가 고유 이름 생성 (타입별 카운터 사용)
+	FString UniqueActorName = GenerateUniqueActorName(ClassToSpawn->GetName());
+
 	AttachEditComponentAndMeta(NewActor, *Row);
+
+	// EditMeta에 고유 Actor 이름 저장 (네트워크로 복제됨)
+	if (UEditSyncComponent* Edit = NewActor->FindComponentByClass<UEditSyncComponent>())
+	{
+		FEditMeta Meta = Edit->GetMeta();
+		Meta.DisplayName = FName(*UniqueActorName);
+		Edit->SetMeta_Unsafe(Meta);
+	}
 
 	// 편집용 메타/컴포넌트 부착, GUID 발급 등 ...
 	NewActor->SetReplicates(true);
@@ -96,7 +106,7 @@ AActor* USceneManager::SpawnByTag(FGameplayTag PresetTag, const FTransform& T)
 
 	if (UEditSyncComponent* Edit = NewActor->FindComponentByClass<UEditSyncComponent>())
 		GuidCache.FindOrAdd(Edit->GetMeta().Guid) = NewActor;
-	
+
 	return NewActor;
 }
 
@@ -140,6 +150,25 @@ void USceneManager::AttachEditComponentAndMeta(AActor* Actor, const struct FLibr
 	auto* Edit = NewObject<UEditSyncComponent>(Actor);
 	Edit->RegisterComponent();
 	Edit->InitMetaFromPreset(Row);
+}
+
+FString USceneManager::GenerateUniqueActorName(const FString& BaseClassName)
+{
+	// BP_Chair_C → BP_Chair 로 변환
+	FString CleanName = BaseClassName;
+	if (CleanName.EndsWith(TEXT("_C")))
+	{
+		CleanName.LeftChopInline(2);
+	}
+
+	// 해당 타입의 카운터 가져오기/증가
+	int32& Counter = ActorTypeCounters.FindOrAdd(CleanName, 0);
+	Counter++;
+
+	// "BP_Chair1" 형식으로 생성
+	FString UniqueName = FString::Printf(TEXT("%s%d"), *CleanName, Counter);
+
+	return UniqueName;
 }
 
 void USceneManager::OnResolverReady()
@@ -186,24 +215,45 @@ void USceneManager::UnbindWorldDelegates()
 	}
 }
 
+void USceneManager::RegisterSceneList(USceneList* InSceneList)
+{
+	SceneListRef = InSceneList;
+}
+
 void USceneManager::HandleActorSpawned(AActor* NewActor)
 {
-	if (!IsAuthority() || !NewActor) return;
+	if (!NewActor) return;
+
+	// GuidCache 업데이트 (서버와 클라이언트 모두)
 	if (UEditSyncComponent* Edit = NewActor->FindComponentByClass<UEditSyncComponent>())
 	{
 		const FEditMeta& M = Edit->GetMeta();
 		if (M.Guid.IsValid())
 			GuidCache.FindOrAdd(M.Guid) = NewActor;
 	}
+
+	// SceneList 자동 업데이트 (서버와 클라이언트 모두)
+	if (SceneListRef.IsValid())
+	{
+		SceneListRef->AddActor(NewActor);
+	}
 }
 
 void USceneManager::HandleActorDestroyed(AActor* DestroyedActor)
 {
-	if (!IsAuthority() || !DestroyedActor) return;
+	if (!DestroyedActor) return;
+
+	// GuidCache 업데이트 (서버와 클라이언트 모두)
 	if (UEditSyncComponent* Edit = DestroyedActor->FindComponentByClass<UEditSyncComponent>())
 	{
 		const FGuid G = Edit->GetMeta().Guid;
 		if (G.IsValid()) GuidCache.Remove(G);
+	}
+
+	// SceneList 자동 업데이트 (서버와 클라이언트 모두)
+	if (SceneListRef.IsValid())
+	{
+		SceneListRef->RemoveActor(DestroyedActor);
 	}
 }
 

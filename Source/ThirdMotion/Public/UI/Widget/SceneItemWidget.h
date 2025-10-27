@@ -29,6 +29,7 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
+	virtual void NativeOnItemSelectionChanged(bool bIsSelected) override;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ItemLabel;

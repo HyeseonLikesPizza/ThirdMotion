@@ -2,6 +2,8 @@
 
 #include "UI/Widget/UserList.h"
 #include "Components/TextBlock.h"
+#include "Components/Button.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -23,8 +25,19 @@ void UUserList::NativeConstruct()
 		TitleText->SetText(FText::FromString(TEXT("Connected Users")));
 	}
 
+	// Bind button event
+	if (Button_Steam)
+	{
+		Button_Steam->OnClicked.AddDynamic(this, &UUserList::OnSteamButtonClicked);
+	}
+
 	// Initial refresh
 	RefreshUserList();
+}
+
+void UUserList::OnSteamButtonClicked()
+{
+	UGameplayStatics::OpenLevel(this, TEXT("/Game/Blueprints/Steam/SteamMap"));
 }
 
 void UUserList::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

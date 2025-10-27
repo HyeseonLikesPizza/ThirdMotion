@@ -86,6 +86,7 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
 	// TreeView 델리게이트
 	void OnGetItemChildren(UObject* Item, TArray<UObject*>& Children);
@@ -93,6 +94,14 @@ protected:
 	// TreeView 이벤트 핸들러
 	UFUNCTION()
 	void OnItemSelectionChangedEvent(UObject* Item, bool bIsSelected);
+
+	// SceneList 데이터 변경 이벤트 핸들러
+	UFUNCTION()
+	void OnSceneListDataChanged();
+
+	// World에서 Actor 선택 시 이벤트 핸들러
+	UFUNCTION()
+	void OnActorSelectedInWorld(const TArray<AActor*>& SelectedActors);
 
 private:
 	// RightPanelController (패널 전환 및 비즈니스 로직)

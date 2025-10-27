@@ -6,15 +6,13 @@
 #include "UI/Widget/ViewportWidget.h"
 #include "UI/Panel/BottomBar.h"
 #include "UI/Panel/RightPanel.h"
+#include "UI/Panel/LibraryPanel.h"
 #include "Blueprint/WidgetTree.h"
 #include "Camera/CameraActor.h"
 
 void UMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	// Setup 3D viewport
-	//SetupViewport();
 
 	// BottomBar와 RightPanel 연결
 	if (BottomBar && RightPanel)
@@ -25,7 +23,6 @@ void UMainWidget::NativeConstruct()
 		if (BottomBarWidget && RightPanelWidget)
 		{
 			BottomBarWidget->InitializeWithRightPanel(RightPanelWidget);
-			UE_LOG(LogTemp, Log, TEXT("MainWidget: BottomBar and RightPanel connected"));
 		}
 		else
 		{
@@ -35,6 +32,26 @@ void UMainWidget::NativeConstruct()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("MainWidget: BottomBar or RightPanel is null"));
+	}
+
+	// BottomBar와 LibraryPanel 연결
+	if (BottomBar && LibraryPanel)
+	{
+		UBottomBar* BottomBarWidget = Cast<UBottomBar>(BottomBar);
+		ULibraryPanel* LibraryPanelWidget = Cast<ULibraryPanel>(LibraryPanel);
+
+		if (BottomBarWidget && LibraryPanelWidget)
+		{
+			BottomBarWidget->InitializeWithLibraryPanel(LibraryPanelWidget);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MainWidget: Failed to cast BottomBar or LibraryPanel"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MainWidget: BottomBar or LibraryPanel is null"));
 	}
 }
 

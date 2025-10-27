@@ -9,6 +9,7 @@
 
 class UBottomController;
 class URightPanel;
+class ULibraryPanel;
 
 /**
  * Bottom Bar - Contains buttons for switching panels
@@ -24,6 +25,10 @@ public:
 	// BottomController 초기화 (RightPanel 참조 필요)
 	UFUNCTION(BlueprintCallable, Category = "Bottom Bar")
 	void InitializeWithRightPanel(URightPanel* InRightPanel);
+
+	// LibraryPanel 초기화
+	UFUNCTION(BlueprintCallable, Category = "Bottom Bar")
+	void InitializeWithLibraryPanel(ULibraryPanel* InLibraryPanel);
 
 	// BottomController 접근자
 	UFUNCTION(BlueprintCallable, Category = "Bottom Bar")
@@ -78,4 +83,11 @@ private:
 	// BottomController (패널 전환 로직 관리)
 	UPROPERTY()
 	UBottomController* BottomController;
+
+	// LibraryPanel 참조
+	UPROPERTY()
+	ULibraryPanel* LibraryPanel;
+
+	// LibraryPanel 표시 상태
+	bool bIsLibraryPanelVisible;
 };

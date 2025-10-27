@@ -96,3 +96,15 @@ void ULibraryPanel::OnCategoryChosen(FGameplayTag Tag)
 	CurrentCategoryTag = Tag;
 	ShowCategories(Tag);
 }
+
+void ULibraryPanel::SetLibraryPanelVisibility(bool bVisible)
+{
+	if (bVisible)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
