@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "GameFramework/PlayerController.h"
+#include "Data/ViewportTypes.h"
 #include "ThirdMotionPlayerController.generated.h"
 
 class ULibraryWidgetController;
@@ -23,6 +24,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupInputComponent() override;
+
+	/* Camera Control */
+	void SetCameraView(ECameraView ViewType);
 
 	/* */
 	AActor* GetSelectedActor();

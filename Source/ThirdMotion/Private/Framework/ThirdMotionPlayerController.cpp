@@ -17,6 +17,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/Widget/ViewportWidget.h"
+#include "Camera/PlayerCameraManager.h"
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -271,5 +272,83 @@ void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Impl
 				}
 			}
 		}
+	}
+}
+
+void AThirdMotionPlayerController::SetCameraView(ECameraView ViewType)
+{
+	FRotator NewRotation = FRotator::ZeroRotator;
+
+	switch (ViewType)
+	{
+	case ECameraView::Perspective:
+		// Perspective 모드: 현재 회전 유지
+		NewRotation = GetControlRotation();
+		UE_LOG(LogTemp, Log, TEXT("Camera View: Perspective (free rotation)"));
+		break;
+
+	case ECameraView::Top:
+		// 위에서 아래로 보기 (Top View)
+		NewRotation.Pitch = -90.0f;
+		NewRotation.Yaw = -90.0f;
+		NewRotation.Roll = 0.0f;
+		UE_LOG(LogTemp, Log, TEXT("Camera View: Top"));
+		break;
+
+	case ECameraView::Bottom:
+		// 아래에서 위로 보기 (Bottom View)
+		NewRotation.Pitch = 90.0f;
+		NewRotation.Yaw = -90.0f;
+		NewRotation.Roll = 0.0f;
+		UE_LOG(LogTemp, Log, TEXT("Camera View: Bottom"));
+		break;
+
+	case ECameraView::Front:
+		// 앞에서 보기 (Front View)
+		NewRotation.Pitch = 0.0f;
+		NewRotation.Yaw = 0.0f;
+		NewRotation.Roll = 0.0f;
+		UE_LOG(LogTemp, Log, TEXT("Camera View: Front"));
+		break;
+
+	case ECameraView::Back:
+		// 뒤에서 보기 (Back View)
+		NewRotation.Pitch = 0.0f;
+		NewRotation.Yaw = 180.0f;
+		NewRotation.Roll = 0.0f;
+		UE_LOG(LogTemp, Log, TEXT("Camera View: Back"));
+		break;
+
+	case ECameraView::Left:
+		// 왼쪽에서 보기 (Left View)
+		NewRotation.Pitch = 0.0f;
+		NewRotation.Yaw = 90.0f;
+		NewRotation.Roll = 0.0f;
+		UE_LOG(LogTemp, Log, TEXT("Camera View: Left"));
+		break;
+
+	case ECameraView::Right:
+		// 오른쪽에서 보기 (Right View)
+		NewRotation.Pitch = 0.0f;
+		NewRotation.Yaw = -90.0f;
+		NewRotation.Roll = 0.0f;
+		UE_LOG(LogTemp, Log, TEXT("Camera View: Right"));
+		break;
+	}
+
+	// 카메라 회전 적용
+	SetControlRotation(NewRotation);
+
+	// Pawn이 있으면 Pawn의 회전도 함께 설정
+	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn)
+	{
+		ControlledPawn->SetActorRotation(NewRotation);
+		UE_LOG(LogTemp, Log, TEXT("SetCameraView: Applied rotation to Pawn - Pitch=%.2f, Yaw=%.2f, Roll=%.2f"),
+			NewRotation.Pitch, NewRotation.Yaw, NewRotation.Roll);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SetCameraView: No Pawn found!"));
 	}
 }

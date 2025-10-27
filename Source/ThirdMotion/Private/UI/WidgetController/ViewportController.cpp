@@ -1,4 +1,5 @@
 #include "UI/WidgetController/ViewportController.h"
+#include "Framework/ThirdMotionPlayerController.h"
 #include "Engine/Engine.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,6 +17,15 @@ void UViewportController::Init()
 	ScreenshotCounter = 0;
 
 	UE_LOG(LogTemp, Log, TEXT("ViewportController: Initialized"));
+}
+
+void UViewportController::SetCameraView(ECameraView ViewType)
+{
+	AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetPlayerController());
+	if (PC)
+	{
+		PC->SetCameraView(ViewType);
+	}
 }
 
 // ==================== Panel Switching ====================

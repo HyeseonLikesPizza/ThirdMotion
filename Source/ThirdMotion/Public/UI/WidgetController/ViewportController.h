@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UI/WidgetController/BaseWidgetController.h"
+#include "Data/ViewportTypes.h"
 #include "ViewportController.generated.h"
 
 // Forward declarations
@@ -47,6 +48,12 @@ public:
 	// ==================== Initialization ====================
 
 	virtual void Init() override;
+
+	// ==================== Camera Control ====================
+
+	// 카메라 뷰 설정
+	UFUNCTION(BlueprintCallable, Category = "Viewport Controller")
+	void SetCameraView(ECameraView ViewType);
 
 	// ==================== Panel Switching ====================
 

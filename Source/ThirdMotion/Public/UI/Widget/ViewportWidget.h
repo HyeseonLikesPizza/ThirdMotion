@@ -38,6 +38,29 @@ public:
 	// 슬라이더 업데이트 함수 (Multicast에서 수동 호출)
 	void OnRep_LightRotation();
 
+	// ==================== Camera View Buttons ====================
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* PerspectiveViewButton;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* TopViewButton;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* BottomViewButton;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* LeftViewButton;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* RightViewButton;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* FrontViewButton;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* BackViewButton;
+
 	// ==================== Widget Switcher & Panel Buttons ====================
 
 	// Widget Switcher (Light, Screen, Cubic 패널 전환)
@@ -67,6 +90,29 @@ public:
 	// Cubic 버튼 클릭 핸들러
 	UFUNCTION()
 	void OnCubicButtonClicked();
+
+	// ==================== Camera View Button Handlers ====================
+
+	UFUNCTION()
+	void OnPerspectiveViewButtonClicked();
+
+	UFUNCTION()
+	void OnTopViewButtonClicked();
+
+	UFUNCTION()
+	void OnBottomViewButtonClicked();
+
+	UFUNCTION()
+	void OnLeftViewButtonClicked();
+
+	UFUNCTION()
+	void OnRightViewButtonClicked();
+
+	UFUNCTION()
+	void OnFrontViewButtonClicked();
+
+	UFUNCTION()
+	void OnBackViewButtonClicked();
 
 	// ==================== Screenshot & Video Recording ====================
 
