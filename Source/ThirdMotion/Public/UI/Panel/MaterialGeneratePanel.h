@@ -85,7 +85,13 @@ protected:
 	//
 	UPROPERTY()
 	EMaterialType matTypeSelected;
-	
+
+	UPROPERTY()
+	class UPreviewMaterialRenderer* PreviewMaterialRenderer;
+
+
+	UPROPERTY()
+	class APreviewImageGenerator* PreviewImagen;
 private:
 	//MaterialTypeChange패널 켜기
 	UFUNCTION()

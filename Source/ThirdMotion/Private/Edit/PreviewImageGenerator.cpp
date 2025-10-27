@@ -5,6 +5,7 @@
 
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Components/DirectionalLightComponent.h"
 
 
 // Sets default values
@@ -25,6 +26,13 @@ APreviewImageGenerator::APreviewImageGenerator()
 	CaptureComponent2D->SetupAttachment(RootComponent);
 	
 	CaptureComponent2D->SetRelativeLocation(FVector(-77, 0, 0));
+
+	// 4️⃣ RenderTarget 로드
+	RenderTarget = LoadObject<UTextureRenderTarget2D>(nullptr, TEXT("/Game/Blueprints/UI/PrevieImageGenerator/BP_PreviewImage.BP_PreviewImage"));
+
+	CaptureComponent2D->TextureTarget = RenderTarget;
+	CaptureComponent2D->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+	
 	//
 	// // 🔹 RenderTarget 생성
 	// RenderTarget = NewObject<UTextureRenderTarget2D>();
@@ -75,5 +83,57 @@ void APreviewImageGenerator::ApplyMaterialToSphere(EMaterialType eMatType)
 	// }
 	//
 	
+}
+
+void APreviewImageGenerator::ChangeMaterialType(EMaterialType NewMaterialType)
+{
+	if (NewMaterialType == EMaterialType::Standard)
+	{
+		UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Blueprints/UI/DefaultMaterials/M_Standard.M_Standard"));
+	
+		
+		// 머티리얼 인스턴스 생성
+		if (BaseMaterial)
+		{
+			MID = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+			if (PreviewSphere)
+			{
+				PreviewSphere->SetMaterial(0, MID);
+			}
+		}
+	
+		if (CaptureComponent2D)
+		{
+			CaptureComponent2D->CaptureScene();
+		}
+	}
+	
+}
+
+void APreviewImageGenerator::RenderMaterialToTarget(EMaterialType NewMaterialType, UTextureRenderTarget2D* Target)
+{
+	if (!Target)
+	{
+		return;
+	}
+
+	if (NewMaterialType == EMaterialType::Standard)
+	{
+		UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Blueprints/UI/DefaultMaterials/M_Standard.M_Standard"));
+		if (BaseMaterial)
+		{
+			MID = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+			if (PreviewSphere)
+			{
+				PreviewSphere->SetMaterial(0, MID);
+			}
+		}
+	}
+
+	if (CaptureComponent2D)
+	{
+		CaptureComponent2D->TextureTarget = Target;
+		CaptureComponent2D->CaptureScene();
+	}
 }
 
