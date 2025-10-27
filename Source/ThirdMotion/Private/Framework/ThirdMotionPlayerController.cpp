@@ -94,6 +94,12 @@ void AThirdMotionPlayerController::SetupInputComponent()
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		EIC->BindAction(IA_Click, ETriggerEvent::Started, this, &AThirdMotionPlayerController::OnClick);
+		EIC->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::MoveCamera);
+		EIC->BindAction(IA_MoveUp, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::MoveCameraUp);
+		EIC->BindAction(IA_RMB, ETriggerEvent::Started,  this, &AThirdMotionPlayerController::OnRMB_Pressed);
+		EIC->BindAction(IA_RMB, ETriggerEvent::Completed,this, &AThirdMotionPlayerController::OnRMB_Released);
+		EIC->BindAction(IA_RMB, ETriggerEvent::Canceled, this, &AThirdMotionPlayerController::OnRMB_Released);
+		EIC->BindAction(IA_Look, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::OnLook);
 	}
 	
 }
@@ -122,6 +128,75 @@ void AThirdMotionPlayerController::StopPlacement(bool bCancel)
 	bPlacing = false;
 }
 
+void AThirdMotionPlayerController::MoveCamera(const FInputActionValue& Value)
+{
+	FVector2D Ax  = Value.Get<FVector2D>();
+
+	APawn* P = GetPawn();
+	if (!P) return;
+
+	PRINTLOG(TEXT("Move Camera Called"));
+
+	// 컨트롤 회전 기준 전후좌우
+	const FRotator YawRot(0.f, GetControlRotation().Yaw, 0.f);
+	const FVector Forward = FRotationMatrix(YawRot).GetUnitAxis(EAxis::X);
+	const FVector Right   = FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y);
+
+	P->AddMovementInput(Forward, Ax.Y);
+	P->AddMovementInput(Right,   Ax.X);
+}
+
+void AThirdMotionPlayerController::MoveCameraUp(const FInputActionValue& Value)
+{
+	float AxisValue = Value.Get<float>();
+	APawn* P = GetPawn();
+	if (!P) return;
+
+	FVector Up = FVector::UpVector;
+	P->AddMovementInput(Up, AxisValue);
+}
+
+void AThirdMotionPlayerController::OnLook(const FInputActionValue& Value)
+{
+	if (!bLookMode) return;
+
+	PRINTLOG(TEXT("OnLook Called"));
+
+	const FVector2D Ax = Value.Get<FVector2D>(); // X: 마우스X, Y: 마우스Y (프레임당 델타)
+
+	// 마우스는 이미 델타값이므로 보통 DeltaTime을 곱하지 않음
+	AddYawInput  ( Ax.X * MouseSensitivity);
+	AddPitchInput(-Ax.Y * MouseSensitivity); // 마우스 위로 = 화면 위로면 보통 부호 반전
+
+	// 필요하면 피치 클램프
+	FRotator CR = GetControlRotation();
+	CR.Pitch = FMath::ClampAngle(CR.Pitch, -85.f, 85.f);
+	SetControlRotation(CR);
+}
+
+void AThirdMotionPlayerController::OnRMB_Pressed(const FInputActionValue& Value)
+{
+	PRINTLOG(TEXT("RMB Pressed"));
+	bLookMode = true;
+
+	// 커서 숨기고 마우스 캡처
+	bShowMouseCursor = false;
+	FInputModeGameOnly Mode;
+	SetInputMode(Mode);
+}
+
+void AThirdMotionPlayerController::OnRMB_Released(const FInputActionValue& Value)
+{
+	PRINTLOG(TEXT("RMB Released"));
+	bLookMode = false;
+
+	// 커서 다시 보이게 (UI도 클릭할거면 GameAndUI로)
+	bShowMouseCursor = true;
+	FInputModeGameAndUI Mode;
+	Mode.SetHideCursorDuringCapture(false);
+	SetInputMode(Mode);
+}
+
 void AThirdMotionPlayerController::OnClick()
 {
 	// 프리뷰 고스트가 켜진 상태일 때
@@ -139,7 +214,6 @@ void AThirdMotionPlayerController::OnClick()
 
 void AThirdMotionPlayerController::SelectUnderCursor()
 {
-
 	FHitResult Hit;
 	if (GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit))
 	{
