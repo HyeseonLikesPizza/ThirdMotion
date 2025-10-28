@@ -37,6 +37,9 @@ public:
 	UFUNCTION()
 	bool ApplyPropertyDelta(const FGuid& Guid, const FPropertyDelta& Delta);
 
+	// Actor 가시성 토글 (네트워크 동기화)
+	UFUNCTION()
+	bool ToggleActorVisibility(const FGuid& Guid);
 
 private:
 	UPROPERTY()

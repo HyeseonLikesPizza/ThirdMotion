@@ -72,6 +72,12 @@ void USceneItemWidget::NativeOnItemSelectionChanged(bool bIsSelected)
 		ItemType->SetColorAndOpacity(TypeColor);
 	}
 
+	// 선택 시 SceneController에 알림
+	if (bIsSelected && SceneController && ItemData && ItemData->Actor)
+	{
+		SceneController->SelectActor(ItemData->Actor);
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("SceneItemWidget: Selection changed - %s, Selected=%d"),
 		ItemData ? *ItemData->DisplayName : TEXT("None"), bIsSelected);
 }

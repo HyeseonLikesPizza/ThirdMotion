@@ -24,6 +24,9 @@ public:
 	// 씬 데이터 갱신
 	void RefreshFromWorld();
 
+	// 기존 아이템들의 상태 업데이트 (가시성 등)
+	void UpdateAllItems();
+
 	// Root 아이템 가져오기
 	UFUNCTION(BlueprintCallable, Category = "Scene List")
 	TArray<USceneItemData*> GetRootItems() const { return RootItems; }

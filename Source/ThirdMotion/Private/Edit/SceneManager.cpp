@@ -165,6 +165,30 @@ bool USceneManager::ApplyPropertyDelta(const FGuid& Guid, const FPropertyDelta& 
 	return false;
 }
 
+bool USceneManager::ToggleActorVisibility(const FGuid& Guid)
+{
+	check(IsAuthority());
+
+	AActor* Actor = FindByGuid(Guid);
+	if (!Actor) return false;
+
+	// 현재 가시성 상태 가져오기
+	bool bCurrentlyHidden = Actor->IsHidden();
+	bool bNewVisibility = bCurrentlyHidden; // 숨겨져 있으면 true (보이게)
+
+	// 가시성 토글
+	Actor->SetActorHiddenInGame(bCurrentlyHidden);
+
+#if WITH_EDITOR
+	Actor->SetIsTemporarilyHiddenInEditor(bCurrentlyHidden);
+#endif
+
+	UE_LOG(LogTemp, Log, TEXT("SceneManager: Toggled visibility for Actor %s - NewHidden=%d"),
+		*Actor->GetName(), bCurrentlyHidden);
+
+	return true;
+}
+
 void USceneManager::AttachEditComponentAndMeta(AActor* Actor, const struct FLibraryRow& Row)
 {
 	auto* Edit = NewObject<UEditSyncComponent>(Actor);

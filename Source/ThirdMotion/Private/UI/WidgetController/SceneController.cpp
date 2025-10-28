@@ -4,6 +4,7 @@
 #include "Edit/SceneManager.h"
 #include "Edit/EditSyncComponent.h"
 #include "Framework/ThirdMotionPlayerController.h"
+#include "Edit/EditTypes.h"
 
 void USceneController::Initialize(UWorld* InWorld)
 {
@@ -44,17 +45,48 @@ TArray<AActor*> USceneController::GetSelectedActors() const
 // 가시성 제어
 void USceneController::ToggleActorVisibility(AActor* Actor)
 {
-	if (!Actor) return;
+	if (!Actor || !World) return;
 
-	bool bNewVisibility = Actor->IsHidden();
-	SetActorVisibility(Actor, bNewVisibility);
+	// EditSyncComponent가 있으면 서버 RPC로 동기화
+	if (UEditSyncComponent* EditComp = Actor->FindComponentByClass<UEditSyncComponent>())
+	{
+		const FGuid ActorGuid = EditComp->GetMeta().Guid;
+		if (ActorGuid.IsValid())
+		{
+			UE_LOG(LogTemp, Log, TEXT("SceneController: Toggling visibility via RPC - GUID=%s"),
+				*ActorGuid.ToString());
+
+			// PlayerController를 통해 Server RPC 호출
+			if (APlayerController* PC = World->GetFirstPlayerController())
+			{
+				if (AThirdMotionPlayerController* TMPC = Cast<AThirdMotionPlayerController>(PC))
+				{
+					TMPC->Server_RequestToggleVisibility(ActorGuid);
+				}
+			}
+		}
+		else
+		{
+			// GUID가 없으면 로컬에서만 처리
+			UE_LOG(LogTemp, Warning, TEXT("SceneController: Actor has no GUID, toggling locally"));
+			bool bNewVisibility = Actor->IsHidden();
+			SetActorVisibility(Actor, bNewVisibility);
+		}
+	}
+	else
+	{
+		// EditSyncComponent가 없으면 로컬에서만 처리 (Ghost 등)
+		UE_LOG(LogTemp, Warning, TEXT("SceneController: Actor has no EditSyncComponent, toggling locally"));
+		bool bNewVisibility = Actor->IsHidden();
+		SetActorVisibility(Actor, bNewVisibility);
+	}
 }
 
 void USceneController::SetActorVisibility(AActor* Actor, bool bVisible)
 {
 	if (!Actor) return;
 
-	// 액터 가시성 설정
+	// 로컬 가시성 설정
 	Actor->SetActorHiddenInGame(!bVisible);
 
 #if WITH_EDITOR

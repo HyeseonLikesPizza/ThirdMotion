@@ -72,6 +72,19 @@ void USceneList::RefreshFromWorld()
 
 }
 
+void USceneList::UpdateAllItems()
+{
+	// 기존 ItemData들의 Actor 상태 업데이트 (가시성 등)
+	for (auto& Pair : ActorToItemMap)
+	{
+		USceneItemData* ItemData = Pair.Value;
+		if (ItemData && ItemData->Actor)
+		{
+			ItemData->UpdateFromActor();
+		}
+	}
+}
+
 USceneItemData* USceneList::FindItemByActor(AActor* Actor) const
 {
 	if (USceneItemData* const* ItemPtr = ActorToItemMap.Find(Actor))

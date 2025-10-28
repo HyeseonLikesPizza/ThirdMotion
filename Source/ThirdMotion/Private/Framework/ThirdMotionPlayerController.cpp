@@ -287,6 +287,16 @@ void AThirdMotionPlayerController::Server_RequestDestroyByGuid_Implementation(co
 		M->DestroyByGuid(GuidToDestroy);
 }
 
+void AThirdMotionPlayerController::Server_RequestToggleVisibility_Implementation(const FGuid& TargetGuid)
+{
+	if (!HasAuthority() || !TargetGuid.IsValid()) return;
+
+	if (USceneManager* SceneManager = GetWorld()->GetSubsystem<USceneManager>())
+	{
+		SceneManager->ToggleActorVisibility(TargetGuid);
+	}
+}
+
 void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
 {
 	UE_LOG(LogTemp, Warning, TEXT("[Server RPC] Received rotation update: Pitch=%f"), NewRotation.Pitch);

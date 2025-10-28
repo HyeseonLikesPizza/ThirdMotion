@@ -6,8 +6,6 @@
 #include "Components/TreeView.h"
 #include "Data/SceneItemData.h"
 #include "Data/SceneList.h"
-#include "Edit/SceneManager.h"
-#include "Network/ServerController.h"
 #include "UI/Panel/RightPanel.h"
 #include "UI/Widget/SceneItemWidget.h"
 #include "UI/WidgetController/SceneController.h"
@@ -99,7 +97,17 @@ void USceneListWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	// 자동 업데이트로 대체됨 - NativeTick에서 RefreshFromWorld 호출 불필요
+	// Play 중 Actor 상태 주기적 갱신 (0.5초마다)
+	RefreshTimer += InDeltaTime;
+	if (RefreshTimer >= 0.5f)
+	{
+		RefreshTimer = 0.0f;
+		if (SceneListData && GetWorld())
+		{
+			// 기존 아이템들의 상태만 업데이트 (가시성, 이름 등)
+			SceneListData->UpdateAllItems();
+		}
+	}
 }
 
 void USceneListWidget::InitializeSceneController()
@@ -128,22 +136,10 @@ void USceneListWidget::InitializeSceneList()
 		SceneListData = NewObject<USceneList>(this);
 		SceneListData->Initialize(GetWorld());
 
-		// SceneManager에 SceneList 등록 (자동 업데이트용)
-		if (USceneManager* SceneMgr = GetWorld()->GetSubsystem<USceneManager>())
-		{
-			SceneMgr->RegisterSceneList(SceneListData);
-		}
+		// Play 중 GetWorld()로 Actor 목록 가져오기
+		SceneListData->RefreshFromWorld();
 
-		// ServerController에도 SceneList 등록 (OnRep_Meta 처리용)
-		if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
-		{
-			if (UServerController* ServerCtrl = GameInstance->GetSubsystem<UServerController>())
-			{
-				ServerCtrl->RegisterSceneList(GetWorld(), SceneListData);
-			}
-		}
-
-		UE_LOG(LogTemp, Log, TEXT("RightPanel: SceneList initialized with %d items"),
+		UE_LOG(LogTemp, Log, TEXT("SceneListWidget: SceneList initialized with %d items"),
 			SceneListData->GetItemCount());
 	}
 }

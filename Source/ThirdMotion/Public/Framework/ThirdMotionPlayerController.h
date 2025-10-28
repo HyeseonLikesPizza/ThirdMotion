@@ -44,6 +44,10 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_RequestDestroyByGuid(const FGuid& GuidToDestroy);
 
+	/* Actor 가시성 토글 */
+	UFUNCTION(Server, Reliable)
+	void Server_RequestToggleVisibility(const FGuid& TargetGuid);
+
 	void StartPlacement(const FGameplayTag& PresetTag);
 	void StopPlacement(bool bCancel);
 

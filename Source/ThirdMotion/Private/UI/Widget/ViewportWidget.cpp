@@ -5,12 +5,38 @@
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
 #include "UI/WidgetController/ViewportController.h"
+#include "Engine/DirectionalLight.h"
+#include "Components/DirectionalLightComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Framework/ThirdMotionPlayerController.h"
 
 void UViewportWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
     InitializeController();
+
+    // DirectionalLight 찾기
+    TArray<AActor*> FoundLights;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADirectionalLight::StaticClass(), FoundLights);
+    if (FoundLights.Num() > 0)
+    {
+        DirectionalLight = Cast<ADirectionalLight>(FoundLights[0]);
+        if (DirectionalLight)
+        {
+            // 초기 회전값 저장
+            LastLightRotation = DirectionalLight->GetActorRotation();
+
+            // 슬라이더 초기값 설정 (Pitch: -90 ~ 90 → Slider: 0 ~ 1)
+            if (Slider_Light)
+            {
+                float NormalizedValue = (LastLightRotation.Pitch + 90.0f) / 180.0f;
+                Slider_Light->SetValue(NormalizedValue);
+            }
+
+            UE_LOG(LogTemp, Log, TEXT("ViewportWidget: DirectionalLight found - Initial Pitch=%f"), LastLightRotation.Pitch);
+        }
+    }
 
     // Bindings
     if (Slider_Light)
@@ -95,7 +121,24 @@ void UViewportWidget::InitializeController()
 
 void UViewportWidget::OnLightSliderValueChanged(float Value)
 {
-    // Implement light slider logic here
+    if (!DirectionalLight) return;
+
+    // Slider 값 (0~1)을 Pitch 각도 (-90~90)로 변환
+    float NewPitch = (Value * 180.0f) - 90.0f;
+
+    // 새 Rotation 생성 (Roll, Yaw는 유지)
+    FRotator NewRotation = DirectionalLight->GetActorRotation();
+    NewRotation.Pitch = NewPitch;
+
+    // 로컬 미리보기 (즉시 반영)
+    DirectionalLight->SetActorRotation(NewRotation);
+
+    // PlayerController를 통해 서버 RPC 호출
+    if (AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetOwningPlayer()))
+    {
+        PC->Server_UpdateDirectionalLightRotation(NewRotation);
+        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Slider changed - NewPitch=%f, Sending RPC"), NewPitch);
+    }
 }
 
 void UViewportWidget::OnLightButtonClicked()
@@ -222,4 +265,15 @@ void UViewportWidget::ReleaseSlateResources(bool bReleaseChildren)
 
 void UViewportWidget::OnRep_LightRotation()
 {
+    // Multicast에서 호출됨 - Slider UI 업데이트
+    if (Slider_Light && DirectionalLight)
+    {
+        float CurrentPitch = DirectionalLight->GetActorRotation().Pitch;
+        float NormalizedValue = (CurrentPitch + 90.0f) / 180.0f;
+
+        // 슬라이더 업데이트 (이벤트 발생 방지)
+        Slider_Light->SetValue(NormalizedValue);
+
+        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: OnRep_LightRotation - Updated slider to Pitch=%f"), CurrentPitch);
+    }
 }
