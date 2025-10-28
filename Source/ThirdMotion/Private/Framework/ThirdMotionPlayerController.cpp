@@ -19,6 +19,7 @@
 #include "UI/Widget/ViewportWidget.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Engine/PostProcessVolume.h"
+#include "UI/Widget/SceneListWidget.h"
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -258,12 +259,12 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 			}
 		}
 
-		// SceneController를 통해 선택 전파 (RightPanel에 알림)
+		// SceneController를 통해 선택 전파 (RightPanel(SceneListWidget)에 알림)
 		if (MainWidget)
 		{
-			if (URightPanel* RightPanel = Cast<URightPanel>(MainWidget->RightPanel))
+			if (USceneListWidget* SceneListWidget = Cast<USceneListWidget>(MainWidget->RightPanel))
 			{
-				if (USceneController* SceneController = RightPanel->GetSceneController())
+				if (USceneController* SceneController = SceneListWidget->GetSceneController())
 				{
 					SceneController->SelectActor(SelectedActor);
 				}
