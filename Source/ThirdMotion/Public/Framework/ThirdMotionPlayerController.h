@@ -33,10 +33,13 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_RequestSpawnByTag(FGameplayTag PresetTag, const FTransform& Xf);
 
-	/* Actor 트랜스폼 변경 */
+	/* Actor 속성값 변경 동기화 */
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void Server_RequestApplyTransform(const FGuid& Guid, const FTransform& NewXf);
 
+	UFUNCTION(Server, Reliable)
+	void Server_RequestApplyProperty(const FGuid& TargetGuid, const FPropertyDelta& Delta);
+	
 	/* Actor 삭제 */
 	UFUNCTION(Server, Reliable)
 	void Server_RequestDestroyByGuid(const FGuid& GuidToDestroy);

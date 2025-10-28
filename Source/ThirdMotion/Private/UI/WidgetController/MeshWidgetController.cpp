@@ -11,6 +11,7 @@
 #include "Data/MaterialDataTypes.h"
 #include "UI/Panel/MaterialGeneratePanel.h"
 #include "Data/MaterialPreviewData.h"
+#include "Edit/EditSyncComponent.h"
 
 void UMeshWidgetController::Initialize(UAssetResolver* InResolver)
 {
@@ -100,16 +101,22 @@ void UMeshWidgetController::BindMaterialPanel(UMaterialGeneratePanel* Panel)
 
 void UMeshWidgetController::HandleMeshPicked(UStaticMesh* NewMesh)
 {
-	if (bComboUpdating || !TargetActor.IsValid() || !NewMesh)
-	{
-		return;
-	}
+	if (bComboUpdating || !TargetActor.IsValid() || !NewMesh) return;
 
 	if (UStaticMeshComponent* StaticMeshComp = TargetActor->FindComponentByClass<UStaticMeshComponent>())
 	{
 		if (StaticMeshComp->GetStaticMesh() != NewMesh)
 		{
-			StaticMeshComp->SetStaticMesh(NewMesh);
+			//StaticMeshComp->SetStaticMesh(NewMesh);
+			
+			// FPropertyDelta 구성 (네트워크 동기화) 
+			if (UEditSyncComponent* Edit = TargetActor->FindComponentByClass<UEditSyncComponent>())
+			{
+				FPropertyDelta Delta;
+				Delta.PropertyTag = FGameplayTag::RequestGameplayTag(TEXT("Property.Mesh.Static"));
+				Delta.ObjectPath = FSoftObjectPath(NewMesh);
+				PC->Server_RequestApplyProperty(Edit->GetMeta().Guid, Delta);
+			}
 		}
 	}
 }
@@ -125,7 +132,18 @@ void UMeshWidgetController::HandleMaterialPicked(UMaterialInterface* NewMaterial
 	{
 		if (StaticMeshComp->GetMaterial(0) != NewMaterial)
 		{
-			StaticMeshComp->SetMaterial(0, NewMaterial);
+			//StaticMeshComp->SetMaterial(0, NewMaterial);
+
+			// FPropertyDelta 구성 (네트워크 동기화)
+			if (UEditSyncComponent* Edit = TargetActor->FindComponentByClass<UEditSyncComponent>())
+			{
+				FPropertyDelta Delta;
+				Delta.PropertyTag = FGameplayTag::RequestGameplayTag(TEXT("Property.Material.SetSlot"));
+				Delta.IntParam = 0; // 적용할 슬롯
+				Delta.ObjectPath = FSoftObjectPath(NewMaterial);
+
+				PC->Server_RequestApplyProperty(Edit->GetMeta().Guid, Delta);
+			}
 		}
 	}
 }

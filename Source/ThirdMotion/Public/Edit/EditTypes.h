@@ -28,7 +28,9 @@ enum class EPropOp : uint8
 	SetColor,
 	SetName,
 	SetObject,
-	SetTransform
+	SetTransform,
+	SetMesh,
+	SetMaterial
 };
 
 USTRUCT(BlueprintType)
