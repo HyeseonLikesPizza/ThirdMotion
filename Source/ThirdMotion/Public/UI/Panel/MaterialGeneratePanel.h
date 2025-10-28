@@ -36,6 +36,10 @@ public:
 	// Material 생성 델리게이트
 	FOnMaterialCreated OnMaterialCreated;
 
+	// BaseMaterial Standard 머티리얼 에셋 경로
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInterface> BaseMaterialAsset_Standard;
+
 protected:
 
 	// 생성된 모든 버튼을 순서대로 저장할 TArray 선언

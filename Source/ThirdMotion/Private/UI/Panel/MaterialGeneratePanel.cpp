@@ -235,15 +235,22 @@ void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 	// 데이터 생성
 	UMaterialPreviewData* NewItem = NewObject<UMaterialPreviewData>(this);
 	const UEnum* MaterialEnum = StaticEnum<EMaterialType>();
-	FText EnumDisplayNameText = MaterialEnum->GetDisplayNameTextByValue(
-		static_cast<int64>(matTypeSelected)
-	);
+	FText EnumDisplayNameText = MaterialEnum->GetDisplayNameTextByValue(static_cast<int64>(matTypeSelected));
 	FString EnumNameString = EnumDisplayNameText.ToString();
 	FString NewMaterialName = FString::Printf(TEXT("New %s"), *EnumNameString);
 	
 	NewItem->MaterialName = NewMaterialName;
 	NewItem->MaterialType = matTypeSelected;
-	
+
+	switch (NewItem->MaterialType)
+	{
+	case EMaterialType::Standard:
+		{
+			UMaterialInterface* LoadedMat = BaseMaterialAsset_Standard.LoadSynchronous();
+			NewItem->BaseMaterial = LoadedMat;
+			break;
+		}
+	}
 	
 	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialName: %s"), *NewItem->MaterialName);
 	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialType: %d"), static_cast<int32>(NewItem->MaterialType));
@@ -260,6 +267,8 @@ void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 	{
 		PreviewImagen->RenderMaterialToTarget(NewItem->MaterialType, NewItem->RenderTarget);
 	}
+
+	OnMaterialCreated.Broadcast(NewItem);
 
 	// TileView에 추가
 	MaterialTileView->AddItem(NewItem);

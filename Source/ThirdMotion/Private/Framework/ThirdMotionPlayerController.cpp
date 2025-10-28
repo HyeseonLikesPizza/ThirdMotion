@@ -475,3 +475,15 @@ void AThirdMotionPlayerController::SetCameraView(ECameraView ViewType)
 		UE_LOG(LogTemp, Warning, TEXT("SetCameraView: No Pawn found!"));
 	}
 }
+
+void AThirdMotionPlayerController::Server_RequestApplyTransform_Implementation(const FGuid& Guid,
+	const FTransform& NewXf)
+{
+	if (!HasAuthority()) return;
+	if (!Guid.IsValid()) return;
+	
+	USceneManager* SceneManager = GetWorld()->GetSubsystem<USceneManager>();
+	if (!SceneManager) return;
+	
+	const bool bSuccess = SceneManager->ApplyTransform(Guid, NewXf);
+}

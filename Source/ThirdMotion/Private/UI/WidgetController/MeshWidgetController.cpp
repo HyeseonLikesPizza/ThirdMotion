@@ -138,10 +138,13 @@ void UMeshWidgetController::HandleSelectionChanged(AActor* SelectedActor)
 
 void UMeshWidgetController::HandleMaterialCreated(UMaterialPreviewData* MatData)
 {
+	if (!MatData || !MeshWidget || !MeshWidget->MaterialListCombo) return;
+	
 	FMaterialEntryRow Row;
 	Row.EntryName = FName(*MatData->MaterialName);
+	Row.BaseAssetRef = MatData->BaseMaterial;
 
-	//MeshWidget->MaterialListCombo->Items
+	MeshWidget->MaterialListCombo->AddMaterialItem(&Row);
 }
 
 void UMeshWidgetController::RefreshList()

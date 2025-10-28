@@ -5,8 +5,10 @@
 
 void UMaterialListCombo::AddMaterialItem(FMaterialEntryRow* InRow)
 {
+	if (!InRow) return;
+	
 	Items.Add(MakeShared<FMaterialEntryRow>(*InRow));
-	//SelectMaterial()
+	Combo->RefreshOptions();
 }
 
 void UMaterialListCombo::SetItems(const TArray<FMaterialEntryRow>& InRows)

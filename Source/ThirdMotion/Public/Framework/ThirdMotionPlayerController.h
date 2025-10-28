@@ -29,12 +29,13 @@ public:
 	/* Camera Control */
 	void SetCameraView(ECameraView ViewType);
 
-	/* */
-	AActor* GetSelectedActor();
-
 	/* 배치 */
 	UFUNCTION(Server, Reliable)
 	void Server_RequestSpawnByTag(FGameplayTag PresetTag, const FTransform& Xf);
+
+	/* Actor 트랜스폼 변경 */
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void Server_RequestApplyTransform(const FGuid& Guid, const FTransform& NewXf);
 
 	/* Actor 삭제 */
 	UFUNCTION(Server, Reliable)
@@ -94,25 +95,29 @@ public:
 	void OnLook(const FInputActionValue& Value);
 	void OnRMB_Pressed(const FInputActionValue& Value);
 	void OnRMB_Released(const FInputActionValue& Value);
-	
+
+	/* ----------- Actor Select ----------- */
+
+public:
+	AActor* GetSelectedActor();
+
 private:
-	
+	// 클릭 이벤트
 	void OnClick();
 
-	/* Actor Select */
+	// 클릭 시 해당 액터 선택
+	void SelectUnderCursor();
 
 	UPROPERTY()
 	AActor* SelectedActor;
-	
-	void SelectUnderCursor();
 
 public:
+	// 액터 선택 시 델리게이트
 	FOnActorSelected OnActorSelected;
 
 private:
 
 	/* 메인 오버레이 위젯 */
-
 	UPROPERTY()
 	UMainWidget* MainWidget;
 
