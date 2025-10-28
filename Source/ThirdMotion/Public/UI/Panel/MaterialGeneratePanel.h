@@ -76,8 +76,8 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	class UTileView* MaterialTileView;
 
-	UPROPERTY()
-	class APreviewImageGenerator* preivewImageGen;
+	// UPROPERTY()
+	// class APreviewImageGenerator* preivewImageGen;
 	// UPROPERTY(meta = (BindWidget))
 	// class UButton* MaterialTypeSelectionBtn;
 	// UPROPERTY(meta = (BindWidget))

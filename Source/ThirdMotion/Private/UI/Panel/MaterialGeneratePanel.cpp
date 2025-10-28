@@ -56,7 +56,7 @@ void UMaterialGeneratePanel::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	preivewImageGen = Cast<APreviewImageGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), APreviewImageGenerator::StaticClass()));
+	PreviewImagen = Cast<APreviewImageGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), APreviewImageGenerator::StaticClass()));
 
 	MaterialTypeChangePanelOnOffBtn->OnClicked.AddDynamic(this, &UMaterialGeneratePanel::TurnOnOffMaterialTypeChangePanel);
 }
