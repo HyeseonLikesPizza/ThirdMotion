@@ -11,6 +11,7 @@ class UTreeView;
 class USceneController;
 class USceneList;
 class USceneItemWidget;
+class USceneListWidget;
 class URightPanelController;
 class AActor;
 
@@ -28,7 +29,6 @@ class USceneItemData;
  * 역할 분리:
  * - View (RightPanel): UI 표시만 담당
  * - Controller (RightPanelController): 패널 전환 및 비즈니스 로직
- * - Scene 관련: SceneController + SceneList
  */
 UCLASS()
 class THIRDMOTION_API URightPanel : public UBaseWidget
@@ -38,41 +38,27 @@ class THIRDMOTION_API URightPanel : public UBaseWidget
 public:
 	// ==================== UI 위젯 ====================
 
-	UPROPERTY(meta = (BindWidget))
-	UTreeView* SceneList;
-
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* PanelTitle;
-
 	// WidgetSwitcher for panel switching (Library, Scene, Properties)
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UWidgetSwitcher* WidgetSwitcher_Right;
-
-	// SceneItemWidget 클래스
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Scene List")
-	TSubclassOf<UUserWidget> SceneItemWidgetClass;
 
 	// Properties 패널
 	UPROPERTY(meta = (BindWidget))
 	UMeshSettingsWidget* MeshSettingsWidget;
 
+	// Scene 패널
+	UPROPERTY(meta = (BindWidget))
+	USceneListWidget* SceneListWidget;
+
 	// ==================== Public Interface ====================
-
-	// Row 생성 (TreeView 델리게이트)
-	UFUNCTION()
-	UUserWidget* OnGenerateRow(UObject* Item);
-
-	// SceneController 접근자 (외부에서 접근 가능)
-	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
-	USceneController* GetSceneController() const { return SceneController; }
-
-	// SceneList 접근자 (외부에서 접근 가능)
-	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
-	USceneList* GetSceneListData() const { return SceneListData; }
 
 	// RightPanelController 접근자
 	UFUNCTION(BlueprintCallable, Category = "Right Panel")
 	URightPanelController* GetRightPanelController() const { return RightPanelController; }
+
+	// SceneController 접근자 (SceneListWidget을 통해 접근)
+	UFUNCTION(BlueprintCallable, Category = "Right Panel")
+	USceneController* GetSceneController() const;
 
 	// WidgetSwitcher 인덱스 변경 (View 기능만)
 	UFUNCTION(BlueprintCallable, Category = "Right Panel")
@@ -84,47 +70,13 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
-
-	// TreeView 델리게이트
-	void OnGetItemChildren(UObject* Item, TArray<UObject*>& Children);
-
-	// TreeView 이벤트 핸들러
-	UFUNCTION()
-	void OnItemSelectionChangedEvent(UObject* Item, bool bIsSelected);
-
-	// SceneList 데이터 변경 이벤트 핸들러
-	UFUNCTION()
-	void OnSceneListDataChanged();
-
-	// World에서 Actor 선택 시 이벤트 핸들러
-	UFUNCTION()
-	void OnActorSelectedInWorld(const TArray<AActor*>& SelectedActors);
 
 private:
 	// RightPanelController (패널 전환 및 비즈니스 로직)
 	UPROPERTY()
 	URightPanelController* RightPanelController;
 
-	// SceneController (Scene 패널 전용)
-	UPROPERTY()
-	USceneController* SceneController;
-
-	
-
-	// SceneList (Scene 패널 데이터)
-	UPROPERTY()
-	class USceneList* SceneListData;
-
-	float RefreshTimer = 0.0f;
-
 	// 초기화
 	void InitializeRightPanelController();
-	void InitializeSceneController();
-	void InitializeSceneList();
 
-	// UI 업데이트
-	void RefreshUI();
 };
