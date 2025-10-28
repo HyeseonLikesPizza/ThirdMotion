@@ -33,6 +33,13 @@ void UBottomController::ToggleUserListPanel()
 	UE_LOG(LogTemp, Warning, TEXT("BottomController: TogglePanel"));
 }
 
+void UBottomController::ToggleMaterialPanel()
+{
+	TogglePanel(ERightPanelType::UserList);
+	UE_LOG(LogTemp, Warning, TEXT("BottomController: TogglePanel"));
+}
+
+
 void UBottomController::TogglePanel(ERightPanelType PanelType)
 {
 	if (!RightPanel)

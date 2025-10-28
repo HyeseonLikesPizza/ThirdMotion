@@ -7,6 +7,7 @@
 #include "BottomController.generated.h"
 
 class URightPanel;
+class UBottomView;
 
 // RightPanel 타입 열거형
 UENUM(BlueprintType)
@@ -18,8 +19,20 @@ enum class ERightPanelType : uint8
 	UserList UMETA(DisplayName = "UserList")
 };
 
+// BottomView 타입 열거형
+UENUM(BlueprintType)
+enum class EBottomViewType : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Material UMETA(DisplayName = "Material"),
+	Memo UMETA(DisplayName = "Memo")
+};
+
 // 패널 변경 이벤트 델리게이트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRightPanelChanged, ERightPanelType, NewPanelType);
+
+// BottomView 변경 이벤트 델리게이트
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBottomViewChanged, EBottomViewType, NewViewType);
 
 /**
  * BottomController - BottomBar와 RightPanel 상호작용 관리
