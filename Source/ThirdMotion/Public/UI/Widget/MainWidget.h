@@ -44,6 +44,4 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Viewport")
 	TSubclassOf<UViewportWidget> ViewportWidgetClass;
 
-	// Setup 3D viewport in the container
-	//void SetupViewport();
 };

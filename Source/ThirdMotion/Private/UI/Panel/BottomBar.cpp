@@ -4,6 +4,7 @@
 #include "UI/WidgetController/BottomController.h"
 #include "UI/Panel/RightPanel.h"
 #include "UI/Panel/LibraryPanel.h"
+#include "UI/Panel/BottomView.h"
 #include "Components/Button.h"
 
 void UBottomBar::NativeConstruct()
@@ -13,7 +14,7 @@ void UBottomBar::NativeConstruct()
 	// 초기 상태 설정
 	bIsLibraryPanelVisible = false;
 
-	// Bind button click events
+	// Bind button click events - RightPanel 관련
 	if (LibraryButton)
 	{
 		LibraryButton->OnClicked.AddDynamic(this, &UBottomBar::OnLibraryClicked);
@@ -32,6 +33,17 @@ void UBottomBar::NativeConstruct()
 	if (UserListButton)
 	{
 		UserListButton->OnClicked.AddDynamic(this, &UBottomBar::OnUserListClicked);
+	}
+
+	// Bind button click events - BottomView 관련
+	if (MaterialButton)
+	{
+		MaterialButton->OnClicked.AddDynamic(this, &UBottomBar::OnMaterialClicked);
+	}
+
+	if (MemoButton)
+	{
+		MemoButton->OnClicked.AddDynamic(this, &UBottomBar::OnMemoClicked);
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("BottomBar constructed and buttons bound"));
@@ -70,6 +82,29 @@ void UBottomBar::InitializeWithLibraryPanel(ULibraryPanel* InLibraryPanel)
 	bIsLibraryPanelVisible = false;
 
 	UE_LOG(LogTemp, Log, TEXT("BottomBar: LibraryPanel initialized (hidden)"));
+}
+
+void UBottomBar::InitializeWithBottomView(UBottomView* InBottomView)
+{
+	if (!InBottomView)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BottomBar: BottomView is null"));
+		return;
+	}
+
+	// BottomController가 이미 있으면 BottomView 초기화
+	if (BottomController)
+	{
+		BottomController->InitializeWithBottomView(InBottomView);
+		UE_LOG(LogTemp, Log, TEXT("BottomBar: BottomView initialized with existing controller"));
+	}
+	else
+	{
+		// BottomController가 없으면 생성 후 BottomView 초기화
+		BottomController = NewObject<UBottomController>(this);
+		BottomController->InitializeWithBottomView(InBottomView);
+		UE_LOG(LogTemp, Log, TEXT("BottomBar: BottomController created and BottomView initialized"));
+	}
 }
 
 void UBottomBar::OnLibraryClicked()
@@ -130,14 +165,30 @@ void UBottomBar::OnUserListClicked()
 	// BottomController를 통해 RightPanel 토글 (index 3: UserPanel)
 	if (BottomController)
 	{
-		UE_LOG(LogTemp, Log, TEXT("BottomBar: BottomController"));
 		BottomController->ToggleUserListPanel();
 	}
-	if (!BottomController)
-	{
-		UE_LOG(LogTemp, Log, TEXT("BottomBar: UserList button clicked"));
-		
-	}
+}
 
-	
+void UBottomBar::OnMaterialClicked()
+{
+	OnMaterialButtonClicked.Broadcast();
+	UE_LOG(LogTemp, Log, TEXT("BottomBar: Material button clicked"));
+
+	// BottomController를 통해 BottomView 토글
+	if (BottomController)
+	{
+		BottomController->ToggleMaterialView();
+	}
+}
+
+void UBottomBar::OnMemoClicked()
+{
+	OnMemoButtonClicked.Broadcast();
+	UE_LOG(LogTemp, Log, TEXT("BottomBar: Memo button clicked"));
+
+	// BottomController를 통해 BottomView 토글
+	if (BottomController)
+	{
+		BottomController->ToggleMemoView();
+	}
 }

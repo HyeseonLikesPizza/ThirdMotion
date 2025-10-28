@@ -30,11 +30,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Bottom Bar")
 	void InitializeWithLibraryPanel(ULibraryPanel* InLibraryPanel);
 
+	// BottomView 초기화
+	UFUNCTION(BlueprintCallable, Category = "Bottom Bar")
+	void InitializeWithBottomView(class UBottomView* InBottomView);
+
 	// BottomController 접근자
 	UFUNCTION(BlueprintCallable, Category = "Bottom Bar")
 	UBottomController* GetBottomController() const { return BottomController; }
 
-	// Widget Components
+	// Widget Components - RightPanel 관련
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UButton* LibraryButton;
 
@@ -47,11 +51,20 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UButton* UserListButton;
 
+	// Widget Components - BottomView 관련
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UButton* MaterialButton;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UButton* MemoButton;
+
 	// Events for panel switching
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLibraryButtonClicked);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSceneButtonClicked);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPropertiesButtonClicked);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUserListButtonClicked);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMaterialButtonClicked);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMemoButtonClicked);
 
 	UPROPERTY(BlueprintAssignable, Category = "BottomBar Events")
 	FOnLibraryButtonClicked OnLibraryButtonClicked;
@@ -64,6 +77,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "BottomBar Events")
 	FOnUserListButtonClicked OnUserListButtonClicked;
+
+	UPROPERTY(BlueprintAssignable, Category = "BottomBar Events")
+	FOnMaterialButtonClicked OnMaterialButtonClicked;
+
+	UPROPERTY(BlueprintAssignable, Category = "BottomBar Events")
+	FOnMemoButtonClicked OnMemoButtonClicked;
 
 protected:
 	// Button click handlers
@@ -78,6 +97,12 @@ protected:
 
 	UFUNCTION()
 	void OnUserListClicked();
+
+	UFUNCTION()
+	void OnMaterialClicked();
+
+	UFUNCTION()
+	void OnMemoClicked();
 
 private:
 	// BottomController (패널 전환 로직 관리)

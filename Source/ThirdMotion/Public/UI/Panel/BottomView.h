@@ -6,15 +6,6 @@
 #include "UI/Widget/BaseWidget.h"
 #include "BottomView.generated.h"
 
-// BottomView 타입 열거형
-UENUM(BlueprintType)
-enum class EBottomViewType : uint8
-{
-	None UMETA(DisplayName = "None"),
-	Material UMETA(DisplayName = "Material"),
-	Memo UMETA(DisplayName = "Memo")
-};
-
 /**
  * BottomView - 하단 뷰 (Material, Memo 등)
  */
