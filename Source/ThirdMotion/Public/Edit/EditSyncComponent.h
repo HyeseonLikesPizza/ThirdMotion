@@ -37,14 +37,14 @@ public:
 	// SceneManager만 호출하는 서버 내부용 속성 적용 API
 	void ServerApplyPropertyDelta_Internal(const FPropertyDelta& D);
 
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_Meta)
+	FEditMeta R_Meta;
+
 	
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	UPROPERTY(ReplicatedUsing=OnRep_Meta)
-	FEditMeta R_Meta;
 
 	UFUNCTION()
 	void OnRep_Meta();

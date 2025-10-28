@@ -91,6 +91,7 @@ AActor* USceneManager::SpawnByTag(FGameplayTag PresetTag, const FTransform& T)
 
 	AttachEditComponentAndMeta(NewActor, *Row);
 
+	/*
 	// EditMeta에 고유 Actor 이름 저장 (네트워크로 복제됨)
 	if (UEditSyncComponent* Edit = NewActor->FindComponentByClass<UEditSyncComponent>())
 	{
@@ -98,6 +99,7 @@ AActor* USceneManager::SpawnByTag(FGameplayTag PresetTag, const FTransform& T)
 		Meta.DisplayName = FName(*UniqueActorName);
 		Edit->SetMeta_Unsafe(Meta);
 	}
+	*/
 
 	// 편집용 메타/컴포넌트 부착, GUID 발급 등 ...
 	NewActor->SetReplicates(true);
