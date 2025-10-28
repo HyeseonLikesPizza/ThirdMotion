@@ -89,11 +89,37 @@ void UEditSyncComponent::ApplyDeltaToNative(const FPropertyDelta& D)
 			LC->SetIntensity(D.FloatParam);
 		return;
 	}
+	
 	if (D.Op == EPropOp::SetTransform)
 	{
 		if (AActor* Owner = GetOwner())
 		{
 			Owner->SetActorTransform(D.TransformParam, true, nullptr, ETeleportType::None);
+		}
+		return;
+	}
+	
+	if (Key == "Property.Mesh.Static")
+	{
+		if (UStaticMeshComponent* SMC = GetSMC())
+		{
+			if (UStaticMesh* NewMesh = Cast<UStaticMesh>(D.ObjectPath.TryLoad()))
+			{
+				SMC->SetStaticMesh(NewMesh);
+			}
+		}
+		return;
+	}
+	
+	if (Key == "Property.Material.SetSlot")
+	{
+		if (UStaticMeshComponent* SMC = GetSMC())
+		{
+			const int32 SlotIndex = D.IntParam;
+			if (UMaterialInterface* NewMat = Cast<UMaterialInterface>(D.ObjectPath.TryLoad()))
+			{
+				SMC->SetMaterial(SlotIndex, NewMat);
+			}
 		}
 		return;
 	}

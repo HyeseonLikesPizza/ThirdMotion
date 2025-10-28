@@ -121,6 +121,16 @@ AActor* AThirdMotionPlayerController::GetSelectedActor()
 	return SelectedActor;
 }
 
+void AThirdMotionPlayerController::Server_RequestApplyProperty_Implementation(const FGuid& TargetGuid,
+	const FPropertyDelta& Delta)
+{
+	if (!HasAuthority() || !TargetGuid.IsValid()) return;
+	if (USceneManager* SceneManager = GetWorld()->GetSubsystem<USceneManager>())
+	{
+		SceneManager->ApplyPropertyDelta(TargetGuid, Delta);
+	}
+}
+
 void AThirdMotionPlayerController::StartPlacement(const FGameplayTag& PresetTag)
 {
 	if (!LibraryWidgetController) return;
