@@ -7,6 +7,7 @@
 #include "UI/Panel/BottomBar.h"
 #include "UI/Panel/RightPanel.h"
 #include "UI/Panel/LibraryPanel.h"
+#include "UI/Panel/BottomView.h"
 #include "Blueprint/WidgetTree.h"
 #include "Camera/CameraActor.h"
 
@@ -53,7 +54,27 @@ void UMainWidget::NativeConstruct()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("MainWidget: BottomBar or LibraryPanel is null"));
 	}
-	
+
+	// BottomBar와 BottomView 연결
+	if (BottomBar && BottomView)
+	{
+		UBottomBar* BottomBarWidget = Cast<UBottomBar>(BottomBar);
+		UBottomView* BottomViewWidget = Cast<UBottomView>(BottomView);
+
+		if (BottomBarWidget && BottomViewWidget)
+		{
+			BottomBarWidget->InitializeWithBottomView(BottomViewWidget);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MainWidget: Failed to cast BottomBar or BottomView"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MainWidget: BottomBar or BottomView is null"));
+	}
+
 }
 
 void UMainWidget::NativeDestruct()
