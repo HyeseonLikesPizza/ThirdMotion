@@ -5,6 +5,7 @@
 #include "GameplayTagContainer.h"
 #include "Edit/AssetResolver.h"
 #include "Edit/EditSyncComponent.h"
+#include "Edit/LightEditLibrary.h"
 #include "Data/SceneList.h"
 #include "ThirdMotion/ThirdMotion.h"
 
@@ -135,15 +136,32 @@ bool USceneManager::ApplyPropertyDelta(const FGuid& Guid, const FPropertyDelta& 
 {
 	check(IsAuthority());
 
-	if (AActor* Actor = FindByGuid(Guid))
+	AActor* Actor = FindByGuid(Guid);
+	if (!Actor) return false;
+
+	// Light 속성: LightEditLibrary로 직접 처리
+	const FName Key = Delta.PropertyTag.GetTagName();
+	if (Key.ToString().StartsWith("Property.Light."))
 	{
-		if (UEditSyncComponent* Edit = Actor->FindComponentByClass<UEditSyncComponent>())
+		bool bSuccess = ULightEditLibrary::ApplyLightPropertyDelta(Actor, Delta);
+		if (bSuccess)
 		{
-			// 서버 즉시 적용 + 히스토리 추가 -> 복제로 클라 반영
-			Edit->ServerApplyPropertyDelta_Internal(Delta);
-			return true;
+			// 히스토리에 추가하여 복제
+			if (UEditSyncComponent* Edit = Actor->FindComponentByClass<UEditSyncComponent>())
+			{
+				Edit->ServerApplyPropertyDelta_Internal(Delta);
+			}
 		}
+		return bSuccess;
 	}
+
+	// 다른 속성: EditSyncComponent를 통해 처리
+	if (UEditSyncComponent* Edit = Actor->FindComponentByClass<UEditSyncComponent>())
+	{
+		Edit->ServerApplyPropertyDelta_Internal(Delta);
+		return true;
+	}
+
 	return false;
 }
 

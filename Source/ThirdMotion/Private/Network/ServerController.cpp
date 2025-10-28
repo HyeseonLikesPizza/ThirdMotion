@@ -1,6 +1,9 @@
 #include "Network/ServerController.h"
 #include "Engine/World.h"
 #include "Data/SceneList.h"
+#include "Edit/EditSyncComponent.h"
+#include "Edit/EditTypes.h"
+#include "GameplayTagContainer.h"
 
 void UServerController::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -85,4 +88,24 @@ void UServerController::NotifySceneChanged(UWorld* World)
 		// (이미 AddActor/RemoveActor에서 호출되지만 수동 알림용)
 		UE_LOG(LogTemp, Log, TEXT("ServerController: NotifySceneChanged for World %s"), *World->GetName());
 	}
+}
+
+FGameplayTag UServerController::GetActorPresetTag(AActor* Actor) const
+{
+	if (!Actor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ServerController: GetActorPresetTag - Invalid Actor"));
+		return FGameplayTag::EmptyTag;
+	}
+
+	// EditSyncComponent에서 PresetTag 가져오기
+	UEditSyncComponent* EditComp = Actor->FindComponentByClass<UEditSyncComponent>();
+	if (EditComp)
+	{
+		const FEditMeta& Meta = EditComp->GetMeta();
+		return Meta.PresetTag;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("ServerController: GetActorPresetTag - Actor has no EditSyncComponent"));
+	return FGameplayTag::EmptyTag;
 }

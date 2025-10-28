@@ -7,6 +7,7 @@
 #include "RightPanel.generated.h"
 
 class UMeshSettingsWidget;
+class ULightWidget;
 class UTreeView;
 class USceneController;
 class USceneList;
@@ -46,6 +47,10 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UMeshSettingsWidget* MeshSettingsWidget;
 
+	// Light 편집 패널
+	UPROPERTY(meta = (BindWidgetOptional))
+	ULightWidget* LightWidget;
+
 	// Scene 패널
 	UPROPERTY(meta = (BindWidget))
 	USceneListWidget* SceneListWidget;
@@ -70,6 +75,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 private:
 	// RightPanelController (패널 전환 및 비즈니스 로직)
@@ -78,5 +84,12 @@ private:
 
 	// 초기화
 	void InitializeRightPanelController();
+
+	// Actor 선택 처리 (Observer 패턴)
+	UFUNCTION()
+	void OnActorSelected(AActor* SelectedActor);
+
+	// Light Actor 체크 및 LightWidget 표시
+	void HandleLightActorSelection(AActor* LightActor);
 
 };

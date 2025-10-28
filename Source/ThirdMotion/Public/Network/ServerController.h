@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "GameplayTagContainer.h"
 #include "ServerController.generated.h"
 
 class AActor;
@@ -33,6 +34,9 @@ public:
 
 	// Scene 업데이트 알림
 	void NotifySceneChanged(UWorld* World);
+
+	// 선택된 액터의 PresetTag 확인
+	FGameplayTag GetActorPresetTag(AActor* Actor) const;
 
 private:
 	// World별 SceneList 참조 맵 (멀티 World 지원)

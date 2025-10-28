@@ -31,6 +31,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Right Panel Controller")
 	void SwitchToPanel(ERightPanelType PanelType);
 
+	// 패널 전환 (커스텀 인덱스 지정)
+	void SwitchToPanel(ERightPanelType PanelType, int32 CustomIndex);
+
 	// 패널 토글 (같은 패널 클릭 시 숨김)
 	UFUNCTION(BlueprintCallable, Category = "Right Panel Controller")
 	void TogglePanel(ERightPanelType PanelType);
