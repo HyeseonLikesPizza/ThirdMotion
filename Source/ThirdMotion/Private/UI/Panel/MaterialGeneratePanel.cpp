@@ -13,6 +13,7 @@
 #include "Components/TileView.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
+#include "Data/MaterialDetailsData.h"
 #include "Data/MaterialPreviewData.h"
 #include "Edit/PreviewImageGenerator.h"
 #include "Edit/PreviewMaterialRenderer.h"
@@ -56,7 +57,7 @@ void UMaterialGeneratePanel::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	PreviewImagen = Cast<APreviewImageGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), APreviewImageGenerator::StaticClass()));
+	PreviewImgGen = Cast<APreviewImageGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), APreviewImageGenerator::StaticClass()));
 
 	MaterialTypeChangePanelOnOffBtn->OnClicked.AddDynamic(this, &UMaterialGeneratePanel::TurnOnOffMaterialTypeChangePanel);
 }
@@ -205,35 +206,16 @@ void UMaterialGeneratePanel::OnStandardBtnClicked()
 void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 {
 	
-	// // 데이터 생성
-	// UMaterialPreviewData* NewItem = NewObject<UMaterialPreviewData>(this);
-	// const UEnum* MaterialEnum = StaticEnum<EMaterialType>();
-	// FText EnumDisplayNameText = MaterialEnum->GetDisplayNameTextByValue(
-	// 	static_cast<int64>(matTypeSelected)
-	// );
-	// FString EnumNameString = EnumDisplayNameText.ToString();
-	// FString NewMaterialName = FString::Printf(TEXT("New %s"), *EnumNameString);
-	//
-	// NewItem->MaterialName = NewMaterialName;
-	// NewItem->MaterialType = matTypeSelected;
-	//
-	//
-	// UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialName: %s"), *NewItem->MaterialName);
-	// UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialType: %d"), static_cast<int32>(NewItem->MaterialType));
-	//
-	// if (NewItem->MaterialType == EMaterialType::Standard)
-	// {
-	// 	PreviewMaterialRenderer->ChangeMaterialType(EMaterialType::Standard);
-	// }
-	//
-	// // NewItem에 RenderTarget 할당
-	// NewItem->RenderTarget = PreviewMaterialRenderer->GetRenderTarget();
-	//
-	// // TileView에 추가
-	// MaterialTileView->AddItem(NewItem);
-
 	// 데이터 생성
-	UMaterialPreviewData* NewItem = NewObject<UMaterialPreviewData>(this);
+	UMaterialPreviewData* NewPreviewData = NewObject<UMaterialPreviewData>(this);
+	UMaterialDetailsData* NewDetailsData = NewObject<UMaterialDetailsData>(this);
+
+	// Create a new Render Target
+	UTextureRenderTarget2D* NewRenderTarget = NewObject<UTextureRenderTarget2D>();
+	NewRenderTarget->RenderTargetFormat = RTF_RGBA8;
+	NewRenderTarget->InitAutoFormat(256, 256);
+	NewRenderTarget->UpdateResourceImmediate(true);
+	
 	const UEnum* MaterialEnum = StaticEnum<EMaterialType>();
 	FText EnumDisplayNameText = MaterialEnum->GetDisplayNameTextByValue(
 		static_cast<int64>(matTypeSelected)
@@ -241,28 +223,24 @@ void UMaterialGeneratePanel::OnCreateMaterialBtnClicked()
 	FString EnumNameString = EnumDisplayNameText.ToString();
 	FString NewMaterialName = FString::Printf(TEXT("New %s"), *EnumNameString);
 	
-	NewItem->MaterialName = NewMaterialName;
-	NewItem->MaterialType = matTypeSelected;
+	NewPreviewData->MaterialName = NewMaterialName;
+	NewPreviewData->MaterialType = matTypeSelected;
+	NewPreviewData->RenderTarget = NewRenderTarget;
 	
+	NewDetailsData->MaterialName = NewMaterialName;
+	NewDetailsData->MaterialType = matTypeSelected;
 	
-	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialName: %s"), *NewItem->MaterialName);
-	UE_LOG(LogTemp, Warning, TEXT("NewItem MaterialType: %d"), static_cast<int32>(NewItem->MaterialType));
+	//프리뷰 이미지를 만든다.
+	PreviewImgGen->RenderMaterialToTarget(NewPreviewData->MaterialType, NewPreviewData->RenderTarget);
+	//previewData의 이미지를 DetailsData이미지에 전달한다. 
+	NewDetailsData->RenderTarget = NewPreviewData->RenderTarget;
 
-	// Create a new Render Target
-	UTextureRenderTarget2D* NewRenderTarget = NewObject<UTextureRenderTarget2D>();
-	NewRenderTarget->RenderTargetFormat = RTF_RGBA8;
-	NewRenderTarget->InitAutoFormat(256, 256);
-	NewRenderTarget->UpdateResourceImmediate(true);
+	NewPreviewData->MaterialDetailsData = NewDetailsData;
+	
+	// TileView에 추가 (타일뷰가 생성된다.) 여기서는 DetailsData만 생성된 상태.
+	MaterialTileView->AddItem(NewPreviewData);
 
-	NewItem->RenderTarget = NewRenderTarget;
-
-	if (PreviewImagen)
-	{
-		PreviewImagen->RenderMaterialToTarget(NewItem->MaterialType, NewItem->RenderTarget);
-	}
-
-	// TileView에 추가
-	MaterialTileView->AddItem(NewItem);
+	
 	
 }
 

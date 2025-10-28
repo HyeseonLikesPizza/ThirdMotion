@@ -91,7 +91,7 @@ protected:
 
 
 	UPROPERTY()
-	class APreviewImageGenerator* PreviewImagen;
+	class APreviewImageGenerator* PreviewImgGen;
 private:
 	//MaterialTypeChange패널 켜기
 	UFUNCTION()

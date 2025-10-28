@@ -39,6 +39,8 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UImage* PreviewImage;
 
+	UPROPERTY();
+	class UMaterialDetailsPanel* materialDetailsPanel;
 
 
 	

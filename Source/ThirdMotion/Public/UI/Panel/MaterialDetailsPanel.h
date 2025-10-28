@@ -14,13 +14,19 @@ class THIRDMOTION_API UMaterialDetailsPanel : public UUserWidget
 {
 	GENERATED_BODY()
 
-
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(BindWidget))
+	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* MaterialNameText;
 
+	UPROPERTY(meta=(BindWidget))
+	class UImage* MaterialPreviewImage;
 
-	//메터리얼 타일뷰가 클릭되면 오른쪽 디테일창이 켜지는 함수.( 이름과 Peview image를 넘겨받는다)
+
+public:
 	UFUNCTION()
-	void SetMaterialNameAndImage(FText name, UMaterial* mat);
+	void TurnOnPanel();
+	
+	UFUNCTION()
+	void SetNameAndPreviewImg(class UMaterialDetailsData* materialDetailsData);
+	
 };

@@ -85,30 +85,30 @@ void APreviewImageGenerator::ApplyMaterialToSphere(EMaterialType eMatType)
 	
 }
 
-void APreviewImageGenerator::ChangeMaterialType(EMaterialType NewMaterialType)
-{
-	if (NewMaterialType == EMaterialType::Standard)
-	{
-		UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Blueprints/UI/DefaultMaterials/M_Standard.M_Standard"));
-	
-		
-		// 머티리얼 인스턴스 생성
-		if (BaseMaterial)
-		{
-			MID = UMaterialInstanceDynamic::Create(BaseMaterial, this);
-			if (PreviewSphere)
-			{
-				PreviewSphere->SetMaterial(0, MID);
-			}
-		}
-	
-		if (CaptureComponent2D)
-		{
-			CaptureComponent2D->CaptureScene();
-		}
-	}
-	
-}
+// void APreviewImageGenerator::ChangeMaterialType(EMaterialType NewMaterialType)
+// {
+// 	if (NewMaterialType == EMaterialType::Standard)
+// 	{
+// 		UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Blueprints/UI/DefaultMaterials/M_Standard.M_Standard"));
+// 	
+// 		
+// 		// 머티리얼 인스턴스 생성
+// 		if (BaseMaterial)
+// 		{
+// 			MID = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+// 			if (PreviewSphere)
+// 			{
+// 				PreviewSphere->SetMaterial(0, MID);
+// 			}
+// 		}
+// 	
+// 		if (CaptureComponent2D)
+// 		{
+// 			CaptureComponent2D->CaptureScene();
+// 		}
+// 	}
+// 	
+// }
 
 void APreviewImageGenerator::RenderMaterialToTarget(EMaterialType NewMaterialType, UTextureRenderTarget2D* Target)
 {
