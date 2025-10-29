@@ -4,17 +4,42 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
+#include "Components/VerticalBox.h"
+#include "Components/Image.h"
 #include "UI/WidgetController/ViewportController.h"
 #include "Engine/DirectionalLight.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Framework/ThirdMotionPlayerController.h"
+#include "Engine/Texture2D.h"
 
 void UViewportWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
     InitializeController();
+
+    // Eye 아이콘 텍스처 로드
+    EyeIconWhite = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), nullptr,
+        TEXT("/Game/Assets/cej/icon/icons8-whiteeye.icons8-whiteeye")));
+
+    if (!EyeIconWhite)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Failed to load EyeIconWhite texture"));
+    }
+
+    // EyeImg에 설정된 기본 텍스처 저장
+    if (EyeImg && EyeImg->GetBrush().GetResourceObject())
+    {
+        EyeIconDefault = Cast<UTexture2D>(EyeImg->GetBrush().GetResourceObject());
+        if (EyeIconDefault)
+        {
+            UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Saved default eye icon from Blueprint"));
+        }
+    }
+
+    // ViewportBox 표시 상태 초기화
+    bIsViewportBoxVisible = false;
 
     // DirectionalLight 찾기
     TArray<AActor*> FoundLights;
@@ -38,10 +63,14 @@ void UViewportWidget::NativeConstruct()
         }
     }
 
-    // Bindings
+    // Bindings (바인딩을 먼저 수행)
     if (Slider_Light)
     {
         Slider_Light->OnValueChanged.AddDynamic(this, &UViewportWidget::OnLightSliderValueChanged);
+    }
+    if (EyeButton)
+    {
+        EyeButton->OnClicked.AddDynamic(this, &UViewportWidget::OnEyeButtonClicked);
     }
     if (TimeLight)
     {
@@ -93,6 +122,16 @@ void UViewportWidget::NativeConstruct()
     {
         BackViewButton->OnClicked.AddDynamic(this, &UViewportWidget::OnBackViewButtonClicked);
     }
+
+    // 초기 상태: ViewportBox와 WidgetSwitcher 숨김 (바인딩 이후에 설정)
+    if (ViewportBox)
+    {
+        ViewportBox->SetVisibility(ESlateVisibility::Collapsed);
+    }
+    if (WidgetSwitcher)
+    {
+        WidgetSwitcher->SetVisibility(ESlateVisibility::Collapsed);
+    }
 }
 
 void UViewportWidget::NativeDestruct()
@@ -141,27 +180,101 @@ void UViewportWidget::OnLightSliderValueChanged(float Value)
     }
 }
 
+void UViewportWidget::OnEyeButtonClicked()
+{
+    if (ViewportBox)
+    {
+        // ViewportBox 가시성 토글
+        ESlateVisibility CurrentVisibility = ViewportBox->GetVisibility();
+        bool bIsCurrentlyVisible = (CurrentVisibility == ESlateVisibility::Visible ||
+                                    CurrentVisibility == ESlateVisibility::SelfHitTestInvisible ||
+                                    CurrentVisibility == ESlateVisibility::HitTestInvisible);
+
+        ViewportBox->SetVisibility(bIsCurrentlyVisible ? ESlateVisibility::Collapsed : ESlateVisibility::Visible);
+
+        // 상태 업데이트
+        bIsViewportBoxVisible = !bIsCurrentlyVisible;
+
+        // ViewportBox가 숨겨지면 WidgetSwitcher도 숨김
+        if (bIsCurrentlyVisible && WidgetSwitcher)
+        {
+            WidgetSwitcher->SetVisibility(ESlateVisibility::Collapsed);
+        }
+
+        // EyeImg 변경
+        if (EyeImg)
+        {
+            if (bIsViewportBoxVisible && EyeIconWhite)
+            {
+                // ViewportBox가 표시될 때 흰색 아이콘으로 변경
+                EyeImg->SetBrushFromTexture(EyeIconWhite);
+                UE_LOG(LogTemp, Log, TEXT("ViewportWidget: EyeImg set to white icon"));
+            }
+            else
+            {
+                // ViewportBox가 숨겨질 때 기본 아이콘으로 복원
+                // Blueprint에서 설정한 기본 이미지 사용 (텍스처를 null로 설정하면 Blueprint 기본값 사용)
+                if (EyeIconDefault)
+                {
+                    EyeImg->SetBrushFromTexture(EyeIconDefault);
+                }
+                UE_LOG(LogTemp, Log, TEXT("ViewportWidget: EyeImg set to default icon"));
+            }
+        }
+
+        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: EyeButton clicked - ViewportBox now %s"),
+               bIsCurrentlyVisible ? TEXT("Hidden") : TEXT("Visible"));
+    }
+}
+
 void UViewportWidget::OnLightButtonClicked()
 {
+    UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Light button clicked"));
+
     if (ViewportController)
     {
         ViewportController->SwitchToLightPanel();
+    }
+
+    // WidgetSwitcher 표시
+    if (WidgetSwitcher)
+    {
+        WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
+        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
     }
 }
 
 void UViewportWidget::OnScreenButtonClicked()
 {
+    UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Screen button clicked"));
+
     if (ViewportController)
     {
         ViewportController->SwitchToScreenPanel();
+    }
+
+    // WidgetSwitcher 표시
+    if (WidgetSwitcher)
+    {
+        WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
+        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
     }
 }
 
 void UViewportWidget::OnCubicButtonClicked()
 {
+    UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Cubic button clicked"));
+
     if (ViewportController)
     {
         ViewportController->SwitchToCubicPanel();
+    }
+
+    // WidgetSwitcher 표시
+    if (WidgetSwitcher)
+    {
+        WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
+        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
     }
 }
 

@@ -24,23 +24,9 @@ void USceneListWidget::RefreshUI()
 
 UUserWidget* USceneListWidget::OnGenerateRow(UObject* Item)
 {
-	if (USceneItemData* ItemData = Cast<USceneItemData>(Item))
-	{
-		if (SceneItemWidgetClass)
-		{
-			// SceneItemWidget 생성
-			UUserWidget* Row = CreateWidget<UUserWidget>(GetWorld(), SceneItemWidgetClass);
-
-			if (USceneItemWidget* SceneItemRow = Cast<USceneItemWidget>(Row))
-			{
-				// SceneController 전달
-				SceneItemRow->SetSceneController(SceneController);
-				return SceneItemRow;
-			}
-
-			return Row;
-		}
-	}
+	// 이 함수는 더 이상 사용되지 않음
+	// TreeView의 EntryWidgetClass는 Blueprint에서 설정됨
+	// SceneItemWidget이 IUserObjectListEntry를 구현하므로 자동으로 처리됨
 	return nullptr;
 }
 
@@ -69,7 +55,11 @@ void USceneListWidget::NativeConstruct()
 	// TreeView 설정 (Scene 패널용)
 	if (SceneList)
 	{
+		// EntryWidgetClass는 Blueprint에서 설정
+		// OnGetItemChildren으로 자식 항목 제공
 		SceneList->SetOnGetItemChildren(this, &USceneListWidget::OnGetItemChildren);
+
+		UE_LOG(LogTemp, Log, TEXT("SceneListWidget: TreeView OnGetItemChildren delegate bound"));
 	}
 
 	// UI 새로고침

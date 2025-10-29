@@ -63,6 +63,18 @@ public:
 
 	// ==================== Widget Switcher & Panel Buttons ====================
 
+	// Eye Button (ViewportBox 표시/숨김 토글)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* EyeButton;
+
+	// Eye Image (Eye 아이콘 이미지)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UImage* EyeImg;
+
+	// ViewportBox (VerticalBox - TimeLight, Screen, Cubic 버튼 포함)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UVerticalBox* ViewportBox;
+
 	// Widget Switcher (Light, Screen, Cubic 패널 전환)
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UWidgetSwitcher* WidgetSwitcher;
@@ -90,6 +102,10 @@ public:
 	// Cubic 버튼 클릭 핸들러
 	UFUNCTION()
 	void OnCubicButtonClicked();
+
+	// Eye 버튼 클릭 핸들러 (ViewportBox 토글)
+	UFUNCTION()
+	void OnEyeButtonClicked();
 
 	// ==================== Camera View Button Handlers ====================
 
@@ -161,6 +177,19 @@ private:
 	// ViewportController
 	UPROPERTY()
 	UViewportController* ViewportController;
+
+	// ==================== Eye Icon Textures ====================
+
+	// Eye 아이콘 텍스처 (기본 상태)
+	UPROPERTY()
+	class UTexture2D* EyeIconDefault;
+
+	// Eye 아이콘 텍스처 (활성화 상태 - 흰색)
+	UPROPERTY()
+	class UTexture2D* EyeIconWhite;
+
+	// ViewportBox 표시 상태
+	bool bIsViewportBoxVisible;
 
 	// 초기화
 	void InitializeController();

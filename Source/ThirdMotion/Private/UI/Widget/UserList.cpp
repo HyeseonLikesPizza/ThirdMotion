@@ -18,6 +18,7 @@ void UUserList::NativeConstruct()
 	RefreshInterval = 1.0f; // Refresh every 1 second
 	TimeSinceLastRefresh = 0.0f;
 	bAutoRefresh = true;
+	bIsVoiceChatActive = false; // 음성 채팅 초기 상태는 비활성
 
 	// Set title
 	if (TitleText)
@@ -37,7 +38,29 @@ void UUserList::NativeConstruct()
 
 void UUserList::OnSteamButtonClicked()
 {
-	UGameplayStatics::OpenLevel(this, TEXT("/Game/Blueprints/Steam/SteamMap"));
+	// PlayerController 가져오기
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerController를 찾을 수 없습니다."));
+		return;
+	}
+
+	// 음성 채팅 토글
+	if (bIsVoiceChatActive)
+	{
+		// 음성 채팅 중지
+		PC->StopTalking();
+		bIsVoiceChatActive = false;
+		UE_LOG(LogTemp, Log, TEXT("음성 채팅 중지"));
+	}
+	else
+	{
+		// 음성 채팅 시작
+		PC->StartTalking();
+		bIsVoiceChatActive = true;
+		UE_LOG(LogTemp, Log, TEXT("음성 채팅 시작"));
+	}
 }
 
 void UUserList::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

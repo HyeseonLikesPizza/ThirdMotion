@@ -46,10 +46,18 @@ void USceneList::RefreshFromWorld()
 		USceneItemData* ItemData = CreateItemData(Actor);
 		ActorToItemMap.Add(Actor, ItemData);
 
-		// 부모가 없으면 루트 아이템
-		if (!Actor->GetAttachParentActor())
+		// 부모가 없으면 루트 아이템 (Attachment와 Parent 둘 다 확인)
+		AActor* ParentCheck = Actor->GetAttachParentActor();
+#if WITH_EDITOR
+		if (!ParentCheck)
+		{
+			ParentCheck = Actor->GetParentActor();
+		}
+#endif
+		if (!ParentCheck)
 		{
 			RootItems.Add(ItemData);
+			UE_LOG(LogTemp, Log, TEXT("SceneList: %s added as ROOT item"), *Actor->GetActorLabel());
 		}
 	}
 
@@ -59,11 +67,34 @@ void USceneList::RefreshFromWorld()
 		AActor* Actor = Pair.Key;
 		USceneItemData* ItemData = Pair.Value;
 
-		if (AActor* ParentActor = Actor->GetAttachParentActor())
+		// 부모 액터 찾기 (Attachment 방식과 Parent 방식 둘 다 확인)
+		AActor* ParentActor = nullptr;
+
+		// 1. Attachment 방식 확인 (GetAttachParentActor)
+		ParentActor = Actor->GetAttachParentActor();
+
+		// 2. Parent 방식 확인 (GetParentActor - 월드 아웃라이너 계층)
+		if (!ParentActor)
+		{
+#if WITH_EDITOR
+			ParentActor = Actor->GetParentActor();
+#endif
+		}
+
+		// 부모가 있으면 자식으로 추가
+		if (ParentActor)
 		{
 			if (USceneItemData** ParentDataPtr = ActorToItemMap.Find(ParentActor))
 			{
 				(*ParentDataPtr)->Children.Add(ItemData);
+				UE_LOG(LogTemp, Log, TEXT("SceneList: %s is child of %s"),
+					*Actor->GetActorLabel(), *ParentActor->GetActorLabel());
+			}
+			else
+			{
+				// 부모는 있지만 SceneList에 포함되지 않은 경우 (필터링된 경우)
+				UE_LOG(LogTemp, Warning, TEXT("SceneList: %s has parent %s but parent not in list"),
+					*Actor->GetActorLabel(), *ParentActor->GetActorLabel());
 			}
 		}
 	}
@@ -238,19 +269,36 @@ void USceneList::AddActor(AActor* Actor)
 	UE_LOG(LogTemp, Warning, TEXT("SceneList: AddActor - Added: %s (DisplayName=%s)"),
 		*Actor->GetActorLabel(), *ItemData->DisplayName);
 
-	// 부모 관계 설정
+	// 부모 관계 설정 (Attachment와 Parent 둘 다 확인)
 	AActor* ParentActor = Actor->GetAttachParentActor();
+#if WITH_EDITOR
+	if (!ParentActor)
+	{
+		ParentActor = Actor->GetParentActor();
+	}
+#endif
+
 	if (ParentActor)
 	{
 		if (USceneItemData** ParentDataPtr = ActorToItemMap.Find(ParentActor))
 		{
 			(*ParentDataPtr)->Children.Add(ItemData);
+			UE_LOG(LogTemp, Log, TEXT("SceneList: AddActor - %s is child of %s"),
+				*Actor->GetActorLabel(), *ParentActor->GetActorLabel());
+		}
+		else
+		{
+			// 부모가 필터링되어 리스트에 없으면 루트로 추가
+			RootItems.Add(ItemData);
+			UE_LOG(LogTemp, Warning, TEXT("SceneList: AddActor - %s parent not in list, added as ROOT"),
+				*Actor->GetActorLabel());
 		}
 	}
 	else
 	{
 		// 부모가 없으면 루트 아이템
 		RootItems.Add(ItemData);
+		UE_LOG(LogTemp, Log, TEXT("SceneList: AddActor - %s added as ROOT item"), *Actor->GetActorLabel());
 	}
 
 	NotifyDataChanged();
@@ -265,8 +313,15 @@ void USceneList::RemoveActor(AActor* Actor)
 
 	USceneItemData* ItemData = *ItemDataPtr;
 
-	// 부모에서 제거
+	// 부모에서 제거 (Attachment와 Parent 둘 다 확인)
 	AActor* ParentActor = Actor->GetAttachParentActor();
+#if WITH_EDITOR
+	if (!ParentActor)
+	{
+		ParentActor = Actor->GetParentActor();
+	}
+#endif
+
 	if (ParentActor)
 	{
 		if (USceneItemData** ParentDataPtr = ActorToItemMap.Find(ParentActor))

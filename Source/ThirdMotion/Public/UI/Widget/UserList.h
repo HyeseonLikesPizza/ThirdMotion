@@ -121,4 +121,7 @@ protected:
 private:
 	UFUNCTION()
 	void OnSteamButtonClicked();
+
+	// 음성 채팅 상태 추적
+	bool bIsVoiceChatActive;
 };
