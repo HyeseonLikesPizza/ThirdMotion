@@ -68,7 +68,6 @@ protected:
 	// 패널별 초기화 로직
 	void InitializeScenePanel();
 	void InitializePropertiesPanel();
-	void InitializeXYZPanel();
 	void InitializeUserListPanel();
 
 private:

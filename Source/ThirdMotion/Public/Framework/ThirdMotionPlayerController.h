@@ -58,6 +58,13 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_UpdateDirectionalLightRotation(FRotator NewRotation);
 
+	/* Memo 동기화 */
+	UFUNCTION(Server, Reliable)
+	void Server_UpdateMemoText(const FString& NewMemoText);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_UpdateMemoText(const FString& NewMemoText);
+
 	// 메인 오버레이 클래스
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> MainWidgetClass;

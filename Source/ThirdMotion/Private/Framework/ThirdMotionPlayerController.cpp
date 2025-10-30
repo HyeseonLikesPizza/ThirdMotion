@@ -4,6 +4,7 @@
 #include "GameplayTagContainer.h"
 #include "Edit/SceneManager.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "TimerManager.h"
 #include "Edit/HighlightComponent.h"
 #include "Engine/World.h"
@@ -15,6 +16,7 @@
 #include "UI/WidgetController/SceneController.h"
 #include "Engine/DirectionalLight.h"
 #include "Components/DirectionalLightComponent.h"
+#include "Components/MultiLineEditableTextBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/Widget/ViewportWidget.h"
 #include "Camera/PlayerCameraManager.h"
@@ -376,6 +378,45 @@ void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Impl
 						ViewportWidget->OnRep_LightRotation();
 						UE_LOG(LogTemp, Warning, TEXT("[Multicast] ViewportWidget updated"));
 					}
+				}
+			}
+		}
+	}
+}
+
+void AThirdMotionPlayerController::Server_UpdateMemoText_Implementation(const FString& NewMemoText)
+{
+	UE_LOG(LogTemp, Log, TEXT("[Server RPC] Received memo update: %s"), *NewMemoText);
+
+	// 모든 클라이언트에 동기화 (Multicast)
+	Multicast_UpdateMemoText(NewMemoText);
+}
+
+void AThirdMotionPlayerController::Multicast_UpdateMemoText_Implementation(const FString& NewMemoText)
+{
+	UE_LOG(LogTemp, Log, TEXT("[Multicast] Received memo update: %s, IsServer=%d"),
+		*NewMemoText, HasAuthority());
+
+	// 모든 클라이언트 + 서버(Listen Server)에서 실행됨
+	// 로컬 플레이어의 ViewMemo 위젯 업데이트
+	if (IsLocalPlayerController())
+	{
+		// MainWidget 찾기
+		TArray<UUserWidget*> FoundWidgets;
+		UWidgetBlueprintLibrary::GetAllWidgetsOfClass(GetWorld(), FoundWidgets, UUserWidget::StaticClass());
+
+		for (UUserWidget* Widget : FoundWidgets)
+		{
+			// WBP_ViewMemo 찾기 (이름으로 확인)
+			if (Widget->GetName().Contains(TEXT("ViewMemo")))
+			{
+				// NoteTextBox 찾기
+				if (UMultiLineEditableTextBox* NoteTextBox = Cast<UMultiLineEditableTextBox>(
+					Widget->GetWidgetFromName(TEXT("NoteTextBox"))))
+				{
+					NoteTextBox->SetText(FText::FromString(NewMemoText));
+					UE_LOG(LogTemp, Log, TEXT("[Multicast] Updated ViewMemo NoteTextBox"));
+					break;
 				}
 			}
 		}

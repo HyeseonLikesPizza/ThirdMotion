@@ -73,9 +73,6 @@ void URightPanelController::SwitchToPanel(ERightPanelType PanelType)
 	case ERightPanelType::Properties:
 		InitializePropertiesPanel();
 		break;
-	case ERightPanelType::XYZ:
-		InitializeXYZPanel();
-		break;
 	case ERightPanelType::UserList:
 		InitializeUserListPanel();
 		break;
@@ -110,9 +107,6 @@ void URightPanelController::SwitchToPanel(ERightPanelType PanelType, int32 Custo
 		break;
 	case ERightPanelType::Properties:
 		InitializePropertiesPanel();
-		break;
-	case ERightPanelType::XYZ:
-		InitializeXYZPanel();
 		break;
 	case ERightPanelType::UserList:
 		InitializeUserListPanel();
@@ -229,12 +223,6 @@ void URightPanelController::InitializePropertiesPanel()
 {
 	// Properties 패널 초기화 로직
 	UE_LOG(LogTemp, Log, TEXT("RightPanelController: Properties panel initialized"));
-}
-
-void URightPanelController::InitializeXYZPanel()
-{
-	// XYZ 패널 초기화 로직
-	UE_LOG(LogTemp, Log, TEXT("RightPanelController: XYZ panel initialized"));
 }
 
 void URightPanelController::InitializeUserListPanel()
