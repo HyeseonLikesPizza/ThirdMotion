@@ -6,6 +6,7 @@
 #include "Data/ViewportTypes.h"
 #include "ThirdMotionPlayerController.generated.h"
 
+class UXYZWidget;
 struct FInputActionValue;
 class ULibraryWidgetController;
 struct FGameplayTag;
@@ -86,6 +87,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Look;
 
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_ESC;
+
 	UPROPERTY(BlueprintReadWrite, Category="Gizmo")
 	bool bGizmoShowed;
 
@@ -102,6 +106,7 @@ public:
 	void OnLook(const FInputActionValue& Value);
 	void OnRMB_Pressed(const FInputActionValue& Value);
 	void OnRMB_Released(const FInputActionValue& Value);
+	void OnESC(const FInputActionValue& Value);
 
 	/* ----------- Actor Select ----------- */
 
@@ -133,6 +138,9 @@ private:
 
 	UPROPERTY()
 	ULibraryWidgetController* LibraryWidgetController;
+
+	UPROPERTY()
+	UXYZWidget* XYZWidget;
 
 	// 로딩 완료 후 메인 위젯 표시
 	void ShowMainWidget();

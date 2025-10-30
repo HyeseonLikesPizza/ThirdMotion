@@ -20,6 +20,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Engine/PostProcessVolume.h"
 #include "UI/Widget/SceneListWidget.h"
+#include "UI/Widget/XYZWidget.h"
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -63,6 +64,12 @@ void AThirdMotionPlayerController::BeginPlay()
 		ULibraryPanel* LBWidget = Cast<ULibraryPanel>(MainWidget->LibraryPanel);
 		LBWidget->Init(LibraryWidgetController);
 		MainWidget->AddToViewport();
+
+		if (MainWidget)
+		{
+			URightPanel* RPanel = Cast<URightPanel>(MainWidget->RightPanel);
+			XYZWidget = RPanel->XYZWidget;
+		}
 	}
 }
 
@@ -113,6 +120,7 @@ void AThirdMotionPlayerController::SetupInputComponent()
 		EIC->BindAction(IA_RMB, ETriggerEvent::Completed,this, &AThirdMotionPlayerController::OnRMB_Released);
 		EIC->BindAction(IA_RMB, ETriggerEvent::Canceled, this, &AThirdMotionPlayerController::OnRMB_Released);
 		EIC->BindAction(IA_Look, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::OnLook);
+		EIC->BindAction(IA_ESC, ETriggerEvent::Started, this, &AThirdMotionPlayerController::OnESC);
 	}
 	
 }
@@ -220,6 +228,19 @@ void AThirdMotionPlayerController::OnRMB_Released(const FInputActionValue& Value
 	SetInputMode(Mode);
 }
 
+void AThirdMotionPlayerController::OnESC(const FInputActionValue& Value)
+{
+	// 하이라이터 끄기
+	if (!bGizmoShowed && IsValid(SelectedActor))
+		if (auto* H = SelectedActor->FindComponentByClass<UHighlightComponent>())
+			H->EnableHighlight(false);
+
+	
+	SelectedActor = nullptr;
+	OnActorSelected.Broadcast(nullptr);
+	XYZWidget->SetTargetActor(nullptr);
+}
+
 void AThirdMotionPlayerController::OnClick()
 {
 	// 프리뷰 고스트가 켜진 상태일 때
@@ -241,6 +262,7 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 	if (GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit))
 	{
 		AActor* NewSel = Hit.GetActor();
+		if (!NewSel->ActorHasTag(TEXT("Edit"))) return;
 
 		// 기존 하이라이트 끄기
 		if (!bGizmoShowed && IsValid(SelectedActor))
@@ -270,7 +292,9 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 				}
 			}
 		}
-		
+
+		// XYZ 패널 업데이트
+		XYZWidget->SetTargetActor(SelectedActor);
 	}
 }
 

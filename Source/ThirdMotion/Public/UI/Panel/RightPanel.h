@@ -6,6 +6,7 @@
 #include "UI/Widget/BaseWidget.h"
 #include "RightPanel.generated.h"
 
+class UXYZWidget;
 class UMeshSettingsWidget;
 class ULightWidget;
 class UTreeView;
@@ -54,6 +55,10 @@ public:
 	// Scene 패널
 	UPROPERTY(meta = (BindWidget))
 	USceneListWidget* SceneListWidget;
+
+	// XYZ 패널
+	UPROPERTY(meta = (BindWidget))
+	UXYZWidget* XYZWidget;
 
 	// ==================== Public Interface ====================
 

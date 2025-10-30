@@ -70,6 +70,21 @@ void UEditSyncComponent::ServerApplyPropertyDelta_Internal(const FPropertyDelta&
 	R_PropsAppliedHistory.Add(D);
 }
 
+void UEditSyncComponent::Server_SetTransform_Implementation(const FTransform& NewWorldTx)
+{
+	ApplyTransformAuthoritative(NewWorldTx);
+}
+
+void UEditSyncComponent::ApplyTransformAuthoritative(const FTransform& NewWorldTx)
+{
+	if (AActor* Owner = GetOwner())
+	{
+		FScopedTransaction Tx(NSLOCTEXT("XYZ", "PanelEdit", "XYZ Panel Edit"));
+		Owner->Modify();
+		Owner->SetActorTransform(NewWorldTx, false, nullptr, ETeleportType::TeleportPhysics);
+	}
+}
+
 void UEditSyncComponent::OnRep_Meta()
 {
 }
