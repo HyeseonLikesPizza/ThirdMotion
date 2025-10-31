@@ -17,6 +17,9 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
+	// 마우스 클릭 이벤트 가로채기 (뷰포트 클릭 방지)
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+
 	// Slider_Light 바인딩
 	UPROPERTY(meta = (BindWidget))
 	class USlider* Slider_Light;

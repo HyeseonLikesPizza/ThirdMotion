@@ -7,8 +7,11 @@
 #include "UI/Widget/Mesh/MeshSettingsWidget.h"
 #include "UI/WidgetController/MeshWidgetController.h"
 #include "Edit/AssetResolver.h"
+#include "Edit/EditSyncComponent.h"
+#include "Edit/EditTypes.h"
 #include "Framework/ThirdMotionPlayerController.h"
 #include "Components/LightComponent.h"
+#include "Components/WidgetSwitcher.h"
 #include "GameplayTagContainer.h"
 
 void URightPanelController::InitializeWithRightPanel(URightPanel* InRightPanel)
@@ -118,6 +121,8 @@ void URightPanelController::SwitchToPanel(ERightPanelType PanelType, int32 Custo
 
 void URightPanelController::TogglePanel(ERightPanelType PanelType)
 {
+	UE_LOG(LogTemp, Warning, TEXT("RightPanelController::TogglePanel called with PanelType: %d"), static_cast<int32>(PanelType));
+
 	if (!RightPanel)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("RightPanelController: RightPanel is null"));
@@ -127,58 +132,27 @@ void URightPanelController::TogglePanel(ERightPanelType PanelType)
 	// Properties 버튼 클릭 시 선택된 Actor 타입 확인
 	if (PanelType == ERightPanelType::Properties)
 	{
-		// PlayerController에서 선택된 Actor 가져오기
-		AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetWorld()->GetFirstPlayerController());
-		if (PC)
+		// 토글 처리
+		if (bIsPanelVisible && CurrentPanel == PanelType)
 		{
-			AActor* SelectedActor = PC->GetSelectedActor();
-			if (SelectedActor)
-			{
-				// LightComponent로 Light Actor인지 확인 (일관성 있게)
-				ULightComponent* LightComp = SelectedActor->FindComponentByClass<ULightComponent>();
-				if (LightComp)
-				{
-					// Light Actor인 경우 토글 처리
-					if (bIsPanelVisible && CurrentPanel == PanelType)
-					{
-						HidePanel();
-					}
-					else
-					{
-						// Properties 패널로 전환 (WidgetSwitcher)
-						CurrentPanel = PanelType;
-						bIsPanelVisible = true;
-						RightPanel->SetRightPanelVisibility(true);
-						RightPanel->SetWidgetSwitcherIndex(static_cast<int32>(PanelType));
+			HidePanel();
+			return;
+		}
+		else
+		{
+			// Properties 패널로 전환
+			CurrentPanel = PanelType;
+			bIsPanelVisible = true;
+			RightPanel->SetRightPanelVisibility(true);
+			RightPanel->SetWidgetSwitcherIndex(static_cast<int32>(PanelType));
 
-						// MeshSettingsWidget 숨기고 LightWidget 표시
-						if (RightPanel->MeshSettingsWidget)
-						{
-							RightPanel->MeshSettingsWidget->SetVisibility(ESlateVisibility::Collapsed);
-						}
+			// PlayerController에서 선택된 Actor 가져오기
+			AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetWorld()->GetFirstPlayerController());
+			AActor* SelectedActor = PC ? PC->GetSelectedActor() : nullptr;
 
-						if (RightPanel->LightWidget)
-						{
-							RightPanel->LightWidget->InitializeWithLightActor(SelectedActor);
-							RightPanel->LightWidget->SetVisibility(ESlateVisibility::Visible);
-						}
-					}
-					UE_LOG(LogTemp, Log, TEXT("RightPanelController: Light actor selected - showing LightWidget"));
-					return;
-				}
-				else
-				{
-					// Mesh Actor인 경우: MeshSettingsWidget 표시, LightWidget 숨김
-					if (RightPanel->LightWidget)
-					{
-						RightPanel->LightWidget->SetVisibility(ESlateVisibility::Collapsed);
-					}
-					if (RightPanel->MeshSettingsWidget)
-					{
-						RightPanel->MeshSettingsWidget->SetVisibility(ESlateVisibility::Visible);
-					}
-				}
-			}
+			// PresetType에 따라 PropertiesSwitcher 인덱스 설정
+			UpdatePropertiesSwitcherByActor(SelectedActor);
+			return;
 		}
 	}
 
@@ -210,6 +184,12 @@ void URightPanelController::HidePanel()
 
 void URightPanelController::BindMaterialPanel(UMaterialGeneratePanel* InView)
 {
+	if (!MeshWidgetController)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RightPanelController: MeshWidgetController is null"));
+		return;
+	}
+
 	MeshWidgetController->BindMaterialPanel(InView);
 }
 
@@ -221,8 +201,116 @@ void URightPanelController::InitializeScenePanel()
 
 void URightPanelController::InitializePropertiesPanel()
 {
+	UE_LOG(LogTemp, Warning, TEXT("RightPanelController: InitializePropertiesPanel START"));
+
 	// Properties 패널 초기화 로직
+	// 선택된 Actor 확인하고 PropertiesSwitcher 인덱스 설정
+	AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PC)
+	{
+		AActor* SelectedActor = PC->GetSelectedActor();
+		UE_LOG(LogTemp, Warning, TEXT("RightPanelController: SelectedActor = %s"), SelectedActor ? *SelectedActor->GetName() : TEXT("NULL"));
+		UpdatePropertiesSwitcherByActor(SelectedActor);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RightPanelController: PlayerController is NULL"));
+		// Actor 선택 없으면 기본값 0 (Mesh)
+		if (RightPanel && RightPanel->PropertiesSwitcher)
+		{
+			RightPanel->PropertiesSwitcher->SetActiveWidgetIndex(0);
+			UE_LOG(LogTemp, Log, TEXT("RightPanelController: No actor selected - PropertiesSwitcher set to default index 0"));
+		}
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("RightPanelController: Properties panel initialized"));
+}
+
+void URightPanelController::UpdatePropertiesSwitcherByActor(AActor* SelectedActor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("RightPanelController: UpdatePropertiesSwitcherByActor START - Actor: %s"), SelectedActor ? *SelectedActor->GetName() : TEXT("NULL"));
+
+	if (!RightPanel)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RightPanelController: RightPanel is null"));
+		return;
+	}
+
+	// 기본값: index 0 (Mesh)
+	int32 PropertiesIndex = 0;
+
+	if (SelectedActor)
+	{
+		// EditSyncComponent에서 PresetTag 가져오기
+		UEditSyncComponent* EditComp = SelectedActor->FindComponentByClass<UEditSyncComponent>();
+		if (EditComp)
+		{
+			const FEditMeta& Meta = EditComp->GetMeta();
+			const FGameplayTag& PresetTag = Meta.PresetTag;
+
+			// AssetResolver를 통해 LibraryRow 가져오기
+			UAssetResolver* Resolver = GetWorld()->GetSubsystem<UAssetResolver>();
+			if (Resolver && PresetTag.IsValid())
+			{
+				const FLibraryRow* Row = Resolver->FindRowByTag(PresetTag);
+				if (Row)
+				{
+					// PresetType에 따라 PropertiesSwitcher 인덱스 설정
+					switch (Row->PresetType)
+					{
+					case EPresetType::Mesh:
+						PropertiesIndex = 0;
+						UE_LOG(LogTemp, Log, TEXT("RightPanelController: Mesh actor - PropertiesSwitcher index 0"));
+						break;
+					case EPresetType::Light:
+						PropertiesIndex = 1;
+						// LightWidget 초기화
+						if (RightPanel->LightWidget)
+						{
+							RightPanel->LightWidget->InitializeWithLightActor(SelectedActor);
+						}
+						UE_LOG(LogTemp, Log, TEXT("RightPanelController: Light actor - PropertiesSwitcher index 1"));
+						break;
+					case EPresetType::Camera:
+						PropertiesIndex = 2;
+						UE_LOG(LogTemp, Log, TEXT("RightPanelController: Camera actor - PropertiesSwitcher index 2"));
+						break;
+					default:
+						PropertiesIndex = 0;
+						UE_LOG(LogTemp, Warning, TEXT("RightPanelController: Unknown PresetType - defaulting to index 0"));
+						break;
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("RightPanelController: LibraryRow not found for PresetTag: %s - using default index 0"), *PresetTag.ToString());
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("RightPanelController: AssetResolver is null or PresetTag is invalid - using default index 0"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("RightPanelController: EditSyncComponent not found - using default index 0"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("RightPanelController: No actor selected - using default index 0"));
+	}
+
+	// PropertiesSwitcher 인덱스 설정
+	if (RightPanel->PropertiesSwitcher)
+	{
+		RightPanel->PropertiesSwitcher->SetActiveWidgetIndex(PropertiesIndex);
+		UE_LOG(LogTemp, Log, TEXT("RightPanelController: PropertiesSwitcher set to index %d"), PropertiesIndex);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RightPanelController: PropertiesSwitcher is null"));
+	}
 }
 
 void URightPanelController::InitializeUserListPanel()

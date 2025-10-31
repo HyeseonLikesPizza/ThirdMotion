@@ -22,6 +22,8 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Engine/PostProcessVolume.h"
 #include "UI/Widget/SceneListWidget.h"
+#include "Components/VerticalBox.h"
+#include "Components/WidgetSwitcher.h"
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -224,6 +226,34 @@ void AThirdMotionPlayerController::OnRMB_Released(const FInputActionValue& Value
 
 void AThirdMotionPlayerController::OnClick()
 {
+	// ViewportWidget의 ViewportBox 또는 WidgetSwitcher가 표시 중인지 확인
+	if (MainWidget && MainWidget->ViewportWidget)
+	{
+		UViewportWidget* VPWidget = MainWidget->ViewportWidget;
+
+		// ViewportBox 또는 WidgetSwitcher가 보이는 상태에서는 뷰포트 클릭 무시
+		bool bShouldIgnoreClick = false;
+
+		// ViewportBox 체크 (EyeButton으로 표시/숨김)
+		if (VPWidget->ViewportBox && VPWidget->ViewportBox->GetVisibility() == ESlateVisibility::Visible)
+		{
+			bShouldIgnoreClick = true;
+			PRINTLOG(TEXT("OnClick: ViewportBox is visible, ignoring viewport click"));
+		}
+
+		// WidgetSwitcher 체크 (패널 표시 중)
+		if (VPWidget->WidgetSwitcher && VPWidget->WidgetSwitcher->GetVisibility() == ESlateVisibility::Visible)
+		{
+			bShouldIgnoreClick = true;
+			PRINTLOG(TEXT("OnClick: WidgetSwitcher is visible, ignoring viewport click"));
+		}
+
+		if (bShouldIgnoreClick)
+		{
+			return;
+		}
+	}
+
 	// 프리뷰 고스트가 켜진 상태일 때
 	if (bPlacing)
 	{

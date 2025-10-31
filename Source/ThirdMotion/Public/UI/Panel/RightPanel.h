@@ -43,6 +43,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UWidgetSwitcher* WidgetSwitcher_Right;
 
+	// Properties 패널 내부의 WidgetSwitcher (Mesh, Light, Memo 전환용)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
+	class UWidgetSwitcher* PropertiesSwitcher;
+
 	// Properties 패널
 	UPROPERTY(meta = (BindWidget))
 	UMeshSettingsWidget* MeshSettingsWidget;

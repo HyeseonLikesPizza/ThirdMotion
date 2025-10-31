@@ -15,6 +15,20 @@ void UMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	// ViewportWidget 찾기 (Blueprint에서 BindWidget으로 연결 안된 경우 대비)
+	if (!ViewportWidget && WidgetTree)
+	{
+		ViewportWidget = Cast<UViewportWidget>(WidgetTree->FindWidget(FName(TEXT("ViewportWidget"))));
+		if (ViewportWidget)
+		{
+			UE_LOG(LogTemp, Log, TEXT("MainWidget: ViewportWidget found via WidgetTree"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MainWidget: ViewportWidget not found!"));
+		}
+	}
+
 	// BottomBar와 RightPanel 연결
 	if (BottomBar && RightPanel)
 	{

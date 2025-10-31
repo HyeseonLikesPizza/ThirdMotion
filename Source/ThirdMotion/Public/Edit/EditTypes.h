@@ -17,7 +17,8 @@ enum class EPresetType : uint8
 {
 	Mesh,
 	Light,
-	Camera
+	Camera, 
+	Tool
 };
 
 UENUM(BlueprintType)

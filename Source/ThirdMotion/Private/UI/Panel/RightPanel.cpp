@@ -44,6 +44,16 @@ void URightPanel::NativeConstruct()
 		LightWidget->SetLightWidgetVisibility(false);
 	}
 
+	// PropertiesSwitcher 바인딩 확인
+	if (PropertiesSwitcher)
+	{
+		UE_LOG(LogTemp, Log, TEXT("RightPanel: PropertiesSwitcher is bound successfully"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RightPanel: PropertiesSwitcher is NOT bound - check Blueprint binding"));
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("RightPanel: NativeConstruct completed"));
 }
 

@@ -95,6 +95,12 @@ void UMeshWidgetController::SetTargetActor(AActor* InActor)
 
 void UMeshWidgetController::BindMaterialPanel(UMaterialGeneratePanel* Panel)
 {
+	if (!Panel)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MeshWidgetController: BindMaterialPanel called with null Panel"));
+		return;
+	}
+
 	MaterialWidget = Panel;
 	MaterialWidget->OnMaterialCreated.AddDynamic(this, &UMeshWidgetController::HandleMaterialCreated);
 }

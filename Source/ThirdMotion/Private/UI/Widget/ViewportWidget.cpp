@@ -71,26 +71,32 @@ void UViewportWidget::NativeConstruct()
     if (EyeButton)
     {
         EyeButton->OnClicked.AddDynamic(this, &UViewportWidget::OnEyeButtonClicked);
+        EyeButton->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
     }
     if (TimeLight)
     {
         TimeLight->OnClicked.AddDynamic(this, &UViewportWidget::OnLightButtonClicked);
+        TimeLight->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
     }
     if (Screen)
     {
         Screen->OnClicked.AddDynamic(this, &UViewportWidget::OnScreenButtonClicked);
+        Screen->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
     }
     if (Cubic)
     {
         Cubic->OnClicked.AddDynamic(this, &UViewportWidget::OnCubicButtonClicked);
+        Cubic->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
     }
     if (ShootButton)
     {
         ShootButton->OnClicked.AddDynamic(this, &UViewportWidget::OnShootButtonClicked);
+        ShootButton->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
     }
     if (VideoButton)
     {
         VideoButton->OnClicked.AddDynamic(this, &UViewportWidget::OnVideoButtonClicked);
+        VideoButton->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
     }
 
     // Camera View Buttons
@@ -242,6 +248,9 @@ void UViewportWidget::OnLightButtonClicked()
         WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
         UE_LOG(LogTemp, Log, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
     }
+
+    // 위젯에 포커스 설정하여 뷰포트 클릭 방지
+    SetKeyboardFocus();
 }
 
 void UViewportWidget::OnScreenButtonClicked()
@@ -259,6 +268,9 @@ void UViewportWidget::OnScreenButtonClicked()
         WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
         UE_LOG(LogTemp, Log, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
     }
+
+    // 위젯에 포커스 설정하여 뷰포트 클릭 방지
+    SetKeyboardFocus();
 }
 
 void UViewportWidget::OnCubicButtonClicked()
@@ -276,6 +288,9 @@ void UViewportWidget::OnCubicButtonClicked()
         WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
         UE_LOG(LogTemp, Log, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
     }
+
+    // 위젯에 포커스 설정하여 뷰포트 클릭 방지
+    SetKeyboardFocus();
 }
 
 void UViewportWidget::OnShootButtonClicked()
@@ -389,4 +404,37 @@ void UViewportWidget::OnRep_LightRotation()
 
         UE_LOG(LogTemp, Log, TEXT("ViewportWidget: OnRep_LightRotation - Updated slider to Pitch=%f"), CurrentPitch);
     }
+}
+
+FReply UViewportWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+    // 먼저 부모 클래스에서 처리 (버튼 클릭 등)
+    FReply Reply = Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
+
+    // 이 위젯 영역 내의 모든 클릭을 소비하여 뷰포트로 전달 방지
+    // 단, 자식 위젯(버튼 등)이 이미 처리한 경우는 그대로 반환
+    if (!Reply.IsEventHandled())
+    {
+        // ViewportBox 또는 WidgetSwitcher가 보이면 클릭 소비
+        bool bShouldConsumeClick = false;
+
+        if (ViewportBox && ViewportBox->GetVisibility() == ESlateVisibility::Visible)
+        {
+            bShouldConsumeClick = true;
+            UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Consuming click - ViewportBox visible"));
+        }
+
+        if (WidgetSwitcher && WidgetSwitcher->GetVisibility() == ESlateVisibility::Visible)
+        {
+            bShouldConsumeClick = true;
+            UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Consuming click - WidgetSwitcher visible"));
+        }
+
+        if (bShouldConsumeClick)
+        {
+            return FReply::Handled();
+        }
+    }
+
+    return Reply;
 }

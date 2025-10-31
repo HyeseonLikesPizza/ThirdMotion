@@ -38,7 +38,7 @@ public:
 	UBorder* ViewportContainer;
 
 	// Viewport widget instance (public for PlayerController access)
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	UViewportWidget* ViewportWidget;
 
 protected:

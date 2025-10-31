@@ -70,6 +70,9 @@ protected:
 	void InitializePropertiesPanel();
 	void InitializeUserListPanel();
 
+	// PresetType에 따라 PropertiesSwitcher 인덱스 설정 (헬퍼 함수)
+	void UpdatePropertiesSwitcherByActor(AActor* SelectedActor);
+
 private:
 	UPROPERTY()
 	UMeshWidgetController* MeshWidgetController;
