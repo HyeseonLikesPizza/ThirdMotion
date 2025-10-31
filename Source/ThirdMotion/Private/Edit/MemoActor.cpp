@@ -17,7 +17,7 @@ AMemoActor::AMemoActor()
 	MemoWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("MemoWidgetComponent"));
 	MemoWidgetComponent->SetupAttachment(RootComponent);
 	MemoWidgetComponent->SetWidgetSpace(EWidgetSpace::World);
-	MemoWidgetComponent->SetDrawSize(FVector2D(400.0f, 300.0f));
+	MemoWidgetComponent->SetDrawSize(FVector2D(300.0f, 300.0f));
 }
 
 void AMemoActor::BeginPlay()

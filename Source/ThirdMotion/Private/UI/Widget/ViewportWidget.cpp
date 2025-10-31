@@ -17,6 +17,9 @@ void UViewportWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
+    // 포커스 가능하도록 설정
+    bIsFocusable = true;
+
     InitializeController();
 
     // Eye 아이콘 텍스처 로드
@@ -41,28 +44,6 @@ void UViewportWidget::NativeConstruct()
     // ViewportBox 표시 상태 초기화
     bIsViewportBoxVisible = false;
 
-    // DirectionalLight 찾기
-    TArray<AActor*> FoundLights;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADirectionalLight::StaticClass(), FoundLights);
-    if (FoundLights.Num() > 0)
-    {
-        DirectionalLight = Cast<ADirectionalLight>(FoundLights[0]);
-        if (DirectionalLight)
-        {
-            // 초기 회전값 저장
-            LastLightRotation = DirectionalLight->GetActorRotation();
-
-            // 슬라이더 초기값 설정 (Pitch: -90 ~ 90 → Slider: 0 ~ 1)
-            if (Slider_Light)
-            {
-                float NormalizedValue = (LastLightRotation.Pitch + 90.0f) / 180.0f;
-                Slider_Light->SetValue(NormalizedValue);
-            }
-
-            UE_LOG(LogTemp, Log, TEXT("ViewportWidget: DirectionalLight found - Initial Pitch=%f"), LastLightRotation.Pitch);
-        }
-    }
-
     // Bindings (바인딩을 먼저 수행)
     if (Slider_Light)
     {
@@ -71,32 +52,32 @@ void UViewportWidget::NativeConstruct()
     if (EyeButton)
     {
         EyeButton->OnClicked.AddDynamic(this, &UViewportWidget::OnEyeButtonClicked);
-        EyeButton->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
+        //EyeButton->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
     }
     if (TimeLight)
     {
         TimeLight->OnClicked.AddDynamic(this, &UViewportWidget::OnLightButtonClicked);
-        TimeLight->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
+        UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: TimeLight button bound"));
     }
     if (Screen)
     {
         Screen->OnClicked.AddDynamic(this, &UViewportWidget::OnScreenButtonClicked);
-        Screen->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
+        UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Screen button bound"));
     }
     if (Cubic)
     {
         Cubic->OnClicked.AddDynamic(this, &UViewportWidget::OnCubicButtonClicked);
-        Cubic->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
+        UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Cubic button bound"));
     }
     if (ShootButton)
     {
         ShootButton->OnClicked.AddDynamic(this, &UViewportWidget::OnShootButtonClicked);
-        ShootButton->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
+        //ShootButton->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
     }
     if (VideoButton)
     {
         VideoButton->OnClicked.AddDynamic(this, &UViewportWidget::OnVideoButtonClicked);
-        VideoButton->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
+        //VideoButton->SetVisibility(ESlateVisibility::Visible); // 클릭 이벤트 소비 보장
     }
 
     // Camera View Buttons
@@ -161,92 +142,51 @@ void UViewportWidget::InitializeController()
         // Bind controller events
         ViewportController->OnPanelChanged.AddDynamic(this, &UViewportWidget::OnPanelChanged);
         ViewportController->OnRecordingStateChanged.AddDynamic(this, &UViewportWidget::OnRecordingStateChanged);
+        ViewportController->OnViewportBoxVisibilityChanged.AddDynamic(this, &UViewportWidget::OnViewportBoxVisibilityChanged);
+        ViewportController->OnLightRotationUpdated.AddDynamic(this, &UViewportWidget::OnLightRotationUpdated);
     }
 }
 
 void UViewportWidget::OnLightSliderValueChanged(float Value)
 {
-    if (!DirectionalLight) return;
-
-    // Slider 값 (0~1)을 Pitch 각도 (-90~90)로 변환
-    float NewPitch = (Value * 180.0f) - 90.0f;
-
-    // 새 Rotation 생성 (Roll, Yaw는 유지)
-    FRotator NewRotation = DirectionalLight->GetActorRotation();
-    NewRotation.Pitch = NewPitch;
-
-    // 로컬 미리보기 (즉시 반영)
-    DirectionalLight->SetActorRotation(NewRotation);
-
-    // PlayerController를 통해 서버 RPC 호출
-    if (AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetOwningPlayer()))
+    // Controller를 통해 처리
+    if (ViewportController)
     {
-        PC->Server_UpdateDirectionalLightRotation(NewRotation);
-        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Slider changed - NewPitch=%f, Sending RPC"), NewPitch);
+        ViewportController->OnLightSliderValueChanged(Value);
     }
 }
 
 void UViewportWidget::OnEyeButtonClicked()
 {
-    if (ViewportBox)
+    // Controller를 통해 상태 토글
+    if (ViewportController)
     {
-        // ViewportBox 가시성 토글
-        ESlateVisibility CurrentVisibility = ViewportBox->GetVisibility();
-        bool bIsCurrentlyVisible = (CurrentVisibility == ESlateVisibility::Visible ||
-                                    CurrentVisibility == ESlateVisibility::SelfHitTestInvisible ||
-                                    CurrentVisibility == ESlateVisibility::HitTestInvisible);
-
-        ViewportBox->SetVisibility(bIsCurrentlyVisible ? ESlateVisibility::Collapsed : ESlateVisibility::Visible);
-
-        // 상태 업데이트
-        bIsViewportBoxVisible = !bIsCurrentlyVisible;
-
-        // ViewportBox가 숨겨지면 WidgetSwitcher도 숨김
-        if (bIsCurrentlyVisible && WidgetSwitcher)
-        {
-            WidgetSwitcher->SetVisibility(ESlateVisibility::Collapsed);
-        }
-
-        // EyeImg 변경
-        if (EyeImg)
-        {
-            if (bIsViewportBoxVisible && EyeIconWhite)
-            {
-                // ViewportBox가 표시될 때 흰색 아이콘으로 변경
-                EyeImg->SetBrushFromTexture(EyeIconWhite);
-                UE_LOG(LogTemp, Log, TEXT("ViewportWidget: EyeImg set to white icon"));
-            }
-            else
-            {
-                // ViewportBox가 숨겨질 때 기본 아이콘으로 복원
-                // Blueprint에서 설정한 기본 이미지 사용 (텍스처를 null로 설정하면 Blueprint 기본값 사용)
-                if (EyeIconDefault)
-                {
-                    EyeImg->SetBrushFromTexture(EyeIconDefault);
-                }
-                UE_LOG(LogTemp, Log, TEXT("ViewportWidget: EyeImg set to default icon"));
-            }
-        }
-
-        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: EyeButton clicked - ViewportBox now %s"),
-               bIsCurrentlyVisible ? TEXT("Hidden") : TEXT("Visible"));
+        ViewportController->ToggleViewportBox();
     }
 }
 
 void UViewportWidget::OnLightButtonClicked()
 {
-    UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Light button clicked"));
+    UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Light button clicked"));
+
+    // 디버그: 버튼 상태 확인
+    if (TimeLight)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("  TimeLight Visibility: %d, IsEnabled: %d"),
+            static_cast<int32>(TimeLight->GetVisibility()), TimeLight->GetIsEnabled());
+    }
 
     if (ViewportController)
     {
         ViewportController->SwitchToLightPanel();
+        UE_LOG(LogTemp, Warning, TEXT("  ViewportController->SwitchToLightPanel() called"));
     }
 
     // WidgetSwitcher 표시
     if (WidgetSwitcher)
     {
         WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
-        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
+        UE_LOG(LogTemp, Warning, TEXT("  WidgetSwitcher set to Visible"));
     }
 
     // 위젯에 포커스 설정하여 뷰포트 클릭 방지
@@ -255,7 +195,7 @@ void UViewportWidget::OnLightButtonClicked()
 
 void UViewportWidget::OnScreenButtonClicked()
 {
-    UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Screen button clicked"));
+    UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Screen button clicked"));
 
     if (ViewportController)
     {
@@ -266,7 +206,7 @@ void UViewportWidget::OnScreenButtonClicked()
     if (WidgetSwitcher)
     {
         WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
-        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
+        UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
     }
 
     // 위젯에 포커스 설정하여 뷰포트 클릭 방지
@@ -275,7 +215,7 @@ void UViewportWidget::OnScreenButtonClicked()
 
 void UViewportWidget::OnCubicButtonClicked()
 {
-    UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Cubic button clicked"));
+    UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Cubic button clicked"));
 
     if (ViewportController)
     {
@@ -286,7 +226,7 @@ void UViewportWidget::OnCubicButtonClicked()
     if (WidgetSwitcher)
     {
         WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
-        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
+        UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
     }
 
     // 위젯에 포커스 설정하여 뷰포트 클릭 방지
@@ -322,6 +262,57 @@ void UViewportWidget::OnRecordingStateChanged(bool bIsRecording)
     if (VideoButtonText)
     {
         VideoButtonText->SetText(FText::FromString(bIsRecording ? TEXT("Stop") : TEXT("Record")));
+    }
+}
+
+void UViewportWidget::OnViewportBoxVisibilityChanged(bool bVisible)
+{
+    // ViewportBox 가시성 업데이트
+    if (ViewportBox)
+    {
+        ViewportBox->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+    }
+
+    // 상태 업데이트
+    bIsViewportBoxVisible = bVisible;
+
+    // ViewportBox가 숨겨지면 WidgetSwitcher도 숨김
+    if (!bVisible && WidgetSwitcher)
+    {
+        WidgetSwitcher->SetVisibility(ESlateVisibility::Collapsed);
+    }
+
+    // EyeImg 변경
+    if (EyeImg)
+    {
+        if (bVisible && EyeIconWhite)
+        {
+            // ViewportBox가 표시될 때 흰색 아이콘으로 변경
+            EyeImg->SetBrushFromTexture(EyeIconWhite);
+            UE_LOG(LogTemp, Log, TEXT("ViewportWidget: EyeImg set to white icon"));
+        }
+        else
+        {
+            // ViewportBox가 숨겨질 때 기본 아이콘으로 복원
+            if (EyeIconDefault)
+            {
+                EyeImg->SetBrushFromTexture(EyeIconDefault);
+            }
+            UE_LOG(LogTemp, Log, TEXT("ViewportWidget: EyeImg set to default icon"));
+        }
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("ViewportWidget: ViewportBox visibility changed - now %s"),
+           bVisible ? TEXT("Visible") : TEXT("Hidden"));
+}
+
+void UViewportWidget::OnLightRotationUpdated(float NormalizedPitch)
+{
+    // Slider UI 업데이트
+    if (Slider_Light)
+    {
+        Slider_Light->SetValue(NormalizedPitch);
+        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Slider updated to value=%f"), NormalizedPitch);
     }
 }
 
@@ -388,53 +379,34 @@ void UViewportWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 void UViewportWidget::ReleaseSlateResources(bool bReleaseChildren)
 {
-	Super::ReleaseSlateResources(bReleaseChildren);
-}
-
-void UViewportWidget::OnRep_LightRotation()
-{
-    // Multicast에서 호출됨 - Slider UI 업데이트
-    if (Slider_Light && DirectionalLight)
-    {
-        float CurrentPitch = DirectionalLight->GetActorRotation().Pitch;
-        float NormalizedValue = (CurrentPitch + 90.0f) / 180.0f;
-
-        // 슬라이더 업데이트 (이벤트 발생 방지)
-        Slider_Light->SetValue(NormalizedValue);
-
-        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: OnRep_LightRotation - Updated slider to Pitch=%f"), CurrentPitch);
-    }
+    Super::ReleaseSlateResources(bReleaseChildren);
 }
 
 FReply UViewportWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-    // 먼저 부모 클래스에서 처리 (버튼 클릭 등)
+    // 부모 클래스에서 처리 (버튼 클릭, 슬라이더 등)
     FReply Reply = Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 
-    // 이 위젯 영역 내의 모든 클릭을 소비하여 뷰포트로 전달 방지
-    // 단, 자식 위젯(버튼 등)이 이미 처리한 경우는 그대로 반환
-    if (!Reply.IsEventHandled())
+    // 버튼이나 다른 위젯이 이미 처리했으면 그대로 반환
+    if (Reply.IsEventHandled())
     {
-        // ViewportBox 또는 WidgetSwitcher가 보이면 클릭 소비
-        bool bShouldConsumeClick = false;
-
-        if (ViewportBox && ViewportBox->GetVisibility() == ESlateVisibility::Visible)
-        {
-            bShouldConsumeClick = true;
-            UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Consuming click - ViewportBox visible"));
-        }
-
-        if (WidgetSwitcher && WidgetSwitcher->GetVisibility() == ESlateVisibility::Visible)
-        {
-            bShouldConsumeClick = true;
-            UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Consuming click - WidgetSwitcher visible"));
-        }
-
-        if (bShouldConsumeClick)
-        {
-            return FReply::Handled();
-        }
+        return Reply;
     }
 
+    // WidgetSwitcher가 보이는 상태에서는 빈 공간 클릭을 소비 (뷰포트 클릭 방지)
+    if (WidgetSwitcher && WidgetSwitcher->GetVisibility() == ESlateVisibility::Visible)
+    {
+        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Consuming click - WidgetSwitcher is visible"));
+        return FReply::Handled();
+    }
+
+    // ViewportBox가 보이는 상태에서도 빈 공간 클릭 소비
+    if (ViewportBox && ViewportBox->GetVisibility() == ESlateVisibility::Visible)
+    {
+        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Consuming click - ViewportBox is visible"));
+        return FReply::Handled();
+    }
+
+    // 그 외에는 이벤트 통과
     return Reply;
 }

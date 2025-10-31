@@ -17,29 +17,16 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-	// 마우스 클릭 이벤트 가로채기 (뷰포트 클릭 방지)
+	// 마우스 클릭 이벤트 처리 (WidgetSwitcher 영역 빈 공간 클릭 소비)
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 	// Slider_Light 바인딩
 	UPROPERTY(meta = (BindWidget))
 	class USlider* Slider_Light;
 
-	// Slider 값 변경 콜백
+	// Slider 값 변경 콜백 (Controller로 전달)
 	UFUNCTION()
 	void OnLightSliderValueChanged(float Value);
-
-	// DirectionalLight 참조
-	UPROPERTY(BlueprintReadWrite)
-	class ADirectionalLight* DirectionalLight;
-
-	// 이전 라이트 회전값 (변경 감지용)
-	FRotator LastLightRotation;
-
-	// DirectionalLight 회전 동기화 (Multicast에서 수동 설정)
-	FRotator ReplicatedLightRotation;
-
-	// 슬라이더 업데이트 함수 (Multicast에서 수동 호출)
-	void OnRep_LightRotation();
 
 	// ==================== Camera View Buttons ====================
 
@@ -168,6 +155,12 @@ protected:
 
 	UFUNCTION()
 	void OnRecordingStateChanged(bool bIsRecording);
+
+	UFUNCTION()
+	void OnViewportBoxVisibilityChanged(bool bVisible);
+
+	UFUNCTION()
+	void OnLightRotationUpdated(float NormalizedPitch);
 
 private:
 

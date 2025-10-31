@@ -18,14 +18,27 @@ void UMainWidget::NativeConstruct()
 	// ViewportWidget 찾기 (Blueprint에서 BindWidget으로 연결 안된 경우 대비)
 	if (!ViewportWidget && WidgetTree)
 	{
-		ViewportWidget = Cast<UViewportWidget>(WidgetTree->FindWidget(FName(TEXT("ViewportWidget"))));
-		if (ViewportWidget)
+		// 여러 가능한 이름으로 시도
+		TArray<FName> PossibleNames = {
+			FName(TEXT("ViewportWidget")),
+			FName(TEXT("WBP_Viewport")),
+			FName(TEXT("Viewport")),
+			FName(TEXT("ViewportWidget_0"))
+		};
+
+		for (const FName& Name : PossibleNames)
 		{
-			UE_LOG(LogTemp, Log, TEXT("MainWidget: ViewportWidget found via WidgetTree"));
+			ViewportWidget = Cast<UViewportWidget>(WidgetTree->FindWidget(Name));
+			if (ViewportWidget)
+			{
+				UE_LOG(LogTemp, Log, TEXT("MainWidget: ViewportWidget found via WidgetTree with name: %s"), *Name.ToString());
+				break;
+			}
 		}
-		else
+
+		if (!ViewportWidget)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("MainWidget: ViewportWidget not found!"));
+			UE_LOG(LogTemp, Warning, TEXT("MainWidget: ViewportWidget not found! Tried all possible names."));
 		}
 	}
 
@@ -78,6 +91,13 @@ void UMainWidget::NativeConstruct()
 		if (BottomBarWidget && BottomViewWidget)
 		{
 			BottomBarWidget->InitializeWithBottomView(BottomViewWidget);
+
+			// BottomView에 RightPanel 참조 전달 (view toggle 분기 처리)
+			URightPanel* RightPanelWidget = Cast<URightPanel>(RightPanel);
+			if (RightPanelWidget)
+			{
+				BottomViewWidget->InitializeWithRightPanel(RightPanelWidget);
+			}
 		}
 		else
 		{

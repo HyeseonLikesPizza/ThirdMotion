@@ -90,7 +90,9 @@ public:
 	UTextBlock* UserCountText;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* Button_Steam;
+	class UButton* StartButton;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* StopButton;
 
 	// Functions to manage user list
 	UFUNCTION(BlueprintCallable, Category = "Network")
@@ -120,7 +122,10 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnSteamButtonClicked();
+	void OnStartButtonClicked();
+
+	UFUNCTION()
+	void OnStopButtonClicked();
 
 	// 음성 채팅 상태 추적
 	bool bIsVoiceChatActive;

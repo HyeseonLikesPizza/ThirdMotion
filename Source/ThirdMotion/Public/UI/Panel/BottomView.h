@@ -26,4 +26,18 @@ public:
 	// BottomView 가시성 설정
 	UFUNCTION(BlueprintCallable, Category = "Bottom View")
 	void SetBottomViewVisibility(bool bVisible);
+
+	// RightPanel 토글 (Blueprint에서 안전하게 접근)
+	UFUNCTION(BlueprintCallable, Category = "Bottom View")
+	void ToggleRightPanel(int32 PanelIndex);
+
+protected:
+	// RightPanel 참조 (optional)
+	UPROPERTY()
+	class URightPanel* RightPanel;
+
+public:
+	// RightPanel 초기화 (MainWidget에서 호출)
+	UFUNCTION(BlueprintCallable, Category = "Bottom View")
+	void InitializeWithRightPanel(class URightPanel* InRightPanel);
 };

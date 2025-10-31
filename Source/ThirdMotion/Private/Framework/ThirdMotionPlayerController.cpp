@@ -24,6 +24,7 @@
 #include "UI/Widget/SceneListWidget.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
+#include "Framework/Application/SlateApplication.h"
 
 void AThirdMotionPlayerController::BeginPlay()
 {
@@ -226,45 +227,17 @@ void AThirdMotionPlayerController::OnRMB_Released(const FInputActionValue& Value
 
 void AThirdMotionPlayerController::OnClick()
 {
-	// ViewportWidget의 ViewportBox 또는 WidgetSwitcher가 표시 중인지 확인
-	if (MainWidget && MainWidget->ViewportWidget)
-	{
-		UViewportWidget* VPWidget = MainWidget->ViewportWidget;
-
-		// ViewportBox 또는 WidgetSwitcher가 보이는 상태에서는 뷰포트 클릭 무시
-		bool bShouldIgnoreClick = false;
-
-		// ViewportBox 체크 (EyeButton으로 표시/숨김)
-		if (VPWidget->ViewportBox && VPWidget->ViewportBox->GetVisibility() == ESlateVisibility::Visible)
-		{
-			bShouldIgnoreClick = true;
-			PRINTLOG(TEXT("OnClick: ViewportBox is visible, ignoring viewport click"));
-		}
-
-		// WidgetSwitcher 체크 (패널 표시 중)
-		if (VPWidget->WidgetSwitcher && VPWidget->WidgetSwitcher->GetVisibility() == ESlateVisibility::Visible)
-		{
-			bShouldIgnoreClick = true;
-			PRINTLOG(TEXT("OnClick: WidgetSwitcher is visible, ignoring viewport click"));
-		}
-
-		if (bShouldIgnoreClick)
-		{
-			return;
-		}
-	}
-
 	// 프리뷰 고스트가 켜진 상태일 때
 	if (bPlacing)
 	{
 		StopPlacement(true);
 		Server_RequestSpawnByTag(CurrentPreset, LastPreviewXf);
+		return;
 	}
-	else // 일반 상태일 때
-	{
-		PRINTLOG(TEXT("SelectUnderCursor"));
-		SelectUnderCursor();
-	}
+
+	// 일반 상태일 때
+	PRINTLOG(TEXT("SelectUnderCursor"));
+	SelectUnderCursor();
 }
 
 void AThirdMotionPlayerController::SelectUnderCursor()
@@ -371,7 +344,7 @@ void AThirdMotionPlayerController::Server_UpdateDirectionalLightRotation_Impleme
 
 void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Implementation(FRotator NewRotation)
 {
-	UE_LOG(LogTemp, Warning, TEXT("[Multicast] Received rotation update: Pitch=%f, IsServer=%d"),
+	/*UE_LOG(LogTemp, Warning, TEXT("[Multicast] Received rotation update: Pitch=%f, IsServer=%d"),
 		NewRotation.Pitch, HasAuthority());
 
 	// 모든 클라이언트 + 서버(Listen Server)에서 실행됨
@@ -411,7 +384,7 @@ void AThirdMotionPlayerController::Multicast_UpdateDirectionalLightRotation_Impl
 				}
 			}
 		}
-	}
+	}*/
 }
 
 void AThirdMotionPlayerController::Server_UpdateMemoText_Implementation(const FString& NewMemoText)

@@ -13,6 +13,7 @@ class UUserWidget;
 class UMainWidget;
 class UInputMappingContext;
 class UInputAction;
+struct FPropertyDelta;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActorSelected, AActor*, SelectedActor);
 

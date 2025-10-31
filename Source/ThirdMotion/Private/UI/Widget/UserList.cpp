@@ -26,40 +26,77 @@ void UUserList::NativeConstruct()
 		TitleText->SetText(FText::FromString(TEXT("Connected Users")));
 	}
 
-	// Bind button event
-	if (Button_Steam)
+	// Bind button events
+	if (StartButton)
 	{
-		Button_Steam->OnClicked.AddDynamic(this, &UUserList::OnSteamButtonClicked);
+		StartButton->OnClicked.AddDynamic(this, &UUserList::OnStartButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("UserList: StartButton bound"));
+	}
+	if (StopButton)
+	{
+		StopButton->OnClicked.AddDynamic(this, &UUserList::OnStopButtonClicked);
+		UE_LOG(LogTemp, Log, TEXT("UserList: StopButton bound"));
 	}
 
 	// Initial refresh
 	RefreshUserList();
 }
 
-void UUserList::OnSteamButtonClicked()
+void UUserList::OnStartButtonClicked()
 {
 	// PlayerController 가져오기
 	APlayerController* PC = GetOwningPlayer();
 	if (!PC)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerController를 찾을 수 없습니다."));
+		UE_LOG(LogTemp, Warning, TEXT("UserList: PlayerController not found"));
 		return;
 	}
 
-	// 음성 채팅 토글
-	if (bIsVoiceChatActive)
+	// 음성 채팅 시작
+	if (!bIsVoiceChatActive)
 	{
-		// 음성 채팅 중지
-		PC->StopTalking();
-		bIsVoiceChatActive = false;
-		UE_LOG(LogTemp, Log, TEXT("음성 채팅 중지"));
-	}
-	else
-	{
-		// 음성 채팅 시작
 		PC->StartTalking();
 		bIsVoiceChatActive = true;
-		UE_LOG(LogTemp, Log, TEXT("음성 채팅 시작"));
+		UE_LOG(LogTemp, Log, TEXT("UserList: Voice chat started"));
+
+		// StartButton 비활성화, StopButton 활성화
+		if (StartButton)
+		{
+			StartButton->SetIsEnabled(false);
+		}
+		if (StopButton)
+		{
+			StopButton->SetIsEnabled(true);
+		}
+	}
+}
+
+void UUserList::OnStopButtonClicked()
+{
+	// PlayerController 가져오기
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UserList: PlayerController not found"));
+		return;
+	}
+
+	// 음성 채팅 종료
+	if (bIsVoiceChatActive)
+	{
+		PC->StopTalking();
+		bIsVoiceChatActive = false;
+		UE_LOG(LogTemp, Log, TEXT("UserList: Voice chat stopped"));
+
+		// StopButton 비활성화, StartButton 활성화
+		if (StopButton)
+		{
+			StopButton->SetIsEnabled(false);
+		}
+		if (StartButton)
+		{
+			StartButton->SetIsEnabled(true);
+		}
 	}
 }
 

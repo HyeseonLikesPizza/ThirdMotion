@@ -125,7 +125,7 @@ AActor* ULibraryWidgetController::SpawnPreviewGhost_Simple(const FGameplayTag& P
 		*GhostName, *Ghost->GetClass()->GetName());
 
 	// SceneManager를 통해 SceneList에 Ghost 추가
-	if (USceneManager* SceneMgr = GetWorld()->GetSubsystem<USceneManager>())
+	/*if (USceneManager* SceneMgr = GetWorld()->GetSubsystem<USceneManager>())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SceneMgr: %s"), *SceneMgr->GetName());
 		if (USceneList* SceneListRef = SceneMgr->GetSceneList())
@@ -142,7 +142,7 @@ AActor* ULibraryWidgetController::SpawnPreviewGhost_Simple(const FGameplayTag& P
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("LibraryWidgetController: SceneManager is NULL!"));
-	}
+	}*/
 
 	return Ghost;
 }
