@@ -44,7 +44,8 @@ void UXYZWidget::NativeOnInitialized()
     }
     if (ScaleY)
     {
-	    ScaleY->OnValueCommitted.AddDynamic(this, &UXYZWidget::HandleScaleCommitted);
+	    ScaleY->OnValueCommitted.AddDynamic(this, &UXYZWidget
+	    	::HandleScaleCommitted);
     }
     if (ScaleZ)
     {

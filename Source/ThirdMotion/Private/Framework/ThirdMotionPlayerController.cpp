@@ -262,24 +262,24 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 	if (GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit))
 	{
 		AActor* NewSel = Hit.GetActor();
+
+		UpdateSelectedActor(NewSel);
+		
+		/*
 		if (!NewSel->ActorHasTag(TEXT("Edit"))) return;
+
+		
 		
 		// 기존 하이라이트 끄기
-		if (!bGizmoShowed && IsValid(SelectedActor))
-			if (auto* H = SelectedActor->FindComponentByClass<UHighlightComponent>())
-				H->EnableHighlight(false);
+		if (!bGizmoShowed)
+			EnableHighlight(false);
+		
 
 		SelectedActor = NewSel;
 		OnActorSelected.Broadcast(SelectedActor);
 
 		// 새 대상 하이라이트 켜기
-		if (IsValid(SelectedActor))
-		{
-			if (auto* H = SelectedActor->FindComponentByClass<UHighlightComponent>())
-			{
-				H->EnableHighlight(true);
-			}
-		}
+		EnableHighlight(true);
 
 		// SceneController를 통해 선택 전파 (RightPanel(SceneListWidget)에 알림)
 		if (MainWidget)
@@ -295,14 +295,57 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 
 		// XYZ 패널 업데이트
 		XYZWidget->SetTargetActor(SelectedActor);
+		*/
 	}
+}
+
+void AThirdMotionPlayerController::EnableHighlight(bool bEnabled)
+{
+	if (IsValid(SelectedActor))
+	{
+		if (auto* H = SelectedActor->FindComponentByClass<UHighlightComponent>())
+			H->EnableHighlight(bEnabled);
+	}
+}
+
+void AThirdMotionPlayerController::UpdateSelectedActor(AActor* NewActor)
+{
+	if (!NewActor->ActorHasTag(TEXT("Edit"))) return;
+	
+	// 기존 하이라이트 끄기
+	if (!bGizmoShowed)
+		EnableHighlight(false);
+	
+	SelectedActor = NewActor;
+	OnActorSelected.Broadcast(SelectedActor);
+
+	// 새 대상 하이라이트 켜기
+	EnableHighlight(true);
+
+	// SceneController를 통해 선택 전파 (RightPanel(SceneListWidget)에 알림)
+	if (MainWidget)
+	{
+		if (USceneListWidget* SceneListWidget = Cast<USceneListWidget>(MainWidget->RightPanel))
+		{
+			if (USceneController* SceneController = SceneListWidget->GetSceneController())
+			{
+				SceneController->SelectActor(SelectedActor);
+			}
+		}
+	}
+
+	// XYZ 패널 업데이트
+	XYZWidget->SetTargetActor(SelectedActor);
 }
 
 
 void AThirdMotionPlayerController::Server_RequestSpawnByTag_Implementation(FGameplayTag PresetTag, const FTransform& Xf)
 {
 	if (auto* M = GetWorld()->GetSubsystem<USceneManager>())
-		M->SpawnByTag(PresetTag, Xf);
+	{
+		AActor* NewActor = M->SpawnByTag(PresetTag, Xf);
+		UpdateSelectedActor(NewActor);
+	}
 }
 
 void AThirdMotionPlayerController::Server_RequestDestroyByGuid_Implementation(const FGuid& GuidToDestroy)

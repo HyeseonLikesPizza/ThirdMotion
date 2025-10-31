@@ -157,4 +157,9 @@ private:
 
 	float Distance = 500;// PostProcessVolume으로부터 떨어진 거리
 
+	// 하이라이트 켜기or끄기
+	void EnableHighlight(bool bEnabled);
+
+	void UpdateSelectedActor(AActor* NewActor);
+
 };
