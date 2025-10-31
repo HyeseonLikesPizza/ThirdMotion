@@ -263,7 +263,7 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 	{
 		AActor* NewSel = Hit.GetActor();
 		if (!NewSel->ActorHasTag(TEXT("Edit"))) return;
-
+		
 		// 기존 하이라이트 끄기
 		if (!bGizmoShowed && IsValid(SelectedActor))
 			if (auto* H = SelectedActor->FindComponentByClass<UHighlightComponent>())

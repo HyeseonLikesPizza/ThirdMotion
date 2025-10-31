@@ -80,16 +80,24 @@ void UXYZWidget::NativeOnInitialized()
 	
     if (PosX)
     {
-	    PosX->SetMinSliderValue(-100000); PosX->SetMaxSliderValue(100000); PosX->SetDelta(1.0);
+	    PosX->SetMinSliderValue(-100000);
+    	PosX->SetMaxSliderValue(100000);
+    	PosX->SetDelta(1.0);
     }
     if (RotYaw)
     {
-	    RotYaw->SetDelta(1.0); RotYaw->SetMinSliderValue(-180); RotYaw->SetMaxSliderValue(180);
+	    RotYaw->SetDelta(1.0);
+    	RotYaw->SetMinSliderValue(-180);
+    	RotYaw->SetMaxSliderValue(180);
     }
     if (ScaleX)
     {
-	    ScaleX->SetDelta(1.0); ScaleX->SetMinSliderValue(0.1); ScaleX->SetMaxSliderValue(1000);
+	    ScaleX->SetDelta(1.0);
+    	ScaleX->SetMinSliderValue(0.1);
+    	ScaleX->SetMaxSliderValue(1000);
     }
+
+	ToggleControls(false);
 
 }
 
@@ -142,7 +150,7 @@ void UXYZWidget::SetSize(const FVector& Meters)
 void UXYZWidget::ToggleControls(bool bEnabled)
 {
 	// Pos
-	if (PosX)PosX->SetIsEnabled(bEnabled);
+	if (PosX) PosX->SetIsEnabled(bEnabled);
 	if (PosY) PosY->SetIsEnabled(bEnabled);
 	if (PosZ) PosZ->SetIsEnabled(bEnabled);
 	// Rot
