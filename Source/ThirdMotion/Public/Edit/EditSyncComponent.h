@@ -40,6 +40,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_Meta)
 	FEditMeta R_Meta;
 
+	UFUNCTION(Server, Reliable)
+	void Server_SetTransform(const FTransform& NewWorldTx);
+
+	// 서버에서 실제 적용
+	void ApplyTransformAuthoritative(const FTransform& NewWorldTx);
+
 	
 
 protected:
