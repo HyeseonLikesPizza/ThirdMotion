@@ -169,24 +169,10 @@ void UViewportWidget::OnLightButtonClicked()
 {
     UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: Light button clicked"));
 
-    // 디버그: 버튼 상태 확인
-    if (TimeLight)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("  TimeLight Visibility: %d, IsEnabled: %d"),
-            static_cast<int32>(TimeLight->GetVisibility()), TimeLight->GetIsEnabled());
-    }
-
     if (ViewportController)
     {
         ViewportController->SwitchToLightPanel();
         UE_LOG(LogTemp, Warning, TEXT("  ViewportController->SwitchToLightPanel() called"));
-    }
-
-    // WidgetSwitcher 표시
-    if (WidgetSwitcher)
-    {
-        WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
-        UE_LOG(LogTemp, Warning, TEXT("  WidgetSwitcher set to Visible"));
     }
 
     // 위젯에 포커스 설정하여 뷰포트 클릭 방지
@@ -202,13 +188,6 @@ void UViewportWidget::OnScreenButtonClicked()
         ViewportController->SwitchToScreenPanel();
     }
 
-    // WidgetSwitcher 표시
-    if (WidgetSwitcher)
-    {
-        WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
-        UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
-    }
-
     // 위젯에 포커스 설정하여 뷰포트 클릭 방지
     SetKeyboardFocus();
 }
@@ -220,13 +199,6 @@ void UViewportWidget::OnCubicButtonClicked()
     if (ViewportController)
     {
         ViewportController->SwitchToCubicPanel();
-    }
-
-    // WidgetSwitcher 표시
-    if (WidgetSwitcher)
-    {
-        WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
-        UE_LOG(LogTemp, Warning, TEXT("ViewportWidget: WidgetSwitcher set to Visible"));
     }
 
     // 위젯에 포커스 설정하여 뷰포트 클릭 방지
@@ -254,6 +226,11 @@ void UViewportWidget::OnPanelChanged(EViewportPanelType NewPanelType)
     if (WidgetSwitcher)
     {
         WidgetSwitcher->SetActiveWidgetIndex(static_cast<int32>(NewPanelType));
+
+        // 패널 전환 시 WidgetSwitcher를 Visible로 설정
+        WidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
+
+        UE_LOG(LogTemp, Log, TEXT("ViewportWidget: Panel changed to %d, WidgetSwitcher set to Visible"), static_cast<int32>(NewPanelType));
     }
 }
 

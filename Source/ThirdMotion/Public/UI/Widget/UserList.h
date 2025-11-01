@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UI/Widget/BaseWidget.h"
 #include "Components/TextBlock.h"
+#include "Interfaces/VoiceInterface.h"
 #include "UserList.generated.h"
 
 /**
@@ -129,4 +130,7 @@ private:
 
 	// 음성 채팅 상태 추적
 	bool bIsVoiceChatActive;
+
+	// Voice Interface 캐싱
+	IOnlineVoicePtr VoiceInterface;
 };

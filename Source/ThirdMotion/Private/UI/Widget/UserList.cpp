@@ -9,6 +9,9 @@
 #include "GameFramework/PlayerState.h"
 #include "Engine/World.h"
 #include "Engine/NetConnection.h"
+#include "OnlineSubsystem.h"
+#include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSessionSettings.h"
 
 void UUserList::NativeConstruct()
 {
@@ -19,6 +22,25 @@ void UUserList::NativeConstruct()
 	TimeSinceLastRefresh = 0.0f;
 	bAutoRefresh = true;
 	bIsVoiceChatActive = false; // 음성 채팅 초기 상태는 비활성
+
+	// Voice Interface 초기화 (OnlineSubsystem)
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
+	if (OnlineSubsystem)
+	{
+		VoiceInterface = OnlineSubsystem->GetVoiceInterface();
+		if (VoiceInterface.IsValid())
+		{
+			UE_LOG(LogTemp, Log, TEXT("UserList: Voice Interface initialized"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UserList: Voice Interface not available"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UserList: OnlineSubsystem not available"));
+	}
 
 	// Set title
 	if (TitleText)
@@ -52,9 +74,36 @@ void UUserList::OnStartButtonClicked()
 		return;
 	}
 
+	// 네트워크 모드 확인
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UserList: World not available"));
+		return;
+	}
+
+	ENetMode NetMode = World->GetNetMode();
+	if (NetMode == NM_Standalone)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UserList: Voice Chat requires multiplayer connection"));
+		return;
+	}
+
 	// 음성 채팅 시작
 	if (!bIsVoiceChatActive)
 	{
+		// VoiceInterface를 통해 네트워크 음성 시작
+		if (VoiceInterface.IsValid())
+		{
+			const ULocalPlayer* LocalPlayer = PC->GetLocalPlayer();
+			if (LocalPlayer && LocalPlayer->GetPreferredUniqueNetId().IsValid())
+			{
+				VoiceInterface->StartNetworkedVoice(0); // 로컬 유저 인덱스 0
+				UE_LOG(LogTemp, Log, TEXT("UserList: Networked voice started via VoiceInterface"));
+			}
+		}
+
+		// PlayerController 음성 활성화
 		PC->StartTalking();
 		bIsVoiceChatActive = true;
 		UE_LOG(LogTemp, Log, TEXT("UserList: Voice chat started"));
@@ -84,6 +133,14 @@ void UUserList::OnStopButtonClicked()
 	// 음성 채팅 종료
 	if (bIsVoiceChatActive)
 	{
+		// VoiceInterface를 통해 네트워크 음성 종료
+		if (VoiceInterface.IsValid())
+		{
+			VoiceInterface->StopNetworkedVoice(0); // 로컬 유저 인덱스 0
+			UE_LOG(LogTemp, Log, TEXT("UserList: Networked voice stopped via VoiceInterface"));
+		}
+
+		// PlayerController 음성 비활성화
 		PC->StopTalking();
 		bIsVoiceChatActive = false;
 		UE_LOG(LogTemp, Log, TEXT("UserList: Voice chat stopped"));
