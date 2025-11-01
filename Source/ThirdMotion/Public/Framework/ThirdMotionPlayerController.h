@@ -78,6 +78,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Look;
 
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_Enter;
+
 	UPROPERTY(BlueprintReadWrite, Category="Gizmo")
 	bool bGizmoShowed;
 
@@ -94,7 +97,7 @@ public:
 	void OnLook(const FInputActionValue& Value);
 	void OnRMB_Pressed(const FInputActionValue& Value);
 	void OnRMB_Released(const FInputActionValue& Value);
-	
+	void OnEnter_Pressed(const FInputActionValue& Value);	
 private:
 	
 	void OnClick();
@@ -137,4 +140,5 @@ private:
 
 	float Distance = 500;// PostProcessVolume으로부터 떨어진 거리
 
+	
 };

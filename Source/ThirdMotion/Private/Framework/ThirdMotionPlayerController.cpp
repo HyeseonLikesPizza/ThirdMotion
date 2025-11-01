@@ -5,6 +5,7 @@
 #include "Edit/SceneManager.h"
 #include "Blueprint/UserWidget.h"
 #include "TimerManager.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Edit/HighlightComponent.h"
 #include "Engine/World.h"
 #include "ThirdMotion/ThirdMotion.h"
@@ -112,6 +113,7 @@ void AThirdMotionPlayerController::SetupInputComponent()
 		EIC->BindAction(IA_RMB, ETriggerEvent::Completed,this, &AThirdMotionPlayerController::OnRMB_Released);
 		EIC->BindAction(IA_RMB, ETriggerEvent::Canceled, this, &AThirdMotionPlayerController::OnRMB_Released);
 		EIC->BindAction(IA_Look, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::OnLook);
+		EIC->BindAction(IA_Enter, ETriggerEvent::Started, this, &AThirdMotionPlayerController::OnEnter_Pressed);
 	}
 	
 }
@@ -209,6 +211,8 @@ void AThirdMotionPlayerController::OnRMB_Released(const FInputActionValue& Value
 	SetInputMode(Mode);
 }
 
+
+
 void AThirdMotionPlayerController::OnClick()
 {
 	// 프리뷰 고스트가 켜진 상태일 때
@@ -223,6 +227,24 @@ void AThirdMotionPlayerController::OnClick()
 		SelectUnderCursor();
 	}
 }
+
+void AThirdMotionPlayerController::OnEnter_Pressed(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("1111"));
+
+	//만약에 내 Player라면
+	if (IsLocalController())
+	{
+		// APlayerController* pc = GetWorld()->GetFirstPlayerController();
+		// //InputMode를 UI전용으로 설정
+		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this);
+		SetShowMouseCursor(true);
+	//	UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this);
+	//	SetShowMouseCursor(true);
+	}
+}
+
+
 
 void AThirdMotionPlayerController::SelectUnderCursor()
 {
