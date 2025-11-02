@@ -59,30 +59,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Viewport Controller")
 	void SetCameraView(ECameraView ViewType);
 
-	// ==================== DirectionalLight Control ====================
-
-	// DirectionalLight 초기화
-	UFUNCTION(BlueprintCallable, Category = "Viewport Controller")
-	void InitializeDirectionalLight();
-
-	// Light Slider 값 변경 처리
-	UFUNCTION(BlueprintCallable, Category = "Viewport Controller")
-	void OnLightSliderValueChanged(float Value);
-
-	// DirectionalLight 가져오기
-	UFUNCTION(BlueprintPure, Category = "Viewport Controller")
-	class ADirectionalLight* GetDirectionalLight() const { return DirectionalLight; }
-
-	// ==================== ViewportBox & Eye Button ====================
-
-	// ViewportBox 토글
-	UFUNCTION(BlueprintCallable, Category = "Viewport Controller")
-	void ToggleViewportBox();
-
-	// ViewportBox 표시 여부
-	UFUNCTION(BlueprintPure, Category = "Viewport Controller")
-	bool IsViewportBoxVisible() const { return bIsViewportBoxVisible; }
-
 	// ==================== Panel Switching ====================
 
 	// Light 패널로 전환
@@ -137,16 +113,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Viewport Controller Events")
 	FOnRecordingStateChanged OnRecordingStateChanged;
 
-	// ViewportBox 가시성 변경 이벤트
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnViewportBoxVisibilityChanged, bool, bVisible);
-	UPROPERTY(BlueprintAssignable, Category = "Viewport Controller Events")
-	FOnViewportBoxVisibilityChanged OnViewportBoxVisibilityChanged;
-
-	// Light Rotation 업데이트 이벤트 (Slider UI 동기화용)
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLightRotationUpdated, float, NormalizedPitch);
-	UPROPERTY(BlueprintAssignable, Category = "Viewport Controller Events")
-	FOnLightRotationUpdated OnLightRotationUpdated;
-
 private:
 	// ==================== State ====================
 
@@ -161,16 +127,6 @@ private:
 	// 스크린샷 카운터
 	UPROPERTY()
 	int32 ScreenshotCounter;
-
-	// DirectionalLight 참조
-	UPROPERTY()
-	class ADirectionalLight* DirectionalLight;
-
-	// 이전 라이트 회전값 (변경 감지용)
-	FRotator LastLightRotation;
-
-	// ViewportBox 표시 상태
-	bool bIsViewportBoxVisible;
 
 	// ==================== Helper Functions ====================
 

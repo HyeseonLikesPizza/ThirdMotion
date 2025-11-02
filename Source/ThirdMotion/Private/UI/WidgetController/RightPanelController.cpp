@@ -238,62 +238,109 @@ void URightPanelController::UpdatePropertiesSwitcherByActor(AActor* SelectedActo
 
 	// 기본값: index 0 (Mesh)
 	int32 PropertiesIndex = 0;
+	bool bTagFound = false;
 
 	if (SelectedActor)
 	{
-		// EditSyncComponent에서 PresetTag 가져오기
-		UEditSyncComponent* EditComp = SelectedActor->FindComponentByClass<UEditSyncComponent>();
-		if (EditComp)
+		// 1. Actor Tag 우선 확인
+		TArray<FName> ActorTags = SelectedActor->Tags;
+		if (ActorTags.Num() > 0)
 		{
-			const FEditMeta& Meta = EditComp->GetMeta();
-			const FGameplayTag& PresetTag = Meta.PresetTag;
+			UE_LOG(LogTemp, Log, TEXT("RightPanelController: Actor has %d tags"), ActorTags.Num());
 
-			// AssetResolver를 통해 LibraryRow 가져오기
-			UAssetResolver* Resolver = GetWorld()->GetSubsystem<UAssetResolver>();
-			if (Resolver && PresetTag.IsValid())
+			for (const FName& Tag : ActorTags)
 			{
-				const FLibraryRow* Row = Resolver->FindRowByTag(PresetTag);
-				if (Row)
+				FString TagString = Tag.ToString();
+				UE_LOG(LogTemp, Log, TEXT("RightPanelController: Checking tag: %s"), *TagString);
+
+				// Tag 이름에 따라 PropertiesSwitcher 인덱스 설정
+				if (TagString.Contains(TEXT("Mesh")) || TagString.Contains(TEXT("mesh")))
 				{
-					// PresetType에 따라 PropertiesSwitcher 인덱스 설정
-					switch (Row->PresetType)
+					PropertiesIndex = 0;
+					bTagFound = true;
+					UE_LOG(LogTemp, Log, TEXT("RightPanelController: Tag 'Mesh' found - PropertiesSwitcher index 0"));
+					break;
+				}
+				else if (TagString.Contains(TEXT("Light")) || TagString.Contains(TEXT("light")))
+				{
+					PropertiesIndex = 1;
+					bTagFound = true;
+					// LightWidget 초기화
+					if (RightPanel->LightWidget)
 					{
-					case EPresetType::Mesh:
-						PropertiesIndex = 0;
-						UE_LOG(LogTemp, Log, TEXT("RightPanelController: Mesh actor - PropertiesSwitcher index 0"));
-						break;
-					case EPresetType::Light:
-						PropertiesIndex = 1;
-						// LightWidget 초기화
-						if (RightPanel->LightWidget)
+						RightPanel->LightWidget->InitializeWithLightActor(SelectedActor);
+					}
+					UE_LOG(LogTemp, Log, TEXT("RightPanelController: Tag 'Light' found - PropertiesSwitcher index 1"));
+					break;
+				}
+				else if (TagString.Contains(TEXT("Camera")) || TagString.Contains(TEXT("camera")))
+				{
+					PropertiesIndex = 2;
+					bTagFound = true;
+					UE_LOG(LogTemp, Log, TEXT("RightPanelController: Tag 'Camera' found - PropertiesSwitcher index 2"));
+					break;
+				}
+			}
+		}
+
+		// 2. Tag가 없거나 매칭되지 않으면 PresetTag로 폴백
+		if (!bTagFound)
+		{
+			UE_LOG(LogTemp, Log, TEXT("RightPanelController: No matching tag found, falling back to PresetTag"));
+
+			UEditSyncComponent* EditComp = SelectedActor->FindComponentByClass<UEditSyncComponent>();
+			if (EditComp)
+			{
+				const FEditMeta& Meta = EditComp->GetMeta();
+				const FGameplayTag& PresetTag = Meta.PresetTag;
+
+				// AssetResolver를 통해 LibraryRow 가져오기
+				UAssetResolver* Resolver = GetWorld()->GetSubsystem<UAssetResolver>();
+				if (Resolver && PresetTag.IsValid())
+				{
+					const FLibraryRow* Row = Resolver->FindRowByTag(PresetTag);
+					if (Row)
+					{
+						// PresetType에 따라 PropertiesSwitcher 인덱스 설정
+						switch (Row->PresetType)
 						{
-							RightPanel->LightWidget->InitializeWithLightActor(SelectedActor);
+						case EPresetType::Mesh:
+							PropertiesIndex = 0;
+							UE_LOG(LogTemp, Log, TEXT("RightPanelController: Mesh actor (via PresetTag) - PropertiesSwitcher index 0"));
+							break;
+						case EPresetType::Light:
+							PropertiesIndex = 1;
+							// LightWidget 초기화
+							if (RightPanel->LightWidget)
+							{
+								RightPanel->LightWidget->InitializeWithLightActor(SelectedActor);
+							}
+							UE_LOG(LogTemp, Log, TEXT("RightPanelController: Light actor (via PresetTag) - PropertiesSwitcher index 1"));
+							break;
+						case EPresetType::Camera:
+							PropertiesIndex = 2;
+							UE_LOG(LogTemp, Log, TEXT("RightPanelController: Camera actor (via PresetTag) - PropertiesSwitcher index 2"));
+							break;
+						default:
+							PropertiesIndex = 0;
+							UE_LOG(LogTemp, Warning, TEXT("RightPanelController: Unknown PresetType - defaulting to index 0"));
+							break;
 						}
-						UE_LOG(LogTemp, Log, TEXT("RightPanelController: Light actor - PropertiesSwitcher index 1"));
-						break;
-					case EPresetType::Camera:
-						PropertiesIndex = 2;
-						UE_LOG(LogTemp, Log, TEXT("RightPanelController: Camera actor - PropertiesSwitcher index 2"));
-						break;
-					default:
-						PropertiesIndex = 0;
-						UE_LOG(LogTemp, Warning, TEXT("RightPanelController: Unknown PresetType - defaulting to index 0"));
-						break;
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("RightPanelController: LibraryRow not found for PresetTag: %s - using default index 0"), *PresetTag.ToString());
 					}
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("RightPanelController: LibraryRow not found for PresetTag: %s - using default index 0"), *PresetTag.ToString());
+					UE_LOG(LogTemp, Warning, TEXT("RightPanelController: AssetResolver is null or PresetTag is invalid - using default index 0"));
 				}
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("RightPanelController: AssetResolver is null or PresetTag is invalid - using default index 0"));
+				UE_LOG(LogTemp, Warning, TEXT("RightPanelController: EditSyncComponent not found - using default index 0"));
 			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("RightPanelController: EditSyncComponent not found - using default index 0"));
 		}
 	}
 	else

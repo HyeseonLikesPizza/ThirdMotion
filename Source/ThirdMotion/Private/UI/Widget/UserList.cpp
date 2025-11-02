@@ -9,9 +9,7 @@
 #include "GameFramework/PlayerState.h"
 #include "Engine/World.h"
 #include "Engine/NetConnection.h"
-#include "OnlineSubsystem.h"
-#include "Interfaces/OnlineSessionInterface.h"
-#include "OnlineSessionSettings.h"
+#include "VoiceChat.h"
 
 void UUserList::NativeConstruct()
 {
@@ -23,24 +21,14 @@ void UUserList::NativeConstruct()
 	bAutoRefresh = true;
 	bIsVoiceChatActive = false; // 음성 채팅 초기 상태는 비활성
 
-	// Voice Interface 초기화 (OnlineSubsystem)
-	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
-	if (OnlineSubsystem)
-	{
-		VoiceInterface = OnlineSubsystem->GetVoiceInterface();
-		if (VoiceInterface.IsValid())
-		{
-			UE_LOG(LogTemp, Log, TEXT("UserList: Voice Interface initialized"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("UserList: Voice Interface not available"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("UserList: OnlineSubsystem not available"));
-	}
+	// Voice Chat 인터페이스 초기화
+	VoiceChatInterface = nullptr;
+	VoiceChatUser = nullptr;
+	ChannelName = TEXT("ThirdMotionChannel");
+	PlayerDisplayName = TEXT("Player");
+
+	// Voice Chat 초기화
+	InitializeVoiceChat();
 
 	// Set title
 	if (TitleText)
@@ -66,94 +54,21 @@ void UUserList::NativeConstruct()
 
 void UUserList::OnStartButtonClicked()
 {
-	// PlayerController 가져오기
-	APlayerController* PC = GetOwningPlayer();
-	if (!PC)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("UserList: PlayerController not found"));
-		return;
-	}
+	UE_LOG(LogTemp, Log, TEXT("UserList: StartButton clicked"));
 
-	// 네트워크 모드 확인
-	UWorld* World = GetWorld();
-	if (!World)
-	{
-		UE_LOG(LogTemp, Error, TEXT("UserList: World not available"));
-		return;
-	}
-
-	ENetMode NetMode = World->GetNetMode();
-	if (NetMode == NM_Standalone)
-	{
-		UE_LOG(LogTemp, Error, TEXT("UserList: Voice Chat requires multiplayer connection"));
-		return;
-	}
-
-	// 음성 채팅 시작
 	if (!bIsVoiceChatActive)
 	{
-		// VoiceInterface를 통해 네트워크 음성 시작
-		if (VoiceInterface.IsValid())
-		{
-			const ULocalPlayer* LocalPlayer = PC->GetLocalPlayer();
-			if (LocalPlayer && LocalPlayer->GetPreferredUniqueNetId().IsValid())
-			{
-				VoiceInterface->StartNetworkedVoice(0); // 로컬 유저 인덱스 0
-				UE_LOG(LogTemp, Log, TEXT("UserList: Networked voice started via VoiceInterface"));
-			}
-		}
-
-		// PlayerController 음성 활성화
-		PC->StartTalking();
-		bIsVoiceChatActive = true;
-		UE_LOG(LogTemp, Log, TEXT("UserList: Voice chat started"));
-
-		// StartButton 비활성화, StopButton 활성화
-		if (StartButton)
-		{
-			StartButton->SetIsEnabled(false);
-		}
-		if (StopButton)
-		{
-			StopButton->SetIsEnabled(true);
-		}
+		ConnectToVoiceChannel();
 	}
 }
 
 void UUserList::OnStopButtonClicked()
 {
-	// PlayerController 가져오기
-	APlayerController* PC = GetOwningPlayer();
-	if (!PC)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("UserList: PlayerController not found"));
-		return;
-	}
+	UE_LOG(LogTemp, Log, TEXT("UserList: StopButton clicked"));
 
-	// 음성 채팅 종료
 	if (bIsVoiceChatActive)
 	{
-		// VoiceInterface를 통해 네트워크 음성 종료
-		if (VoiceInterface.IsValid())
-		{
-			VoiceInterface->StopNetworkedVoice(0); // 로컬 유저 인덱스 0
-			UE_LOG(LogTemp, Log, TEXT("UserList: Networked voice stopped via VoiceInterface"));
-		}
-
-		// PlayerController 음성 비활성화
-		PC->StopTalking();
-		bIsVoiceChatActive = false;
-		UE_LOG(LogTemp, Log, TEXT("UserList: Voice chat stopped"));
-
-		// StopButton 비활성화, StartButton 활성화
-		if (StopButton)
-		{
-			StopButton->SetIsEnabled(false);
-		}
-		if (StartButton)
-		{
-			StartButton->SetIsEnabled(true);
-		}
+		DisconnectFromVoiceChannel();
 	}
 }
 
@@ -314,4 +229,168 @@ FString UUserList::GetPlayerIPAddress(APlayerController* PlayerController)
 	}
 
 	return TEXT("Unknown");
+}
+
+void UUserList::InitializeVoiceChat()
+{
+	// Voice Chat 인터페이스 가져오기
+	VoiceChatInterface = IVoiceChat::Get();
+
+	if (VoiceChatInterface)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UserList: VoiceChat Interface obtained"));
+
+		// VoiceChat 초기화
+		if (!VoiceChatInterface->IsInitialized())
+		{
+			VoiceChatInterface->Initialize();
+			UE_LOG(LogTemp, Log, TEXT("UserList: VoiceChat initialized"));
+		}
+
+		// VoiceChatUser 연결
+		VoiceChatUser = VoiceChatInterface->CreateUser();
+		if (VoiceChatUser)
+		{
+			UE_LOG(LogTemp, Log, TEXT("UserList: VoiceChatUser created"));
+
+			// 플레이어 이름 설정
+			APlayerController* PC = GetOwningPlayer();
+			if (PC && PC->PlayerState)
+			{
+				PlayerDisplayName = PC->PlayerState->GetPlayerName();
+			}
+
+			// 로그인
+			FPlatformUserId PlatformUserId = PLATFORMUSERID_NONE;
+			if (PC && PC->GetLocalPlayer())
+			{
+				PlatformUserId = PC->GetLocalPlayer()->GetPlatformUserId();
+			}
+
+			VoiceChatUser->Login(PlatformUserId, PlayerDisplayName, TEXT(""),
+				FOnVoiceChatLoginCompleteDelegate::CreateLambda([this](const FString& LoggedInPlayerName, const FVoiceChatResult& Result)
+			{
+				if (Result.IsSuccess())
+				{
+					UE_LOG(LogTemp, Log, TEXT("UserList: VoiceChat Login successful for %s"), *LoggedInPlayerName);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("UserList: VoiceChat Login failed: %s"), *Result.ErrorDesc);
+				}
+			}));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("UserList: Failed to create VoiceChatUser"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UserList: VoiceChat Interface not available"));
+	}
+}
+
+void UUserList::ConnectToVoiceChannel()
+{
+	if (!VoiceChatUser)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UserList: VoiceChatUser is null, cannot connect to channel"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("UserList: Connecting to voice channel: %s"), *ChannelName);
+
+	// 채널에 연결
+	VoiceChatUser->JoinChannel(ChannelName, TEXT(""), EVoiceChatChannelType::NonPositional,
+		FOnVoiceChatChannelJoinCompleteDelegate::CreateLambda([this](const FString& JoinedChannelName, const FVoiceChatResult& Result)
+	{
+		if (Result.IsSuccess())
+		{
+			UE_LOG(LogTemp, Log, TEXT("UserList: Successfully joined voice channel: %s"), *JoinedChannelName);
+
+			// 송신 시작 (마이크 활성화)
+			if (VoiceChatUser)
+			{
+				VoiceChatUser->SetChannelPlayerMuted(JoinedChannelName, VoiceChatUser->GetLoggedInPlayerName(), false);
+				VoiceChatUser->SetAudioInputDeviceMuted(false);
+				VoiceChatUser->SetAudioOutputDeviceMuted(false);
+
+				UE_LOG(LogTemp, Log, TEXT("UserList: Audio input/output enabled"));
+			}
+
+			bIsVoiceChatActive = true;
+
+			// 버튼 상태 업데이트
+			if (StartButton)
+			{
+				StartButton->SetIsEnabled(false);
+			}
+			if (StopButton)
+			{
+				StopButton->SetIsEnabled(true);
+			}
+
+			// 화면에 메시지 출력
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green,
+					FString::Printf(TEXT("Voice Chat Connected: %s"), *JoinedChannelName));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("UserList: Failed to join voice channel: %s"), *Result.ErrorDesc);
+
+			// 화면에 에러 메시지 출력
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red,
+					FString::Printf(TEXT("Voice Chat Failed: %s"), *Result.ErrorDesc));
+			}
+		}
+	}));
+}
+
+void UUserList::DisconnectFromVoiceChannel()
+{
+	if (!VoiceChatUser)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UserList: VoiceChatUser is null, cannot disconnect"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("UserList: Disconnecting from voice channel: %s"), *ChannelName);
+
+	// 채널에서 나가기
+	VoiceChatUser->LeaveChannel(ChannelName,
+		FOnVoiceChatChannelLeaveCompleteDelegate::CreateLambda([this](const FString& LeftChannelName, const FVoiceChatResult& Result)
+	{
+		if (Result.IsSuccess())
+		{
+			UE_LOG(LogTemp, Log, TEXT("UserList: Successfully left voice channel: %s"), *LeftChannelName);
+
+			bIsVoiceChatActive = false;
+
+			// 버튼 상태 업데이트
+			if (StopButton)
+			{
+				StopButton->SetIsEnabled(false);
+			}
+			if (StartButton)
+			{
+				StartButton->SetIsEnabled(true);
+			}
+
+			// 화면에 메시지 출력
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("Voice Chat Disconnected"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("UserList: Failed to leave voice channel: %s"), *Result.ErrorDesc);
+		}
+	}));
 }

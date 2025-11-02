@@ -7,8 +7,6 @@
 #include "Misc/Paths.h"
 #include "HAL/PlatformFileManager.h"
 #include "HAL/PlatformProcess.h"
-#include "Engine/DirectionalLight.h"
-#include "Components/DirectionalLightComponent.h"
 
 void UViewportController::Init()
 {
@@ -18,10 +16,6 @@ void UViewportController::Init()
 	CurrentPanelType = EViewportPanelType::Light; // 기본값: Light 패널
 	bIsRecording = false;
 	ScreenshotCounter = 0;
-	bIsViewportBoxVisible = false;
-
-	// DirectionalLight 초기화
-	InitializeDirectionalLight();
 
 	UE_LOG(LogTemp, Log, TEXT("ViewportController: Initialized"));
 }
@@ -33,84 +27,6 @@ void UViewportController::SetCameraView(ECameraView ViewType)
 	{
 		PC->SetCameraView(ViewType);
 	}
-}
-
-// ==================== DirectionalLight Control ====================
-
-void UViewportController::InitializeDirectionalLight()
-{
-	UWorld* World = GetWorld();
-	if (!World)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ViewportController: World is null, cannot initialize DirectionalLight"));
-		return;
-	}
-
-	// DirectionalLight 찾기
-	TArray<AActor*> FoundLights;
-	UGameplayStatics::GetAllActorsOfClass(World, ADirectionalLight::StaticClass(), FoundLights);
-	if (FoundLights.Num() > 0)
-	{
-		DirectionalLight = Cast<ADirectionalLight>(FoundLights[0]);
-		if (DirectionalLight)
-		{
-			// 초기 회전값 저장
-			LastLightRotation = DirectionalLight->GetActorRotation();
-
-			// Slider 초기값 계산 (Pitch: -90 ~ 90 → Slider: 0 ~ 1)
-			float NormalizedValue = (LastLightRotation.Pitch + 90.0f) / 180.0f;
-
-			// Observer Pattern: View에게 초기값 알림
-			OnLightRotationUpdated.Broadcast(NormalizedValue);
-
-			UE_LOG(LogTemp, Log, TEXT("ViewportController: DirectionalLight found - Initial Pitch=%f"), LastLightRotation.Pitch);
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ViewportController: DirectionalLight not found in scene"));
-	}
-}
-
-void UViewportController::OnLightSliderValueChanged(float Value)
-{
-	if (!DirectionalLight)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ViewportController: DirectionalLight is null"));
-		return;
-	}
-
-	// Slider 값 (0~1)을 Pitch 각도 (-90~90)로 변환
-	float NewPitch = (Value * 180.0f) - 90.0f;
-
-	// 새 Rotation 생성 (Roll, Yaw는 유지)
-	FRotator NewRotation = DirectionalLight->GetActorRotation();
-	NewRotation.Pitch = NewPitch;
-
-	// 로컬 미리보기 (즉시 반영)
-	DirectionalLight->SetActorRotation(NewRotation);
-
-	// PlayerController를 통해 서버 RPC 호출
-	AThirdMotionPlayerController* PC = Cast<AThirdMotionPlayerController>(GetPlayerController());
-	if (PC)
-	{
-		PC->Server_UpdateDirectionalLightRotation(NewRotation);
-		UE_LOG(LogTemp, Log, TEXT("ViewportController: Slider changed - NewPitch=%f, Sending RPC"), NewPitch);
-	}
-}
-
-// ==================== ViewportBox & Eye Button ====================
-
-void UViewportController::ToggleViewportBox()
-{
-	// 상태 토글
-	bIsViewportBoxVisible = !bIsViewportBoxVisible;
-
-	// Observer Pattern: View에게 가시성 변경 알림
-	OnViewportBoxVisibilityChanged.Broadcast(bIsViewportBoxVisible);
-
-	UE_LOG(LogTemp, Log, TEXT("ViewportController: ViewportBox toggled - now %s"),
-		bIsViewportBoxVisible ? TEXT("Visible") : TEXT("Hidden"));
 }
 
 // ==================== Panel Switching ====================

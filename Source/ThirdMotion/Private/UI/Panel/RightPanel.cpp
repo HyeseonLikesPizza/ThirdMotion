@@ -119,9 +119,20 @@ USceneController* URightPanel::GetSceneController() const
 
 void URightPanel::OnActorSelected(AActor* SelectedActor)
 {
-	// Actor 선택 시 자동으로 패널을 표시하지 않음
-	// Properties 버튼을 클릭해야 패널이 표시됨
-	UE_LOG(LogTemp, Log, TEXT("RightPanel: Actor selected (use Properties button to view details)"));
+	UE_LOG(LogTemp, Log, TEXT("RightPanel: Actor selected - %s"), SelectedActor ? *SelectedActor->GetName() : TEXT("NULL"));
+
+	// Properties 패널이 현재 표시되고 있으면 PropertiesSwitcher 업데이트
+	if (RightPanelController && RightPanelController->IsPanelVisible() &&
+		RightPanelController->GetCurrentPanel() == ERightPanelType::Properties)
+	{
+		// Actor Tag에 따라 PropertiesSwitcher 인덱스 자동 변경
+		if (SelectedActor && PropertiesSwitcher)
+		{
+			// RightPanelController를 통해 PropertiesSwitcher 업데이트
+			RightPanelController->UpdatePropertiesSwitcherByActor(SelectedActor);
+			UE_LOG(LogTemp, Log, TEXT("RightPanel: PropertiesSwitcher updated based on selected Actor"));
+		}
+	}
 }
 
 void URightPanel::HandleLightActorSelection(AActor* LightActor)

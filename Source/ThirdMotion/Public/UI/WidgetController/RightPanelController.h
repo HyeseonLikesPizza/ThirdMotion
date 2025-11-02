@@ -54,6 +54,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void BindMaterialPanel(UMaterialGeneratePanel* InView);
 
+	// Actor 선택 시 PropertiesSwitcher 업데이트 (public)
+	UFUNCTION(BlueprintCallable, Category = "Right Panel Controller")
+	void UpdatePropertiesSwitcherByActor(AActor* SelectedActor);
+
 protected:
 	// RightPanel 참조 (View)
 	UPROPERTY()
@@ -69,9 +73,6 @@ protected:
 	void InitializeScenePanel();
 	void InitializePropertiesPanel();
 	void InitializeUserListPanel();
-
-	// PresetType에 따라 PropertiesSwitcher 인덱스 설정 (헬퍼 함수)
-	void UpdatePropertiesSwitcherByActor(AActor* SelectedActor);
 
 private:
 	UPROPERTY()

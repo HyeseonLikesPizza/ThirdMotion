@@ -17,16 +17,26 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-	// 마우스 클릭 이벤트 처리 (WidgetSwitcher 영역 빈 공간 클릭 소비)
-	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
-
 	// Slider_Light 바인딩
 	UPROPERTY(meta = (BindWidget))
 	class USlider* Slider_Light;
 
-	// Slider 값 변경 콜백 (Controller로 전달)
+	// Slider 값 변경 콜백
 	UFUNCTION()
 	void OnLightSliderValueChanged(float Value);
+
+	// DirectionalLight 참조
+	UPROPERTY(BlueprintReadWrite)
+	class ADirectionalLight* DirectionalLight;
+
+	// 이전 라이트 회전값 (변경 감지용)
+	FRotator LastLightRotation;
+
+	// DirectionalLight 회전 동기화 (Multicast에서 수동 설정)
+	FRotator ReplicatedLightRotation;
+
+	// 슬라이더 업데이트 함수 (Multicast에서 수동 호출)
+	void OnRep_LightRotation();
 
 	// ==================== Camera View Buttons ====================
 
@@ -52,18 +62,6 @@ public:
 	class UButton* BackViewButton;
 
 	// ==================== Widget Switcher & Panel Buttons ====================
-
-	// Eye Button (ViewportBox 표시/숨김 토글)
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* EyeButton;
-
-	// Eye Image (Eye 아이콘 이미지)
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UImage* EyeImg;
-
-	// ViewportBox (VerticalBox - TimeLight, Screen, Cubic 버튼 포함)
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UVerticalBox* ViewportBox;
 
 	// Widget Switcher (Light, Screen, Cubic 패널 전환)
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
@@ -92,10 +90,6 @@ public:
 	// Cubic 버튼 클릭 핸들러
 	UFUNCTION()
 	void OnCubicButtonClicked();
-
-	// Eye 버튼 클릭 핸들러 (ViewportBox 토글)
-	UFUNCTION()
-	void OnEyeButtonClicked();
 
 	// ==================== Camera View Button Handlers ====================
 
@@ -156,12 +150,6 @@ protected:
 	UFUNCTION()
 	void OnRecordingStateChanged(bool bIsRecording);
 
-	UFUNCTION()
-	void OnViewportBoxVisibilityChanged(bool bVisible);
-
-	UFUNCTION()
-	void OnLightRotationUpdated(float NormalizedPitch);
-
 private:
 
 	TSharedPtr<class SOverlay> RootWidget;
@@ -173,19 +161,6 @@ private:
 	// ViewportController
 	UPROPERTY()
 	UViewportController* ViewportController;
-
-	// ==================== Eye Icon Textures ====================
-
-	// Eye 아이콘 텍스처 (기본 상태)
-	UPROPERTY()
-	class UTexture2D* EyeIconDefault;
-
-	// Eye 아이콘 텍스처 (활성화 상태 - 흰색)
-	UPROPERTY()
-	class UTexture2D* EyeIconWhite;
-
-	// ViewportBox 표시 상태
-	bool bIsViewportBoxVisible;
 
 	// 초기화
 	void InitializeController();
