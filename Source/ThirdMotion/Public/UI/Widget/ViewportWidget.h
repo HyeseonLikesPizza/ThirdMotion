@@ -1,167 +1,175 @@
-
-
 #pragma once
-#include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
-#include "UI/WidgetController/ViewportController.h"
-#include "ViewportWidget.generated.h"
+  #include "CoreMinimal.h"
+  #include "Blueprint/UserWidget.h"
+  #include "UI/WidgetController/ViewportController.h"
+  #include "ViewportWidget.generated.h"
 
-UCLASS()
-class THIRDMOTION_API UViewportWidget : public UUserWidget
-{
-	GENERATED_BODY()
+  UCLASS()
+  class THIRDMOTION_API UViewportWidget : public UUserWidget
+  {
+        GENERATED_BODY()
 
-public:
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
-	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
+  public:
+        virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+        virtual void ReleaseSlateResources(bool bReleaseChildren) override;
+        virtual void NativeConstruct() override;
+        virtual void NativeDestruct() override;
 
-	// Slider_Light 바인딩
-	UPROPERTY(meta = (BindWidget))
-	class USlider* Slider_Light;
+        // Slider_Light 바인딩
+        UPROPERTY(meta = (BindWidget))
+        class USlider* Slider_Light;
 
-	// Slider 값 변경 콜백
-	UFUNCTION()
-	void OnLightSliderValueChanged(float Value);
+        // LightTime 텍스트 (시간 표시)
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
+        class UTextBlock* LightTime;
 
-	// DirectionalLight 참조
-	UPROPERTY(BlueprintReadWrite)
-	class ADirectionalLight* DirectionalLight;
+        // Slider 값 변경 콜백
+        UFUNCTION()
+        void OnLightSliderValueChanged(float Value);
 
-	// 이전 라이트 회전값 (변경 감지용)
-	FRotator LastLightRotation;
+        // DirectionalLight 참조
+        UPROPERTY(BlueprintReadWrite)
+        class ADirectionalLight* DirectionalLight;
 
-	// DirectionalLight 회전 동기화 (Multicast에서 수동 설정)
-	FRotator ReplicatedLightRotation;
+        // DirectionalLight 찾기
+        void FindDirectionalLight();
 
-	// 슬라이더 업데이트 함수 (Multicast에서 수동 호출)
-	void OnRep_LightRotation();
+        // Slider 값을 시간 문자열로 변환
+        FString SliderValueToTimeString(float Value) const;
 
-	// ==================== Camera View Buttons ====================
+        // 이전 라이트 회전값 (변경 감지용)
+        FRotator LastLightRotation;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* PerspectiveViewButton;
+        // DirectionalLight 회전 동기화 (Multicast에서 수동 설정)
+        FRotator ReplicatedLightRotation;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* TopViewButton;
+        // 슬라이더 업데이트 함수 (Multicast에서 수동 호출)
+        void OnRep_LightRotation();
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* BottomViewButton;
+        // ==================== Camera View Buttons ====================
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* LeftViewButton;
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* PerspectiveViewButton;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* RightViewButton;
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* TopViewButton;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* FrontViewButton;
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* BottomViewButton;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* BackViewButton;
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* LeftViewButton;
 
-	// ==================== Widget Switcher & Panel Buttons ====================
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* RightViewButton;
 
-	// Widget Switcher (Light, Screen, Cubic 패널 전환)
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UWidgetSwitcher* WidgetSwitcher;
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* FrontViewButton;
 
-	// Light Button
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* TimeLight;
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* BackViewButton;
 
-	// Screen Button
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* Screen;
+        // ==================== Widget Switcher & Panel Buttons ====================
 
-	// Cubic Button
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* Cubic;
+        // Widget Switcher (Light, Screen, Cubic 패널 전환)
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UWidgetSwitcher* WidgetSwitcher;
 
-	// Light 버튼 클릭 핸들러
-	UFUNCTION()
-	void OnLightButtonClicked();
+        // Light Button
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* TimeLight;
 
-	// Screen 버튼 클릭 핸들러
-	UFUNCTION()
-	void OnScreenButtonClicked();
+        // Screen Button
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* Screen;
 
-	// Cubic 버튼 클릭 핸들러
-	UFUNCTION()
-	void OnCubicButtonClicked();
+        // Cubic Button
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* Cubic;
 
-	// ==================== Camera View Button Handlers ====================
+        // Light 버튼 클릭 핸들러
+        UFUNCTION()
+        void OnLightButtonClicked();
 
-	UFUNCTION()
-	void OnPerspectiveViewButtonClicked();
+        // Screen 버튼 클릭 핸들러
+        UFUNCTION()
+        void OnScreenButtonClicked();
 
-	UFUNCTION()
-	void OnTopViewButtonClicked();
+        // Cubic 버튼 클릭 핸들러
+        UFUNCTION()
+        void OnCubicButtonClicked();
 
-	UFUNCTION()
-	void OnBottomViewButtonClicked();
+        // ==================== Camera View Button Handlers ====================
 
-	UFUNCTION()
-	void OnLeftViewButtonClicked();
+        UFUNCTION()
+        void OnPerspectiveViewButtonClicked();
 
-	UFUNCTION()
-	void OnRightViewButtonClicked();
+        UFUNCTION()
+        void OnTopViewButtonClicked();
 
-	UFUNCTION()
-	void OnFrontViewButtonClicked();
+        UFUNCTION()
+        void OnBottomViewButtonClicked();
 
-	UFUNCTION()
-	void OnBackViewButtonClicked();
+        UFUNCTION()
+        void OnLeftViewButtonClicked();
 
-	// ==================== Screenshot & Video Recording ====================
+        UFUNCTION()
+        void OnRightViewButtonClicked();
 
-	// Shoot Button (Screenshot)
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* ShootButton;
+        UFUNCTION()
+        void OnFrontViewButtonClicked();
 
-	// Video Button (Start/Stop Recording)
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UButton* VideoButton;
+        UFUNCTION()
+        void OnBackViewButtonClicked();
 
-	// Video Button Text (녹화 상태 표시)
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UTextBlock* VideoButtonText;
+        // ==================== Screenshot & Video Recording ====================
 
-	// Screenshot button click handler
-	UFUNCTION()
-	void OnShootButtonClicked();
+        // Shoot Button (Screenshot)
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* ShootButton;
 
-	// Video recording button click handler
-	UFUNCTION()
-	void OnVideoButtonClicked();
+        // Video Button (Start/Stop Recording)
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UButton* VideoButton;
 
-	// ==================== MVC Pattern ====================
+        // Video Button Text (녹화 상태 표시)
+        UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+        class UTextBlock* VideoButtonText;
 
-	// ViewportController 
-	UFUNCTION(BlueprintCallable, Category = "Viewport")
-	UViewportController* GetViewportController() const { return ViewportController; }
+        // Screenshot button click handler
+        UFUNCTION()
+        void OnShootButtonClicked();
 
-protected:
-	// Observer Pattern: Controller 이벤트 핸들러
-	UFUNCTION()
-	void OnPanelChanged(EViewportPanelType NewPanelType);
+        // Video recording button click handler
+        UFUNCTION()
+        void OnVideoButtonClicked();
 
-	UFUNCTION()
-	void OnRecordingStateChanged(bool bIsRecording);
+        // ==================== MVC Pattern ====================
 
-private:
+        // ViewportController
+        UFUNCTION(BlueprintCallable, Category = "Viewport")
+        UViewportController* GetViewportController() const { return ViewportController; }
 
-	TSharedPtr<class SOverlay> RootWidget;
-	TSharedPtr<class SViewport> ViewportWidget;
-	TSharedPtr<class FSceneViewport> SceneViewport;
+  protected:
+        // Observer Pattern: Controller 이벤트 핸들러
+        UFUNCTION()
+        void OnPanelChanged(EViewportPanelType NewPanelType);
 
-	// ==================== MVC Pattern ====================
+        UFUNCTION()
+        void OnRecordingStateChanged(bool bIsRecording);
 
-	// ViewportController
-	UPROPERTY()
-	UViewportController* ViewportController;
+  private:
 
-	// 초기화
-	void InitializeController();
-};
+        TSharedPtr<class SOverlay> RootWidget;
+        TSharedPtr<class SViewport> ViewportWidget;
+        TSharedPtr<class FSceneViewport> SceneViewport;
+
+        // ==================== MVC Pattern ====================
+
+        // ViewportController
+        UPROPERTY()
+        UViewportController* ViewportController;
+
+        // 초기화
+        void InitializeController();
+  };
