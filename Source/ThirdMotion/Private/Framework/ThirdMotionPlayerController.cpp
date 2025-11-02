@@ -102,6 +102,16 @@ void AThirdMotionPlayerController::Tick(float DeltaSeconds)
 	
 }
 
+void AThirdMotionPlayerController::OnCtrl_Pressed(const FInputActionValue& InputActionValue)
+{
+	bIsCtrlPressed = true;
+}
+
+void AThirdMotionPlayerController::OnCtrl_Released(const FInputActionValue& InputActionValue)
+{
+	bIsCtrlPressed = false;
+}
+
 void AThirdMotionPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -126,6 +136,8 @@ void AThirdMotionPlayerController::SetupInputComponent()
 		EIC->BindAction(IA_RMB, ETriggerEvent::Canceled, this, &AThirdMotionPlayerController::OnRMB_Released);
 		EIC->BindAction(IA_Look, ETriggerEvent::Triggered, this, &AThirdMotionPlayerController::OnLook);
 		EIC->BindAction(IA_ESC, ETriggerEvent::Started, this, &AThirdMotionPlayerController::OnESC);
+		EIC->BindAction(IA_Ctrl, ETriggerEvent::Started, this, &AThirdMotionPlayerController::OnCtrl_Pressed);
+		EIC->BindAction(IA_Ctrl, ETriggerEvent::Completed, this, &AThirdMotionPlayerController::OnCtrl_Released);
 	}
 	
 }
@@ -235,6 +247,18 @@ void AThirdMotionPlayerController::OnRMB_Released(const FInputActionValue& Value
 
 void AThirdMotionPlayerController::OnESC(const FInputActionValue& Value)
 {
+	// 모든 선택 해제
+	ClearSelection();
+    
+	// 델리게이트 브로드캐스트
+	OnActorSelected.Broadcast(nullptr);
+	OnMultiActorsSelected.Broadcast(SelectedActors);
+    
+	if (XYZWidget)
+	{
+		XYZWidget->SetTargetActor(nullptr);
+	}
+	/*
 	// 하이라이터 끄기
 	if (!bGizmoShowed && IsValid(SelectedActor))
 		if (auto* H = SelectedActor->FindComponentByClass<UHighlightComponent>())
@@ -244,6 +268,97 @@ void AThirdMotionPlayerController::OnESC(const FInputActionValue& Value)
 	SelectedActor = nullptr;
 	OnActorSelected.Broadcast(nullptr);
 	XYZWidget->SetTargetActor(nullptr);
+	*/
+}
+
+FVector AThirdMotionPlayerController::GetSelectionCenterLocation() const
+{
+	if (SelectedActors.Num() == 0)
+	{
+		return FVector::ZeroVector;
+	}
+    
+	if (SelectedActors.Num() == 1)
+	{
+		return SelectedActors[0]->GetActorLocation();
+	}
+    
+	// 여러 액터의 평균 위치 계산
+	FVector SumLocation = FVector::ZeroVector;
+	int32 ValidCount = 0;
+    
+	for (AActor* Actor : SelectedActors)
+	{
+		if (IsValid(Actor))
+		{
+			SumLocation += Actor->GetActorLocation();
+			ValidCount++;
+		}
+	}
+    
+	return ValidCount > 0 ? (SumLocation / ValidCount) : FVector::ZeroVector;
+}
+
+void AThirdMotionPlayerController::AddToSelection(AActor* Actor)
+{
+	if (!Actor || !Actor->ActorHasTag(TEXT("Edit"))) return;
+    
+	if (!SelectedActors.Contains(Actor))
+	{
+		SelectedActors.Add(Actor);
+        
+		// 하이라이트 켜기
+		if (auto* H = Actor->FindComponentByClass<UHighlightComponent>())
+		{
+			H->EnableHighlight(true);
+		}
+        
+		PRINTLOG(TEXT("Added actor to selection: %s (Total: %d)"), *Actor->GetName(), SelectedActors.Num());
+	}
+}
+
+void AThirdMotionPlayerController::RemoveFromSelection(AActor* Actor)
+{
+	if (!Actor) return;
+    
+	if (SelectedActors.Contains(Actor))
+	{
+		SelectedActors.Remove(Actor);
+        
+		// 하이라이트 끄기
+		if (auto* H = Actor->FindComponentByClass<UHighlightComponent>())
+		{
+			H->EnableHighlight(false);
+		}
+        
+		PRINTLOG(TEXT("Removed actor from selection: %s (Total: %d)"), 
+			*Actor->GetName(), SelectedActors.Num());
+	}
+}
+
+void AThirdMotionPlayerController::ClearSelection()
+{
+	// 모든 선택된 액터의 하이라이트 끄기
+	for (AActor* Actor : SelectedActors)
+	{
+		if (IsValid(Actor))
+		{
+			if (auto* H = Actor->FindComponentByClass<UHighlightComponent>())
+			{
+				H->EnableHighlight(false);
+			}
+		}
+	}
+    
+	SelectedActors.Empty();
+	SelectedActor = nullptr;
+    
+	PRINTLOG(TEXT("Selection cleared"));
+}
+
+bool AThirdMotionPlayerController::IsActorSelected(AActor* Actor) const
+{
+	return SelectedActors.Contains(Actor);
 }
 
 void AThirdMotionPlayerController::OnClick()
@@ -270,37 +385,7 @@ void AThirdMotionPlayerController::SelectUnderCursor()
 
 		UpdateSelectedActor(NewSel);
 		
-		/*
-		if (!NewSel->ActorHasTag(TEXT("Edit"))) return;
-
 		
-		
-		// 기존 하이라이트 끄기
-		if (!bGizmoShowed)
-			EnableHighlight(false);
-		
-
-		SelectedActor = NewSel;
-		OnActorSelected.Broadcast(SelectedActor);
-
-		// 새 대상 하이라이트 켜기
-		EnableHighlight(true);
-
-		// SceneController를 통해 선택 전파 (RightPanel(SceneListWidget)에 알림)
-		if (MainWidget)
-		{
-			if (USceneListWidget* SceneListWidget = Cast<USceneListWidget>(MainWidget->RightPanel))
-			{
-				if (USceneController* SceneController = SceneListWidget->GetSceneController())
-				{
-					SceneController->SelectActor(SelectedActor);
-				}
-			}
-		}
-
-		// XYZ 패널 업데이트
-		XYZWidget->SetTargetActor(SelectedActor);
-		*/
 	}
 }
 
@@ -315,7 +400,55 @@ void AThirdMotionPlayerController::EnableHighlight(bool bEnabled)
 
 void AThirdMotionPlayerController::UpdateSelectedActor(AActor* NewActor)
 {
-	if (!NewActor->ActorHasTag(TEXT("Edit"))) return;
+	if (!NewActor || !NewActor->ActorHasTag(TEXT("Edit"))) return;
+
+	if (bIsCtrlPressed)
+	{
+		// Ctrl이 눌려있으면 다중 선택 모드
+		if (IsActorSelected(NewActor))
+		{
+			// 이미 선택된 액터면 선택 해제
+			RemoveFromSelection(NewActor);
+		}
+		else
+		{
+			// 선택되지 않은 액터면 추가
+			AddToSelection(NewActor);
+		}
+	}
+	else
+	{
+		// Ctrl이 안 눌려있으면 단일 선택 (기존 선택 초기화)
+		ClearSelection();
+		AddToSelection(NewActor);
+	}
+
+	// 단일 선택 액터 업데이트 (하위 호환성)
+	SelectedActor = SelectedActors.Num() > 0 ? SelectedActors[0] : nullptr;
+        
+	// 델리게이트 브로드캐스트
+	OnActorSelected.Broadcast(SelectedActor);
+	OnMultiActorsSelected.Broadcast(SelectedActors);
+
+	// XYZ 위젯 업데이트
+	if (XYZWidget)
+	{
+		XYZWidget->SetTargetActor(SelectedActor);
+	}
+
+	// SceneController 업데이트
+	if (MainWidget)
+	{
+		if (USceneListWidget* SceneListWidget = Cast<USceneListWidget>(MainWidget->RightPanel))
+		{
+			if (USceneController* SceneController = SceneListWidget->GetSceneController())
+			{
+				SceneController->SelectActor(SelectedActor);
+			}
+		}
+	}
+
+	/*
 	
 	// 기존 하이라이트 끄기
 	if (!bGizmoShowed)
@@ -341,6 +474,7 @@ void AThirdMotionPlayerController::UpdateSelectedActor(AActor* NewActor)
 
 	// XYZ 패널 업데이트
 	XYZWidget->SetTargetActor(SelectedActor);
+	*/
 }
 
 

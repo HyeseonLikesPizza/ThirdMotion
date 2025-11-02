@@ -174,19 +174,7 @@ void UMaterialListCombo::ReleaseSlateResources(bool bReleaseChildren)
 
 TSharedRef<SWidget> UMaterialListCombo::GenerateItem(TSharedPtr<FMaterialEntryRow> Row) const
 {
-	FSlateBrush* Brush = new FSlateBrush();
-	Brush->ImageSize = FVector2D(16, 16);
-
-	if (Row.IsValid() && Row->PreviewTexture)
-	{
-		Brush->SetResourceObject(Row->PreviewTexture);
-	}
-
 	return SNew(SHorizontalBox)
-	+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2, 0)
-	  [
-		  SNew(SImage).Image(Brush)
-	  ]
 	+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(6, 0)
 	  [
 		  SNew(STextBlock).Text(FText::FromName(Row->EntryName))
