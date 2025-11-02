@@ -226,7 +226,7 @@ void AThirdMotionPlayerController::OnRMB_Released(const FInputActionValue& Value
 	PRINTLOG(TEXT("RMB Released"));
 	bLookMode = false;
 
-	// 커서 다시 보이게 (UI도 클릭할거면 GameAndUI로)
+	// 커서 다시 보이게 
 	bShowMouseCursor = true;
 	FInputModeGameAndUI Mode;
 	Mode.SetHideCursorDuringCapture(false);
