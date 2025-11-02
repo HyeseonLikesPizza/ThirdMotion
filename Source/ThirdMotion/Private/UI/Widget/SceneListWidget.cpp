@@ -25,14 +25,6 @@ void USceneListWidget::RefreshUI()
 	UE_LOG(LogTemp, Log, TEXT("SceneListWidget: UI refreshed with %d root items"), RootItems.Num());
 }
 
-UUserWidget* USceneListWidget::OnGenerateRow(UObject* Item)
-{
-	// 이 함수는 더 이상 사용되지 않음
-	// TreeView의 EntryWidgetClass는 Blueprint에서 설정됨
-	// SceneItemWidget이 IUserObjectListEntry를 구현하므로 자동으로 처리됨
-	return nullptr;
-}
-
 void USceneListWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
