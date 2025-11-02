@@ -81,6 +81,9 @@ void UXYZWidgetController::TickSync()
 	const FVector ScalePct = Tx.GetScale3D()*100.f;
 	const FVector SizeM = GetWorldSize(Target.Get()) / 100.f;
 
+	const FText ObjectName = FText::FromString(Target->GetActorNameOrLabel());
+
+	View->SetObjectName(ObjectName);
 	View->SetPos(Pos);
 	View->SetRot(Rot);
 	View->SetScale(ScalePct);
