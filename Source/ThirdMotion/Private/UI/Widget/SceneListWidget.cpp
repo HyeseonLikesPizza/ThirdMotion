@@ -224,6 +224,6 @@ FReply USceneListWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKey
 			}
 		}
 	}
-
+	RefreshUI();
 	return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 }
