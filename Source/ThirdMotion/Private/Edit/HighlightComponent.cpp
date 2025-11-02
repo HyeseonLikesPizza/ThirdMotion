@@ -97,10 +97,23 @@ void UHighlightComponent::EnableHighlight(bool bEnable)
 							if (MainWidget && MainWidget->RightPanel)
 							{
 								URightPanel* RightPanel = Cast<URightPanel>(MainWidget->RightPanel);
-								if (RightPanel && RightPanel->PropertiesSwitcher)
+								if (RightPanel)
 								{
-									RightPanel->PropertiesSwitcher->SetActiveWidgetIndex(PropertiesIndex);
-									UE_LOG(LogTemp, Log, TEXT("HighlightComponent: PropertiesSwitcher set to index %d"), PropertiesIndex);
+									// RightPanelController를 통해 Properties 패널로 전환
+									URightPanelController* Controller = RightPanel->GetRightPanelController();
+									if (Controller)
+									{
+										// Properties 패널로 전환 (RightPanel 자동 표시)
+										Controller->SwitchToPanel(ERightPanelType::Properties);
+										UE_LOG(LogTemp, Log, TEXT("HighlightComponent: Switched to Properties panel"));
+									}
+
+									// PropertiesSwitcher 인덱스 설정
+									if (RightPanel->PropertiesSwitcher)
+									{
+										RightPanel->PropertiesSwitcher->SetActiveWidgetIndex(PropertiesIndex);
+										UE_LOG(LogTemp, Log, TEXT("HighlightComponent: PropertiesSwitcher set to index %d"), PropertiesIndex);
+									}
 								}
 								break;
 							}

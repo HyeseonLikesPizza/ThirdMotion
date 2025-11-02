@@ -36,9 +36,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Scene List")
 	TSubclassOf<UUserWidget> SceneItemWidgetClass;
 
-	// Row 생성 (TreeView 델리게이트)
+	/*// Row 생성 (TreeView 델리게이트)
 	UFUNCTION()
-	UUserWidget* OnGenerateRow(UObject* Item);
+	UUserWidget* OnGenerateRow(UObject* Item);*/
 
 	// SceneController 접근자 (외부에서 접근 가능)
 	UFUNCTION(BlueprintCallable, Category = "Scene Panel")
