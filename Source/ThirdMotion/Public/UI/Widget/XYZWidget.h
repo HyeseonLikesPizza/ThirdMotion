@@ -5,6 +5,7 @@
 #include "BaseWidget.h"
 #include "XYZWidget.generated.h"
 
+class UTextBlock;
 class UXYZWidgetController;
 class USpinBox;
 class UCheckBox;
@@ -17,6 +18,9 @@ class THIRDMOTION_API UXYZWidget : public UBaseWidget
 	GENERATED_BODY()
 
 public:
+    UPROPERTY(meta=(BindWidget))
+    UTextBlock* ObjectNameText;
+    
 	// Pos
     UPROPERTY(meta=(BindWidget))
     USpinBox* PosX;
@@ -75,6 +79,7 @@ public:
     void SetRot(const FRotator& Deg);
     void SetScale(const FVector& Pct);
     void SetSize(const FVector& Meters);
+    void SetObjectName(const FText& Name);
 
     void ToggleControls(bool bEnabled); 
 

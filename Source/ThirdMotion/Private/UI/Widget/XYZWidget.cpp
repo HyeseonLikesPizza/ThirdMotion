@@ -2,6 +2,7 @@
 
 #include "Components/Button.h"
 #include "Components/SpinBox.h"
+#include "Components/TextBlock.h"
 #include "UI/WidgetController/XYZWidgetController.h"
 
 
@@ -112,6 +113,7 @@ void UXYZWidget::SetTargetActor(AActor* InActor)
 
 	if (!bHasTarget)
 	{
+		//SetObjectName(FText::FromString(InActor->GetActorNameOrLabel()));
 		SetPos(FVector::ZeroVector);
 		SetRot(FRotator::ZeroRotator);
 		SetScale(FVector(100,100,100)); // 100% 기본
@@ -146,6 +148,11 @@ void UXYZWidget::SetSize(const FVector& Meters)
 	if (SizeX) SizeX->SetValue(Meters.X);
 	if (SizeY) SizeY->SetValue(Meters.Y);
 	if (SizeZ) SizeZ->SetValue(Meters.Z);
+}
+
+void UXYZWidget::SetObjectName(const FText& Name)
+{
+	ObjectNameText->SetText(Name);
 }
 
 void UXYZWidget::ToggleControls(bool bEnabled)
