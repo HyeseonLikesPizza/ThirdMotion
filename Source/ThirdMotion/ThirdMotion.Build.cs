@@ -8,7 +8,7 @@ public class ThirdMotion : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "MoviePlayer", "Sockets", "Networking", "GameplayTags", "NetCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "MoviePlayer", "Sockets", "Networking", "GameplayTags", "NetCore", "OnlineSubsystem", "OnlineSubsystemUtils", "EOSVoiceChat" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "ImageWrapper", "MoviePlayer", "MoviePlayer", "UMG" });
 

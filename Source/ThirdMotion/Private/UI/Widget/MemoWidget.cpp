@@ -65,23 +65,29 @@ void UMemoWidget::UpdateMemoText(const FText& NewText)
 		return;
 	}
 
-	// 선택된 액터가 BP_Memo인지 확인
-	if (!SelectedActor->GetName().Contains(TEXT("BP_Memo")))
+	// 선택된 액터의 WidgetComponent 중 태그가 "Memo"인 컴포넌트 찾기
+	TArray<UWidgetComponent*> WidgetComponents;
+	SelectedActor->GetComponents<UWidgetComponent>(WidgetComponents);
+
+	UWidgetComponent* MemoWidgetComp = nullptr;
+	for (UWidgetComponent* WidgetComp : WidgetComponents)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: Selected actor is not BP_Memo"));
+		if (WidgetComp && WidgetComp->ComponentHasTag(TEXT("Memo")))
+		{
+			MemoWidgetComp = WidgetComp;
+			UE_LOG(LogTemp, Log, TEXT("MemoWidget: Found component with 'Memo' tag - Component: %s"), *WidgetComp->GetName());
+			break;
+		}
+	}
+
+	if (!MemoWidgetComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: Component with 'Memo' tag not found in selected actor"));
 		return;
 	}
 
-	// 선택된 BP_Memo 액터의 WidgetComponent 찾기
-	UWidgetComponent* WidgetComp = SelectedActor->FindComponentByClass<UWidgetComponent>();
-	if (!WidgetComp)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: WidgetComponent not found in selected BP_Memo"));
-		return;
-	}
-
-	// WidgetComponent에서 ViewMemo 위젯 가져오기
-	UUserWidget* ViewMemo = WidgetComp->GetWidget();
+	// MemoWidgetComponent에서 ViewMemo 위젯 가져오기
+	UUserWidget* ViewMemo = MemoWidgetComp->GetWidget();
 	if (!ViewMemo)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: ViewMemo widget is null"));
@@ -103,10 +109,5 @@ void UMemoWidget::UpdateMemoText(const FText& NewText)
 		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: NoteTextBox not found in ViewMemo"));
 	}
 
-	// RPC로 네트워크 동기화 (선택된 액터 정보 포함)
-	FGuid ActorGuid;
-	// BP_Memo가 EditSyncComponent를 가지고 있다면 Guid 사용 가능
-	// 여기서는 Actor 이름으로 동기화
-	PC->Server_UpdateMemoText(NewText.ToString());
-	UE_LOG(LogTemp, Log, TEXT("MemoWidget: Sent memo update to server for selected BP_Memo"));
+	UE_LOG(LogTemp, Log, TEXT("MemoWidget: Memo text updated successfully"));
 }

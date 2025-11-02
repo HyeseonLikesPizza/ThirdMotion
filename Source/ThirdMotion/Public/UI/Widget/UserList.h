@@ -7,6 +7,9 @@
 #include "Components/TextBlock.h"
 #include "UserList.generated.h"
 
+class IVoiceChat;
+class IVoiceChatUser;
+
 /**
  * Data structure for connected user information
  */
@@ -127,6 +130,27 @@ private:
 	UFUNCTION()
 	void OnStopButtonClicked();
 
+	// Voice Chat 초기화
+	void InitializeVoiceChat();
+
+	// Voice Chat 채널 연결
+	void ConnectToVoiceChannel();
+
+	// Voice Chat 채널 연결 해제
+	void DisconnectFromVoiceChannel();
+
 	// 음성 채팅 상태 추적
 	bool bIsVoiceChatActive;
+
+	// Voice Chat 인터페이스
+	IVoiceChat* VoiceChatInterface;
+
+	// Voice Chat User 인터페이스
+	IVoiceChatUser* VoiceChatUser;
+
+	// 채널 이름
+	FString ChannelName;
+
+	// 플레이어 이름
+	FString PlayerDisplayName;
 };

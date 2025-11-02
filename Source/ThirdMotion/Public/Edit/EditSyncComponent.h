@@ -46,7 +46,14 @@ public:
 	// 서버에서 실제 적용
 	void ApplyTransformAuthoritative(const FTransform& NewWorldTx);
 
-	
+	// Light Intensity 설정 (Server RPC)
+	UFUNCTION(Server, Reliable)
+	void Server_SetLightIntensity(float NewIntensity);
+
+	// 서버에서 Light Intensity 적용
+	void ApplyLightIntensityAuthoritative(float NewIntensity);
+
+
 
 protected:
 	virtual void BeginPlay() override;

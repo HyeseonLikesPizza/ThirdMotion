@@ -69,7 +69,8 @@ void USceneController::ToggleActorVisibility(AActor* Actor)
 		{
 			// GUID가 없으면 로컬에서만 처리
 			UE_LOG(LogTemp, Warning, TEXT("SceneController: Actor has no GUID, toggling locally"));
-			bool bNewVisibility = Actor->IsHidden();
+			bool bCurrentlyHidden = Actor->IsHidden();
+			bool bNewVisibility = !bCurrentlyHidden; // 현재 숨겨져 있으면 보이게, 보이면 숨기기
 			SetActorVisibility(Actor, bNewVisibility);
 		}
 	}
@@ -77,7 +78,8 @@ void USceneController::ToggleActorVisibility(AActor* Actor)
 	{
 		// EditSyncComponent가 없으면 로컬에서만 처리 (Ghost 등)
 		UE_LOG(LogTemp, Warning, TEXT("SceneController: Actor has no EditSyncComponent, toggling locally"));
-		bool bNewVisibility = Actor->IsHidden();
+		bool bCurrentlyHidden = Actor->IsHidden();
+		bool bNewVisibility = !bCurrentlyHidden; // 현재 숨겨져 있으면 보이게, 보이면 숨기기
 		SetActorVisibility(Actor, bNewVisibility);
 	}
 }
@@ -93,8 +95,11 @@ void USceneController::SetActorVisibility(AActor* Actor, bool bVisible)
 	Actor->SetIsTemporarilyHiddenInEditor(!bVisible);
 #endif
 
+	// 씬 변경 알림 (SceneListWidget이 자동으로 UI 업데이트)
 	NotifySceneChanged();
 
+	UE_LOG(LogTemp, Log, TEXT("SceneController: Actor visibility set - Actor: %s, Visible: %d"),
+		*Actor->GetName(), bVisible);
 }
 
 // 이름 변경

@@ -15,11 +15,14 @@ void USceneListWidget::RefreshUI()
 {
 	if (!SceneList || !SceneListData) return;
 
+	// SceneListData의 모든 ItemData를 Actor 상태로부터 업데이트
+	SceneListData->UpdateAllItems();
+
 	// TreeView에 데이터 설정
 	TArray<USceneItemData*> RootItems = SceneListData->GetRootItems();
 	SceneList->SetListItems(RootItems);
 
-	UE_LOG(LogTemp, Log, TEXT("RightPanel: UI refreshed with %d root items"), RootItems.Num());
+	UE_LOG(LogTemp, Log, TEXT("SceneListWidget: UI refreshed with %d root items"), RootItems.Num());
 }
 
 UUserWidget* USceneListWidget::OnGenerateRow(UObject* Item)
@@ -50,6 +53,7 @@ void USceneListWidget::NativeConstruct()
 	if (SceneController)
 	{
 		SceneController->OnSelectionChanged.AddDynamic(this, &USceneListWidget::OnActorSelectedInWorld);
+		SceneController->OnSceneChanged.AddDynamic(this, &USceneListWidget::OnSceneListDataChanged);
 	}
 
 	// TreeView 설정 (Scene 패널용)
@@ -78,6 +82,7 @@ void USceneListWidget::NativeDestruct()
 	if (SceneController)
 	{
 		SceneController->OnSelectionChanged.RemoveDynamic(this, &USceneListWidget::OnActorSelectedInWorld);
+		SceneController->OnSceneChanged.RemoveDynamic(this, &USceneListWidget::OnSceneListDataChanged);
 	}
 
 	Super::NativeDestruct();
@@ -219,6 +224,6 @@ FReply USceneListWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKey
 			}
 		}
 	}
-
+	RefreshUI();
 	return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 }

@@ -85,6 +85,30 @@ void UEditSyncComponent::ApplyTransformAuthoritative(const FTransform& NewWorldT
 	}
 }
 
+void UEditSyncComponent::Server_SetLightIntensity_Implementation(float NewIntensity)
+{
+	ApplyLightIntensityAuthoritative(NewIntensity);
+}
+
+void UEditSyncComponent::ApplyLightIntensityAuthoritative(float NewIntensity)
+{
+	check(GetOwner() && GetOwner()->HasAuthority());
+
+	// PropertyDelta 생성
+	FPropertyDelta Delta;
+	Delta.PropertyTag = FGameplayTag::RequestGameplayTag(FName("Property.Light.Intensity"));
+	Delta.Op = EPropOp::SetFloat;
+	Delta.FloatParam = NewIntensity;
+
+	// 네이티브에 적용
+	ApplyDeltaToNative(Delta);
+
+	// 히스토리에 추가 (복제됨)
+	R_PropsAppliedHistory.Add(Delta);
+
+	UE_LOG(LogTemp, Log, TEXT("EditSyncComponent: Light Intensity set to %f"), NewIntensity);
+}
+
 void UEditSyncComponent::OnRep_Meta()
 {
 }
