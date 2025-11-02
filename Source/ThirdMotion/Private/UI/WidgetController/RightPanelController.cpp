@@ -11,6 +11,7 @@
 #include "Edit/EditTypes.h"
 #include "Framework/ThirdMotionPlayerController.h"
 #include "Components/LightComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Components/WidgetSwitcher.h"
 #include "GameplayTagContainer.h"
 
@@ -242,43 +243,80 @@ void URightPanelController::UpdatePropertiesSwitcherByActor(AActor* SelectedActo
 
 	if (SelectedActor)
 	{
-		// 1. Actor Tag 우선 확인
-		TArray<FName> ActorTags = SelectedActor->Tags;
-		if (ActorTags.Num() > 0)
+		// 1. StaticMeshComponent의 ComponentTags 확인
+		TArray<UStaticMeshComponent*> StaticMeshComponents;
+		SelectedActor->GetComponents<UStaticMeshComponent>(StaticMeshComponents);
+
+		if (StaticMeshComponents.Num() > 0)
 		{
-			UE_LOG(LogTemp, Log, TEXT("RightPanelController: Actor has %d tags"), ActorTags.Num());
+			UE_LOG(LogTemp, Log, TEXT("RightPanelController: Actor has %d StaticMeshComponents"), StaticMeshComponents.Num());
 
-			for (const FName& Tag : ActorTags)
+			for (UStaticMeshComponent* MeshComp : StaticMeshComponents)
 			{
-				FString TagString = Tag.ToString();
-				UE_LOG(LogTemp, Log, TEXT("RightPanelController: Checking tag: %s"), *TagString);
+				if (!MeshComp) continue;
 
-				// Tag 이름에 따라 PropertiesSwitcher 인덱스 설정
-				if (TagString.Contains(TEXT("Mesh")) || TagString.Contains(TEXT("mesh")))
+				TArray<FName> ComponentTags = MeshComp->ComponentTags;
+				UE_LOG(LogTemp, Log, TEXT("RightPanelController: StaticMeshComponent '%s' has %d ComponentTags"), *MeshComp->GetName(), ComponentTags.Num());
+
+				for (const FName& Tag : ComponentTags)
 				{
-					PropertiesIndex = 0;
-					bTagFound = true;
-					UE_LOG(LogTemp, Log, TEXT("RightPanelController: Tag 'Mesh' found - PropertiesSwitcher index 0"));
-					break;
-				}
-				else if (TagString.Contains(TEXT("Light")) || TagString.Contains(TEXT("light")))
-				{
-					PropertiesIndex = 1;
-					bTagFound = true;
-					// LightWidget 초기화
-					if (RightPanel->LightWidget)
+					FString TagString = Tag.ToString();
+					UE_LOG(LogTemp, Log, TEXT("RightPanelController: Checking ComponentTag: %s"), *TagString);
+
+					// ComponentTag가 "Light"이면 PropertiesSwitcher index 2
+					if (TagString.Equals(TEXT("Light"), ESearchCase::IgnoreCase))
 					{
-						RightPanel->LightWidget->InitializeWithLightActor(SelectedActor);
+						PropertiesIndex = 2;
+						bTagFound = true;
+						UE_LOG(LogTemp, Log, TEXT("RightPanelController: StaticMeshComponent tag 'Light' found - PropertiesSwitcher index 2"));
+						break;
 					}
-					UE_LOG(LogTemp, Log, TEXT("RightPanelController: Tag 'Light' found - PropertiesSwitcher index 1"));
-					break;
 				}
-				else if (TagString.Contains(TEXT("Camera")) || TagString.Contains(TEXT("camera")))
+
+				if (bTagFound) break;
+			}
+		}
+
+		// 2. ComponentTag로 찾지 못했으면 Actor Tag 확인
+		if (!bTagFound)
+		{
+			TArray<FName> ActorTags = SelectedActor->Tags;
+			if (ActorTags.Num() > 0)
+			{
+				UE_LOG(LogTemp, Log, TEXT("RightPanelController: Actor has %d tags"), ActorTags.Num());
+
+				for (const FName& Tag : ActorTags)
 				{
-					PropertiesIndex = 2;
-					bTagFound = true;
-					UE_LOG(LogTemp, Log, TEXT("RightPanelController: Tag 'Camera' found - PropertiesSwitcher index 2"));
-					break;
+					FString TagString = Tag.ToString();
+					UE_LOG(LogTemp, Log, TEXT("RightPanelController: Checking tag: %s"), *TagString);
+
+					// Tag 이름에 따라 PropertiesSwitcher 인덱스 설정
+					if (TagString.Contains(TEXT("Mesh")) || TagString.Contains(TEXT("mesh")))
+					{
+						PropertiesIndex = 0;
+						bTagFound = true;
+						UE_LOG(LogTemp, Log, TEXT("RightPanelController: Tag 'Mesh' found - PropertiesSwitcher index 0"));
+						break;
+					}
+					else if (TagString.Contains(TEXT("Light")) || TagString.Contains(TEXT("light")))
+					{
+						PropertiesIndex = 1;
+						bTagFound = true;
+						// LightWidget 초기화
+						if (RightPanel->LightWidget)
+						{
+							RightPanel->LightWidget->InitializeWithLightActor(SelectedActor);
+						}
+						UE_LOG(LogTemp, Log, TEXT("RightPanelController: Tag 'Light' found - PropertiesSwitcher index 1"));
+						break;
+					}
+					else if (TagString.Contains(TEXT("Camera")) || TagString.Contains(TEXT("camera")))
+					{
+						PropertiesIndex = 2;
+						bTagFound = true;
+						UE_LOG(LogTemp, Log, TEXT("RightPanelController: Tag 'Camera' found - PropertiesSwitcher index 2"));
+						break;
+					}
 				}
 			}
 		}

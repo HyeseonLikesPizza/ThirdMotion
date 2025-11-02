@@ -81,22 +81,7 @@ void ULightController::RequestServerUpdate(const FPropertyDelta& Delta)
 	if (!World)
 		return;
 
-	// SceneManager 가져오기 (ServerManager 역할)
-	USceneManager* SceneManager = World->GetSubsystem<USceneManager>();
-	if (!SceneManager)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LightController: SceneManager not found"));
-		return;
-	}
-
-	// 서버 권한 체크
-	if (!SceneManager->IsAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LightController: Not authority - cannot update (TODO: Implement client-to-server RPC in GameMode or PlayerController)"));
-		return;
-	}
-
-	// EditSyncComponent에서 Guid 가져오기
+	// EditSyncComponent 가져오기
 	UEditSyncComponent* EditSync = LightActor->FindComponentByClass<UEditSyncComponent>();
 	if (!EditSync)
 	{
@@ -104,14 +89,35 @@ void ULightController::RequestServerUpdate(const FPropertyDelta& Delta)
 		return;
 	}
 
-	const FGuid& ActorGuid = EditSync->GetMeta().Guid;
-	if (!ActorGuid.IsValid())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LightController: Actor Guid is invalid"));
-		return;
-	}
+	// 서버 권한 체크
+	bool bIsServer = LightActor->HasAuthority();
 
-	// SceneManager를 통해 속성 적용 (ServerManager 역할)
-	SceneManager->ApplyPropertyDelta(ActorGuid, Delta);
-	UE_LOG(LogTemp, Log, TEXT("LightController: Property change applied via SceneManager"));
+	if (bIsServer)
+	{
+		// 서버인 경우: SceneManager를 통해 직접 적용
+		USceneManager* SceneManager = World->GetSubsystem<USceneManager>();
+		if (SceneManager)
+		{
+			const FGuid& ActorGuid = EditSync->GetMeta().Guid;
+			if (ActorGuid.IsValid())
+			{
+				SceneManager->ApplyPropertyDelta(ActorGuid, Delta);
+				UE_LOG(LogTemp, Log, TEXT("LightController: Property change applied via SceneManager (Server)"));
+			}
+		}
+	}
+	else
+	{
+		// 클라이언트인 경우: Light Intensity는 EditSyncComponent RPC 사용
+		if (Delta.PropertyTag.GetTagName() == "Property.Light.Intensity")
+		{
+			EditSync->Server_SetLightIntensity(Delta.FloatParam);
+			UE_LOG(LogTemp, Log, TEXT("LightController: Light Intensity RPC called (Client -> Server)"));
+		}
+		else
+		{
+			// 다른 속성은 기존 방식 사용
+			UE_LOG(LogTemp, Warning, TEXT("LightController: Client cannot update property %s directly"), *Delta.PropertyTag.ToString());
+		}
+	}
 }

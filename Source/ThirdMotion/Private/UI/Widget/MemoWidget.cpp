@@ -65,37 +65,24 @@ void UMemoWidget::UpdateMemoText(const FText& NewText)
 		return;
 	}
 
-	// 선택된 액터의 태그가 "tool"인지 확인
-	if (!SelectedActor->ActorHasTag(TEXT("tool")))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: Selected actor does not have 'tool' tag - Name: %s"), *SelectedActor->GetName());
-		return;
-	}
-
-	// 선택된 액터가 BP_Memo인지 확인
-	if (!SelectedActor->GetName().Contains(TEXT("BP_Memo")))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: Selected actor is not BP_Memo - Name: %s"), *SelectedActor->GetName());
-		return;
-	}
-
-	// 선택된 BP_Memo 액터의 MemoWidgetComponent 찾기
+	// 선택된 액터의 WidgetComponent 중 태그가 "Memo"인 컴포넌트 찾기
 	TArray<UWidgetComponent*> WidgetComponents;
 	SelectedActor->GetComponents<UWidgetComponent>(WidgetComponents);
 
 	UWidgetComponent* MemoWidgetComp = nullptr;
 	for (UWidgetComponent* WidgetComp : WidgetComponents)
 	{
-		if (WidgetComp && WidgetComp->GetName().Contains(TEXT("MemoWidgetComponent")))
+		if (WidgetComp && WidgetComp->ComponentHasTag(TEXT("Memo")))
 		{
 			MemoWidgetComp = WidgetComp;
+			UE_LOG(LogTemp, Log, TEXT("MemoWidget: Found component with 'Memo' tag - Component: %s"), *WidgetComp->GetName());
 			break;
 		}
 	}
 
 	if (!MemoWidgetComp)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: MemoWidgetComponent not found in selected BP_Memo"));
+		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: Component with 'Memo' tag not found in selected actor"));
 		return;
 	}
 
