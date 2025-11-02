@@ -9,6 +9,7 @@
 class ULightController;
 class USlider;
 class UTextBlock;
+class UComboBoxString;
 
 /**
  * LightWidget - Light Actor의 Intensity와 Color 편집 UI (MVC View)
@@ -45,6 +46,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	class UButton* ColorPickerButton;
 
+	// UI Components - Color Combo (Red, Yellow, Green)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
+	UComboBoxString* ColorCombo;
+
 protected:
 	// LightController (MVC Controller)
 	UPROPERTY()
@@ -53,6 +58,10 @@ protected:
 	// Slider 변경 이벤트
 	UFUNCTION()
 	void OnIntensitySliderChanged(float Value);
+
+	// ColorCombo 선택 변경 이벤트
+	UFUNCTION()
+	void OnColorComboSelectionChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
 	// Observer 패턴 - Controller 델리게이트 콜백
 	UFUNCTION()

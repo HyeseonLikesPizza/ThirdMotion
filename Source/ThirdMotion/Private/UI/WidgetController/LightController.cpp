@@ -108,11 +108,16 @@ void ULightController::RequestServerUpdate(const FPropertyDelta& Delta)
 	}
 	else
 	{
-		// 클라이언트인 경우: Light Intensity는 EditSyncComponent RPC 사용
+		// 클라이언트인 경우: EditSyncComponent RPC 사용
 		if (Delta.PropertyTag.GetTagName() == "Property.Light.Intensity")
 		{
 			EditSync->Server_SetLightIntensity(Delta.FloatParam);
 			UE_LOG(LogTemp, Log, TEXT("LightController: Light Intensity RPC called (Client -> Server)"));
+		}
+		else if (Delta.PropertyTag.GetTagName() == "Property.Light.Color")
+		{
+			EditSync->Server_SetLightColor(Delta.ColorParam);
+			UE_LOG(LogTemp, Log, TEXT("LightController: Light Color RPC called (Client -> Server)"));
 		}
 		else
 		{
