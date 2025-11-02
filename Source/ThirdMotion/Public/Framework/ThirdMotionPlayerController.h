@@ -26,6 +26,8 @@ class THIRDMOTION_API AThirdMotionPlayerController : public APlayerController
 public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	void OnCtrl_Pressed(const FInputActionValue& InputActionValue);
+	void OnCtrl_Released(const FInputActionValue& InputActionValue);
 	virtual void SetupInputComponent() override;
 
 	/* Camera Control */
@@ -98,6 +100,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_ESC;
 
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_Ctrl;
+
 	UPROPERTY(BlueprintReadWrite, Category="Gizmo")
 	bool bGizmoShowed;
 
@@ -121,6 +126,37 @@ public:
 public:
 	AActor* GetSelectedActor();
 
+	// Ctrl 키가 눌려있는지 확인
+	UPROPERTY(BlueprintReadWrite, Category = "Selection")
+	bool bIsCtrlPressed = false;
+
+	// 다중 선택된 액터들
+	UPROPERTY(BlueprintReadOnly, Category = "Selection")
+	TArray<AActor*> SelectedActors;
+
+	// 다중 선택 델리게이트 (기존 OnActorSelected와 별도)
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMultiActorsSelected, const TArray<AActor*>&, Actors);
+    
+	UPROPERTY(BlueprintAssignable, Category = "Selection")
+	FOnMultiActorsSelected OnMultiActorsSelected;
+
+	// Gizmo 위치 계산 함수
+	UFUNCTION(BlueprintCallable, Category = "Selection")
+	FVector GetSelectionCenterLocation() const;
+
+	// 다중 선택 관리 함수들
+	UFUNCTION(BlueprintCallable, Category = "Selection")
+	void AddToSelection(AActor* Actor);
+
+	UFUNCTION(BlueprintCallable, Category = "Selection")
+	void RemoveFromSelection(AActor* Actor);
+
+	UFUNCTION(BlueprintCallable, Category = "Selection")
+	void ClearSelection();
+
+	UFUNCTION(BlueprintCallable, Category = "Selection")
+	bool IsActorSelected(AActor* Actor) const;
+
 private:
 	// 클릭 이벤트
 	void OnClick();
@@ -130,6 +166,9 @@ private:
 
 	UPROPERTY()
 	AActor* SelectedActor;
+
+	
+
 
 public:
 	// 액터 선택 시 델리게이트
@@ -167,7 +206,6 @@ private:
 
 	// 하이라이트 켜기or끄기
 	void EnableHighlight(bool bEnabled);
-
 	void UpdateSelectedActor(AActor* NewActor);
 
 };
