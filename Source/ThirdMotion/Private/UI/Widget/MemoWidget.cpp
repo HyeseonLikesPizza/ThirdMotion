@@ -5,6 +5,7 @@
 #include "Components/Button.h"
 #include "Components/WidgetComponent.h"
 #include "Framework/ThirdMotionPlayerController.h"
+#include "Edit/EditSyncComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 void UMemoWidget::NativeConstruct()
@@ -65,49 +66,30 @@ void UMemoWidget::UpdateMemoText(const FText& NewText)
 		return;
 	}
 
-	// 선택된 액터의 WidgetComponent 중 태그가 "Memo"인 컴포넌트 찾기
-	TArray<UWidgetComponent*> WidgetComponents;
-	SelectedActor->GetComponents<UWidgetComponent>(WidgetComponents);
-
-	UWidgetComponent* MemoWidgetComp = nullptr;
-	for (UWidgetComponent* WidgetComp : WidgetComponents)
+	// EditSyncComponent 가져오기
+	UEditSyncComponent* EditSync = SelectedActor->FindComponentByClass<UEditSyncComponent>();
+	if (!EditSync)
 	{
-		if (WidgetComp && WidgetComp->ComponentHasTag(TEXT("Memo")))
-		{
-			MemoWidgetComp = WidgetComp;
-			UE_LOG(LogTemp, Log, TEXT("MemoWidget: Found component with 'Memo' tag - Component: %s"), *WidgetComp->GetName());
-			break;
-		}
-	}
-
-	if (!MemoWidgetComp)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: Component with 'Memo' tag not found in selected actor"));
+		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: EditSyncComponent not found"));
 		return;
 	}
 
-	// MemoWidgetComponent에서 ViewMemo 위젯 가져오기
-	UUserWidget* ViewMemo = MemoWidgetComp->GetWidget();
-	if (!ViewMemo)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: ViewMemo widget is null"));
-		return;
-	}
+	// 서버 권한 체크
+	bool bIsServer = SelectedActor->HasAuthority();
+	FString NewTextString = NewText.ToString();
 
-	// ViewMemo의 NoteTextBox 찾기
-	UMultiLineEditableTextBox* ViewNoteTextBox = Cast<UMultiLineEditableTextBox>(
-		ViewMemo->GetWidgetFromName(TEXT("NoteTextBox")));
-
-	if (ViewNoteTextBox)
+	if (bIsServer)
 	{
-		ViewNoteTextBox->SetText(NewText);
-		UE_LOG(LogTemp, Log, TEXT("MemoWidget: Updated selected BP_Memo NoteTextBox - Text: %s"),
-			*NewText.ToString());
+		// 서버인 경우: 직접 적용
+		EditSync->ApplyMemoTextAuthoritative(NewTextString);
+		UE_LOG(LogTemp, Log, TEXT("MemoWidget: Memo text applied directly (Server)"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MemoWidget: NoteTextBox not found in ViewMemo"));
+		// 클라이언트인 경우: RPC 호출
+		EditSync->Server_SetMemoText(NewTextString);
+		UE_LOG(LogTemp, Log, TEXT("MemoWidget: Memo text RPC called (Client -> Server)"));
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("MemoWidget: Memo text updated successfully"));
+	UE_LOG(LogTemp, Log, TEXT("MemoWidget: Memo text update requested - Text: %s"), *NewTextString);
 }

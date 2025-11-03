@@ -40,6 +40,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_Meta)
 	FEditMeta R_Meta;
 
+	// Memo Text (복제됨)
+	UPROPERTY(ReplicatedUsing=OnRep_MemoText)
+	FString R_MemoText;
+
 	UFUNCTION(Server, Reliable)
 	void Server_SetTransform(const FTransform& NewWorldTx);
 
@@ -53,7 +57,12 @@ public:
 	// 서버에서 Light Intensity 적용
 	void ApplyLightIntensityAuthoritative(float NewIntensity);
 
+	// Memo Text 설정 (Server RPC)
+	UFUNCTION(Server, Reliable)
+	void Server_SetMemoText(const FString& NewText);
 
+	// 서버에서 Memo Text 적용
+	void ApplyMemoTextAuthoritative(const FString& NewText);
 
 protected:
 	virtual void BeginPlay() override;
@@ -61,6 +70,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_Meta();
+
+	UFUNCTION()
+	void OnRep_MemoText();
 
 	// 속성 변경 히스토리
 	UPROPERTY(ReplicatedUsing=OnRep_Props)
@@ -73,6 +85,9 @@ private:
 	// 실제 네이티브 컴포넌트에 반영
 	void ApplyDeltaToNative(const FPropertyDelta& D);
 	void ApplyAllPropsHistory();
+
+	// Memo WidgetComponent 텍스트 업데이트
+	void UpdateMemoWidgetText(const FString& NewText);
 
 	UStaticMeshComponent* GetSMC() const;
 	ULightComponent* GetLightC() const;

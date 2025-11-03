@@ -2,7 +2,10 @@
 #include "Edit/EditSyncComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/LightComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/MultiLineEditableTextBox.h"
 #include "Engine/StaticMeshActor.h"
+#include "Blueprint/UserWidget.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -33,7 +36,7 @@ void UEditSyncComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 	DOREPLIFETIME_CONDITION(UEditSyncComponent, R_Meta, COND_InitialOnly);
 	DOREPLIFETIME(UEditSyncComponent, R_PropsAppliedHistory);
-	
+	DOREPLIFETIME(UEditSyncComponent, R_MemoText);
 }
 
 
@@ -109,12 +112,39 @@ void UEditSyncComponent::ApplyLightIntensityAuthoritative(float NewIntensity)
 	UE_LOG(LogTemp, Log, TEXT("EditSyncComponent: Light Intensity set to %f"), NewIntensity);
 }
 
+void UEditSyncComponent::Server_SetMemoText_Implementation(const FString& NewText)
+{
+	ApplyMemoTextAuthoritative(NewText);
+}
+
+void UEditSyncComponent::ApplyMemoTextAuthoritative(const FString& NewText)
+{
+	check(GetOwner() && GetOwner()->HasAuthority());
+
+	// R_MemoText 업데이트 (복제되면 OnRep_MemoText 호출됨)
+	R_MemoText = NewText;
+
+	// 서버에서도 WidgetComponent 업데이트
+	UpdateMemoWidgetText(NewText);
+
+	UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent: Server - Memo Text set to %s"), *NewText);
+}
+
 void UEditSyncComponent::OnRep_Meta()
 {
 }
 
+void UEditSyncComponent::OnRep_MemoText()
+{
+	UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent::OnRep_MemoText - Called, Text: %s"), *R_MemoText);
+
+	// 클라이언트에서 WidgetComponent 업데이트
+	UpdateMemoWidgetText(R_MemoText);
+}
+
 void UEditSyncComponent::OnRep_Props()
 {
+	UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent::OnRep_Props - Called, History count: %d"), R_PropsAppliedHistory.Num());
 	ApplyAllPropsHistory();
 }
 
@@ -126,6 +156,13 @@ void UEditSyncComponent::ApplyDeltaToNative(const FPropertyDelta& D)
 	{
 		if (ULightComponent* LC = GetLightC())
 			LC->SetIntensity(D.FloatParam);
+		return;
+	}
+
+	if (Key == "Property.Light.Color")
+	{
+		if (ULightComponent* LC = GetLightC())
+			LC->SetLightColor(D.ColorParam);
 		return;
 	}
 	
@@ -167,8 +204,15 @@ void UEditSyncComponent::ApplyDeltaToNative(const FPropertyDelta& D)
 
 void UEditSyncComponent::ApplyAllPropsHistory()
 {
+	UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent::ApplyAllPropsHistory - START, Count: %d"), R_PropsAppliedHistory.Num());
+
 	for (const FPropertyDelta& D : R_PropsAppliedHistory)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent::ApplyAllPropsHistory - Applying PropertyTag: %s"), *D.PropertyTag.ToString());
 		ApplyDeltaToNative(D);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent::ApplyAllPropsHistory - END"));
 }
 
 UStaticMeshComponent* UEditSyncComponent::GetSMC() const
@@ -194,5 +238,52 @@ UCameraComponent* UEditSyncComponent::GetCameraC() const
 	if (const AActor* Owner = GetOwner())
 		return Owner->FindComponentByClass<UCameraComponent>();
 	return nullptr;
+}
+
+void UEditSyncComponent::UpdateMemoWidgetText(const FString& NewText)
+{
+	UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent::UpdateMemoWidgetText - START, Text: %s"), *NewText);
+
+	if (AActor* Owner = GetOwner())
+	{
+		TArray<UWidgetComponent*> WidgetComponents;
+		Owner->GetComponents<UWidgetComponent>(WidgetComponents);
+
+		UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent::UpdateMemoWidgetText - WidgetComponents count: %d"), WidgetComponents.Num());
+
+		for (UWidgetComponent* WidgetComp : WidgetComponents)
+		{
+			if (WidgetComp && WidgetComp->ComponentHasTag(TEXT("Memo")))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent::UpdateMemoWidgetText - Found Memo WidgetComponent"));
+
+				if (UUserWidget* ViewMemo = WidgetComp->GetWidget())
+				{
+					UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent::UpdateMemoWidgetText - ViewMemo widget found: %s"), *ViewMemo->GetName());
+
+					// ViewMemo의 NoteTextBox 찾기
+					if (UMultiLineEditableTextBox* NoteTextBox = Cast<UMultiLineEditableTextBox>(
+						ViewMemo->GetWidgetFromName(TEXT("NoteTextBox"))))
+					{
+						NoteTextBox->SetText(FText::FromString(NewText));
+						UE_LOG(LogTemp, Warning, TEXT("EditSyncComponent::UpdateMemoWidgetText - SUCCESS, Applied Text: %s"), *NewText);
+					}
+					else
+					{
+						UE_LOG(LogTemp, Error, TEXT("EditSyncComponent::UpdateMemoWidgetText - NoteTextBox NOT FOUND in ViewMemo"));
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("EditSyncComponent::UpdateMemoWidgetText - ViewMemo widget is NULL"));
+				}
+				break;
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("EditSyncComponent::UpdateMemoWidgetText - Owner is NULL"));
+	}
 }
 

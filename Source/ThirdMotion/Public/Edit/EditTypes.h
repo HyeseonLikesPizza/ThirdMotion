@@ -31,7 +31,8 @@ enum class EPropOp : uint8
 	SetObject,
 	SetTransform,
 	SetMesh,
-	SetMaterial
+	SetMaterial,
+	SetString
 };
 
 USTRUCT(BlueprintType)
@@ -56,6 +57,9 @@ struct FPropertyDelta
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName NameParam = FName("");
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString StringParam = FString("");
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSoftObjectPath ObjectPath;
