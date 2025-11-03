@@ -5,6 +5,9 @@
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include "Components/ComboBoxString.h"
+#include "Framework/ThirdMotionPlayerController.h"
+#include "ThirdMotion/ThirdMotion.h"
 
 void ULightWidget::NativeConstruct()
 {
@@ -16,7 +19,26 @@ void ULightWidget::NativeConstruct()
 		IntensitySlider->OnValueChanged.AddDynamic(this, &ULightWidget::OnIntensitySliderChanged);
 	}
 
+	// ColorCombo 초기화
+	if (ColorCombo)
+	{
+		ColorCombo->ClearOptions();
+		ColorCombo->AddOption(TEXT("Red"));
+		ColorCombo->AddOption(TEXT("Yellow"));
+		ColorCombo->AddOption(TEXT("Green"));
+		ColorCombo->SetSelectedOption(TEXT("Red")); // 기본값: Red
+
+		ColorCombo->OnSelectionChanged.AddDynamic(this, &ULightWidget::OnColorComboSelectionChanged);
+
+		UE_LOG(LogTemp, Log, TEXT("LightWidget: ColorCombo initialized with Red, Yellow, Green"));
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("LightWidget: NativeConstruct completed"));
+
+	if (!LightController)
+	{
+		LightController = NewObject<ULightController>();
+	}
 }
 
 void ULightWidget::NativeDestruct()
@@ -33,7 +55,24 @@ void ULightWidget::NativeDestruct()
 		IntensitySlider->OnValueChanged.RemoveDynamic(this, &ULightWidget::OnIntensitySliderChanged);
 	}
 
+	if (ColorCombo)
+	{
+		ColorCombo->OnSelectionChanged.RemoveDynamic(this, &ULightWidget::OnColorComboSelectionChanged);
+	}
+
 	Super::NativeDestruct();
+}
+
+void ULightWidget::InitAndBind(AThirdMotionPlayerController* PlayerController)
+{
+	PlayerController->OnActorSelected.AddDynamic(this, &ULightWidget::SetSelectedActor);
+}
+
+void ULightWidget::SetSelectedActor(AActor* InActor)
+{
+	SelectedActor = InActor;
+	if (LightController)
+		LightController->SetLightActor(SelectedActor);
 }
 
 void ULightWidget::InitializeWithLightActor(AActor* InLightActor)
@@ -77,10 +116,42 @@ void ULightWidget::SetLightWidgetVisibility(bool bVisible)
 void ULightWidget::OnIntensitySliderChanged(float Value)
 {
 	if (!LightController)
+	{
+		PRINTLOG(TEXT("Light Controller 없음"));
 		return;
+	}
 
 	// Controller를 통해 변경 요청
 	LightController->SetLightIntensity(Value);
+
+	PRINTLOG(TEXT("OnIntensitySliderChanged"));
+}
+
+void ULightWidget::OnColorComboSelectionChanged(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
+	if (!LightController)
+		return;
+
+	// 선택된 색상에 따라 FLinearColor 생성
+	FLinearColor NewColor = FLinearColor::White;
+
+	if (SelectedItem == TEXT("Red"))
+	{
+		NewColor = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f); // Red
+	}
+	else if (SelectedItem == TEXT("Yellow"))
+	{
+		NewColor = FLinearColor(1.0f, 1.0f, 0.0f, 1.0f); // Yellow
+	}
+	else if (SelectedItem == TEXT("Green"))
+	{
+		NewColor = FLinearColor(0.0f, 1.0f, 0.0f, 1.0f); // Green
+	}
+
+	// Controller를 통해 변경 요청
+	LightController->SetLightColor(NewColor);
+
+	UE_LOG(LogTemp, Log, TEXT("LightWidget: ColorCombo selection changed to %s"), *SelectedItem);
 }
 
 void ULightWidget::OnLightIntensityChanged(float NewIntensity)

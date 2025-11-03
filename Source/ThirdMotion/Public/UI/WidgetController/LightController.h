@@ -49,6 +49,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Light Controller")
 	AActor* GetLightActor() const { return LightActor.Get(); }
 
+	void SetLightActor(AActor* InLightActor) { LightActor = InLightActor; }
+
+	
 protected:
 	// 선택된 Light Actor
 	UPROPERTY()

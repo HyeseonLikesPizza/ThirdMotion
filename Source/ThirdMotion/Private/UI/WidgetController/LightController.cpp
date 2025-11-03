@@ -45,7 +45,19 @@ void ULightController::SetLightIntensity(float NewIntensity)
 
 	// Observer 패턴 - 이벤트 브로드캐스트
 	OnLightIntensityChanged.Broadcast(NewIntensity);
+	FPropertyDelta d;
+	d.PropertyTag = FGameplayTag::RequestGameplayTag("Property.Light.Intensity");
+	d.FloatParam = NewIntensity;
 
+	USceneManager* SceneManager = GetWorld()->GetSubsystem<USceneManager>();
+
+	UEditSyncComponent* ES = LightActor->FindComponentByClass<UEditSyncComponent>();
+	if (ES)
+	{
+		FGuid ActorGuid = ES->GetMeta().Guid;
+		SceneManager->ApplyPropertyDelta(ActorGuid, d);
+	}
+	
 	UE_LOG(LogTemp, Log, TEXT("LightController: Intensity changed to %f"), NewIntensity);
 }
 
@@ -60,6 +72,21 @@ void ULightController::SetLightColor(FLinearColor NewColor)
 	// LightEditLibrary를 통해 Delta 생성
 	FPropertyDelta Delta = ULightEditLibrary::MakeLightColorDelta(NewColor);
 
+	OnLightColorChanged.Broadcast(NewColor);
+	FPropertyDelta d;
+	d.PropertyTag = FGameplayTag::RequestGameplayTag("Property.Light.Color");
+	d.ColorParam = NewColor;
+
+	USceneManager* SceneManager = GetWorld()->GetSubsystem<USceneManager>();
+
+	UEditSyncComponent* ES = LightActor->FindComponentByClass<UEditSyncComponent>();
+	if (ES)
+	{
+		FGuid ActorGuid = ES->GetMeta().Guid;
+		SceneManager->ApplyPropertyDelta(ActorGuid, d);
+	}
+
+	
 	// 서버에 변경 요청
 	RequestServerUpdate(Delta);
 
@@ -108,11 +135,16 @@ void ULightController::RequestServerUpdate(const FPropertyDelta& Delta)
 	}
 	else
 	{
-		// 클라이언트인 경우: Light Intensity는 EditSyncComponent RPC 사용
+		// 클라이언트인 경우: EditSyncComponent RPC 사용
 		if (Delta.PropertyTag.GetTagName() == "Property.Light.Intensity")
 		{
 			EditSync->Server_SetLightIntensity(Delta.FloatParam);
 			UE_LOG(LogTemp, Log, TEXT("LightController: Light Intensity RPC called (Client -> Server)"));
+		}
+		else if (Delta.PropertyTag.GetTagName() == "Property.Light.Color")
+		{
+			//EditSync->Server_SetLightColor(Delta.ColorParam);
+			UE_LOG(LogTemp, Log, TEXT("LightController: Light Color RPC called (Client -> Server)"));
 		}
 		else
 		{
