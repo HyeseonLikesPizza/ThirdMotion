@@ -7,6 +7,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "Blueprint/UserWidget.h"
 #include "Net/UnrealNetwork.h"
+#include "ThirdMotion/ThirdMotion.h"
 
 
 UEditSyncComponent::UEditSyncComponent()
@@ -229,7 +230,14 @@ UStaticMeshComponent* UEditSyncComponent::GetSMC() const
 ULightComponent* UEditSyncComponent::GetLightC() const
 {
 	if (const AActor* Owner = GetOwner())
-		return Owner->FindComponentByClass<ULightComponent>();
+	{
+		if (Owner->FindComponentByClass<ULightComponent>())
+		{
+			PRINTLOG(TEXT("Light Component 존재"));
+			return Owner->FindComponentByClass<ULightComponent>();
+		}
+	}
+	PRINTLOG(TEXT("Light Component 존재하지 않음"));
 	return nullptr;
 }
 

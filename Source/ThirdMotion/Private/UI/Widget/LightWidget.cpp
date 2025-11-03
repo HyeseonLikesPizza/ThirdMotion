@@ -6,6 +6,8 @@
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/ComboBoxString.h"
+#include "Framework/ThirdMotionPlayerController.h"
+#include "ThirdMotion/ThirdMotion.h"
 
 void ULightWidget::NativeConstruct()
 {
@@ -32,6 +34,11 @@ void ULightWidget::NativeConstruct()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("LightWidget: NativeConstruct completed"));
+
+	if (!LightController)
+	{
+		LightController = NewObject<ULightController>();
+	}
 }
 
 void ULightWidget::NativeDestruct()
@@ -54,6 +61,18 @@ void ULightWidget::NativeDestruct()
 	}
 
 	Super::NativeDestruct();
+}
+
+void ULightWidget::InitAndBind(AThirdMotionPlayerController* PlayerController)
+{
+	PlayerController->OnActorSelected.AddDynamic(this, &ULightWidget::SetSelectedActor);
+}
+
+void ULightWidget::SetSelectedActor(AActor* InActor)
+{
+	SelectedActor = InActor;
+	if (LightController)
+		LightController->SetLightActor(SelectedActor);
 }
 
 void ULightWidget::InitializeWithLightActor(AActor* InLightActor)
@@ -97,10 +116,15 @@ void ULightWidget::SetLightWidgetVisibility(bool bVisible)
 void ULightWidget::OnIntensitySliderChanged(float Value)
 {
 	if (!LightController)
+	{
+		PRINTLOG(TEXT("Light Controller 없음"));
 		return;
+	}
 
 	// Controller를 통해 변경 요청
 	LightController->SetLightIntensity(Value);
+
+	PRINTLOG(TEXT("OnIntensitySliderChanged"));
 }
 
 void ULightWidget::OnColorComboSelectionChanged(FString SelectedItem, ESelectInfo::Type SelectionType)

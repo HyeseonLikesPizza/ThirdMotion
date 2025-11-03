@@ -25,6 +25,7 @@
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
 #include "Framework/Application/SlateApplication.h"
+#include "UI/Widget/LightWidget.h"
 #include "UI/Widget/XYZWidget.h"
 
 void AThirdMotionPlayerController::BeginPlay()
@@ -75,6 +76,16 @@ void AThirdMotionPlayerController::BeginPlay()
 			URightPanel* RPanel = Cast<URightPanel>(MainWidget->RightPanel);
 			XYZWidget = RPanel->XYZWidget;
 		}
+
+		if (URightPanel* RightPanel = Cast<URightPanel>(MainWidget->RightPanel))
+		{
+			ULightWidget* LightWidget = Cast<ULightWidget>(RightPanel->LightWidget);
+			if (LightWidget)
+			{
+				LightWidget->InitAndBind(this);
+			}
+		}
+		
 	}
 }
 

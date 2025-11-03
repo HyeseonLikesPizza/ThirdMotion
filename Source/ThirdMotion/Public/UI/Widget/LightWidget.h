@@ -6,6 +6,7 @@
 #include "UI/Widget/BaseWidget.h"
 #include "LightWidget.generated.h"
 
+class AThirdMotionPlayerController;
 class ULightController;
 class USlider;
 class UTextBlock;
@@ -22,6 +23,11 @@ class THIRDMOTION_API ULightWidget : public UBaseWidget
 public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+
+	void InitAndBind(AThirdMotionPlayerController* PlayerController);
+
+	UFUNCTION()
+	void SetSelectedActor(AActor* InActor);
 
 	// LightController와 Light Actor로 초기화
 	UFUNCTION(BlueprintCallable, Category = "Light Widget")
@@ -54,6 +60,9 @@ protected:
 	// LightController (MVC Controller)
 	UPROPERTY()
 	ULightController* LightController;
+
+	UPROPERTY()
+	AActor* SelectedActor;
 
 	// Slider 변경 이벤트
 	UFUNCTION()

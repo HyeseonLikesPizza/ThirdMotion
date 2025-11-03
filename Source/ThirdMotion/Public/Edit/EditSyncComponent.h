@@ -81,6 +81,9 @@ protected:
 	UFUNCTION()
 	void OnRep_Props();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	ULightComponent* GetLightComponentFromBlueprint(const AActor* Owner) const;
+
 private:
 	// 실제 네이티브 컴포넌트에 반영
 	void ApplyDeltaToNative(const FPropertyDelta& D);
