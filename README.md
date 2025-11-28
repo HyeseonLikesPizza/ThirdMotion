@@ -21,7 +21,7 @@ ThirdMotion은 Unreal Engine 5.6 기반의 실시간 협업 3D 편집 툴입니�
 <table>
   <tr>
     <td><strong>개발 기간</strong></td>
-    <td>2025.10.21 - 2025.11.03 (14일)</td>
+    <td>2025.10.01 ~ 2025.11.03 (33일)</td>
   </tr>
   <tr>
     <td><strong>팀 구성</strong></td>
