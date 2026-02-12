@@ -25,7 +25,7 @@ ThirdMotion은 Unreal Engine 5.6 기반의 실시간 협업 3D 편집 툴입니�
   </tr>
   <tr>
     <td><strong>팀 구성</strong></td>
-    <td>4명 (eunjung, HyeseonLikesPizza/Lauren, bsj, heekki2024)</td>
+    <td>3명 (eunjung, HyeseonLikesPizza/Lauren, bsj)</td>
   </tr>
   <tr>
     <td><strong>엔진 버전</strong></td>
